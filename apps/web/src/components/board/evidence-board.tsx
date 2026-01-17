@@ -14,7 +14,7 @@ import {
   type NodeChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { BoardToolbar } from './board-toolbar';
 import { DocumentNode, type DocumentNodeData } from './document-node';
@@ -25,6 +25,7 @@ import type { Document, Entity } from '@/types';
 
 import { useEntities } from '@/hooks/use-entities';
 import { useGraph } from '@/hooks/use-graph';
+import { useGameStore } from '@/stores/game-store';
 
 const nodeTypes = {
   entity: EntityNode,
@@ -47,6 +48,12 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
 
   const { entities } = useEntities(caseId);
   const { isLoading, syncGraph, getHubs } = useGraph(caseId);
+  const { setCurrentCase } = useGameStore();
+
+  // Set current case on mount
+  useEffect(() => {
+    setCurrentCase(caseId);
+  }, [caseId, setCurrentCase]);
 
   const handleNodesChange = useCallback(
     (changes: NodeChange<BoardNode>[]) => {
@@ -91,12 +98,13 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
         data: {
           entity,
           label: entity.name,
+          caseId,
         },
       };
 
       setNodes(nds => [...nds, newNode]);
     },
-    [nodes, setNodes],
+    [nodes, setNodes, caseId],
   );
 
   const handleLoadHubs = useCallback(async () => {
@@ -184,6 +192,7 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
     <div className="flex h-full w-full">
       <div className="flex min-h-0 flex-1 flex-col">
         <BoardToolbar
+          caseId={caseId}
           onLoadHubs={handleLoadHubs}
           onSyncGraph={handleSyncGraph}
           onClearBoard={handleClearBoard}
@@ -219,6 +228,7 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
       </div>
 
       <NodeDetailsPanel
+        caseId={caseId}
         selectedNode={selectedNode}
         onClose={handleClosePanel}
         onRemoveFromBoard={handleRemoveFromBoard}

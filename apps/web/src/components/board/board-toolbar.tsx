@@ -1,12 +1,25 @@
 'use client';
 
-import { Loader2, Network, Plus, RotateCcw, Sparkles, Trash2 } from 'lucide-react';
+import {
+  ArrowRight,
+  Loader2,
+  Network,
+  Pin,
+  Plus,
+  RotateCcw,
+  Sparkles,
+  Star,
+  Trash2,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useGameStore } from '@/stores/game-store';
 
 interface BoardToolbarProps {
+  caseId: string;
   onLoadHubs: () => Promise<void>;
   onSyncGraph: () => Promise<void>;
   onClearBoard: () => void;
@@ -17,6 +30,7 @@ interface BoardToolbarProps {
 }
 
 export function BoardToolbar({
+  caseId,
   onLoadHubs,
   onSyncGraph,
   onClearBoard,
@@ -26,12 +40,24 @@ export function BoardToolbar({
   nodeCount,
 }: BoardToolbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+  const { pinnedItems, suspectedEntities, currentCaseId } = useGameStore();
+
+  // Filter items for current case
+  const casePinnedCount = pinnedItems.filter(p => p.caseId === caseId).length;
+  const caseSuspectedCount = currentCaseId === caseId ? suspectedEntities.size : 0;
+
+  const canSubmit = casePinnedCount > 0 && caseSuspectedCount > 0;
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
       onSearch(searchQuery.trim());
       setSearchQuery('');
     }
+  };
+
+  const handleGoToSubmit = () => {
+    router.push(`/cases/${caseId}/submit`);
   };
 
   return (
@@ -105,8 +131,33 @@ export function BoardToolbar({
         </Button>
       </div>
 
+      {/* Divider */}
+      <div className="bg-border mx-2 h-6 w-px" />
+
+      {/* Case status counters */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 text-sm">
+          <Pin className="h-4 w-4 text-blue-500" />
+          <span className="font-medium">{casePinnedCount}</span>
+          <span className="text-muted-foreground">evidencia</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-sm">
+          <Star className="h-4 w-4 text-yellow-500" />
+          <span className="font-medium">{caseSuspectedCount}</span>
+          <span className="text-muted-foreground">sospechosos</span>
+        </div>
+      </div>
+
+      {/* Submit button */}
+      {canSubmit && (
+        <Button size="sm" onClick={handleGoToSubmit} className="gap-2">
+          Ir a Submit
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+      )}
+
       {/* Node count */}
-      <span className="text-muted-foreground text-sm">{nodeCount} nodes</span>
+      <span className="text-muted-foreground ml-auto text-sm">{nodeCount} nodes</span>
     </div>
   );
 }
