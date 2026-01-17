@@ -86,6 +86,7 @@ export default tseslint.config(
       '*.config.js',
       '*.config.mjs',
       '*.config.cjs',
+      'next-env.d.ts',
     ],
   },
   prettierConfig,
