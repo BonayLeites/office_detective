@@ -1,6 +1,7 @@
 'use client';
 
 import { Send } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { type KeyboardEvent, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -9,14 +10,10 @@ import { Textarea } from '@/components/ui/textarea';
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled?: boolean;
-  placeholder?: string;
 }
 
-export function ChatInput({
-  onSend,
-  disabled = false,
-  placeholder = 'Ask ARIA about the case...',
-}: ChatInputProps) {
+export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
+  const t = useTranslations('chat');
   const [message, setMessage] = useState('');
 
   const handleSubmit = () => {
@@ -48,7 +45,7 @@ export function ChatInput({
               setMessage(e.target.value);
             }}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder}
+            placeholder={t('inputPlaceholder')}
             disabled={disabled}
             autoResize
             className="min-h-[44px] resize-none pr-12"
@@ -71,9 +68,7 @@ export function ChatInput({
           <Send className="h-4 w-4" />
         </Button>
       </div>
-      <p className="text-muted-foreground mt-2 text-xs">
-        Press Enter to send, Shift+Enter for new line
-      </p>
+      <p className="text-muted-foreground mt-2 text-xs">{t('sendHint')}</p>
     </div>
   );
 }

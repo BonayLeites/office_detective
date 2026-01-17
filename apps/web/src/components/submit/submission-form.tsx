@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertTriangle, Send } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { EvidenceSelector } from './evidence-selector';
@@ -31,6 +32,7 @@ export function SubmissionForm({
   onSubmit,
   isSubmitting,
 }: SubmissionFormProps) {
+  const t = useTranslations('submit');
   const [selectedCulprits, setSelectedCulprits] = useState<Set<string>>(new Set());
   const [selectedEvidence, setSelectedEvidence] = useState<Set<string>>(new Set());
   const [explanation, setExplanation] = useState('');
@@ -83,22 +85,17 @@ export function SubmissionForm({
         <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
           <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
           <div>
-            <h3 className="font-medium text-amber-800 dark:text-amber-200">
-              Ready to submit your findings?
-            </h3>
+            <h3 className="font-medium text-amber-800 dark:text-amber-200">{t('warningTitle')}</h3>
             <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
-              This action cannot be undone. Make sure you&apos;ve reviewed all evidence and are
-              confident in your conclusion before submitting.
+              {t('warningDescription')}
             </p>
           </div>
         </div>
 
         {/* Culprit Selection */}
         <section>
-          <h2 className="mb-4 text-lg font-semibold">1. Identify the Culprit(s)</h2>
-          <p className="text-muted-foreground mb-4 text-sm">
-            Select the person(s) responsible for the fraudulent activity.
-          </p>
+          <h2 className="mb-4 text-lg font-semibold">{t('culprit.title')}</h2>
+          <p className="text-muted-foreground mb-4 text-sm">{t('culprit.description')}</p>
 
           <div className="grid gap-2 sm:grid-cols-2">
             {personEntities.map(entity => {
@@ -133,18 +130,14 @@ export function SubmissionForm({
           </div>
 
           {personEntities.length === 0 && (
-            <p className="text-muted-foreground text-sm">
-              No person entities found. Make sure the case has been loaded properly.
-            </p>
+            <p className="text-muted-foreground text-sm">{t('culprit.empty')}</p>
           )}
         </section>
 
         {/* Evidence Selection */}
         <section>
-          <h2 className="mb-4 text-lg font-semibold">2. Select Supporting Evidence</h2>
-          <p className="text-muted-foreground mb-4 text-sm">
-            Choose the documents and evidence that support your conclusion.
-          </p>
+          <h2 className="mb-4 text-lg font-semibold">{t('evidence.title')}</h2>
+          <p className="text-muted-foreground mb-4 text-sm">{t('evidence.description')}</p>
 
           <EvidenceSelector
             pinnedItems={pinnedItems}
@@ -156,23 +149,20 @@ export function SubmissionForm({
 
         {/* Explanation */}
         <section>
-          <h2 className="mb-4 text-lg font-semibold">3. Explain Your Reasoning</h2>
-          <p className="text-muted-foreground mb-4 text-sm">
-            Provide a brief explanation of how the fraud was committed and how you reached your
-            conclusion.
-          </p>
+          <h2 className="mb-4 text-lg font-semibold">{t('explanation.title')}</h2>
+          <p className="text-muted-foreground mb-4 text-sm">{t('explanation.description')}</p>
 
           <Textarea
             value={explanation}
             onChange={e => {
               setExplanation(e.target.value);
             }}
-            placeholder="Describe the fraud mechanism and your reasoning..."
+            placeholder={t('explanation.placeholder')}
             rows={5}
             className="resize-none"
           />
           <p className="text-muted-foreground mt-2 text-xs">
-            {explanation.length}/20 characters minimum
+            {t('explanation.minChars', { count: explanation.length })}
           </p>
         </section>
 
@@ -180,14 +170,14 @@ export function SubmissionForm({
         <section className="border-border border-t pt-6">
           <Button onClick={handleSubmit} disabled={!canSubmit} size="lg" className="w-full gap-2">
             <Send className="h-4 w-4" />
-            Submit Case Solution
+            {t('submitButton')}
           </Button>
 
           {!canSubmit && (
             <p className="text-muted-foreground mt-2 text-center text-sm">
-              {selectedCulprits.size === 0 && 'Select at least one culprit. '}
-              {selectedEvidence.size < 1 && 'Select at least one piece of evidence. '}
-              {explanation.trim().length < 20 && 'Explanation must be at least 20 characters.'}
+              {selectedCulprits.size === 0 && t('validation.needCulprit') + ' '}
+              {selectedEvidence.size < 1 && t('validation.needEvidence') + ' '}
+              {explanation.trim().length < 20 && t('validation.needExplanation')}
             </p>
           )}
         </section>

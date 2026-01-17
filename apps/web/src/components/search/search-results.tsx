@@ -1,6 +1,7 @@
 'use client';
 
 import { FileSearch } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { SearchResultItem } from './search-result-item';
 
@@ -23,15 +24,14 @@ export function SearchResults({
   caseId,
   onViewDocument,
 }: SearchResultsProps) {
+  const t = useTranslations('search');
+
   if (results.length === 0 && query) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <FileSearch className="text-muted-foreground mb-4 h-12 w-12 opacity-50" />
-        <h3 className="mb-2 text-lg font-medium">No results found</h3>
-        <p className="text-muted-foreground max-w-md text-sm">
-          Try different keywords or phrases. Semantic search works best with descriptive queries
-          like &quot;suspicious vendor payments&quot; or &quot;communication about budget&quot;.
-        </p>
+        <h3 className="mb-2 text-lg font-medium">{t('noResults', { query })}</h3>
+        <p className="text-muted-foreground max-w-md text-sm">{t('tryDifferent')}</p>
       </div>
     );
   }
@@ -40,11 +40,8 @@ export function SearchResults({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <FileSearch className="text-muted-foreground mb-4 h-12 w-12 opacity-50" />
-        <h3 className="mb-2 text-lg font-medium">Search documents</h3>
-        <p className="text-muted-foreground max-w-md text-sm">
-          Enter a query above to search through case documents using semantic similarity. Results
-          will show the most relevant document chunks.
-        </p>
+        <h3 className="mb-2 text-lg font-medium">{t('placeholder')}</h3>
+        <p className="text-muted-foreground max-w-md text-sm">{t('tryDifferent')}</p>
       </div>
     );
   }
@@ -54,8 +51,7 @@ export function SearchResults({
       {/* Results count */}
       <div className="border-border border-b px-4 py-2">
         <p className="text-muted-foreground text-sm">
-          Found <span className="text-foreground font-medium">{total}</span> results for{' '}
-          <span className="text-foreground font-medium">&quot;{query}&quot;</span>
+          <span className="text-foreground font-medium">{total}</span> &quot;{query}&quot;
         </p>
       </div>
 

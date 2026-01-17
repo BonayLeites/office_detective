@@ -108,6 +108,7 @@ class IngestionService:
                 chunk_index=chunk_result.chunk_index,
                 text=chunk_result.text,
                 embedding=embedding,
+                language=doc.language,  # Inherit language from document
                 meta_json=chunk_result.meta_json,
             )
             chunks.append(chunk)

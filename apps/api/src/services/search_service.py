@@ -53,6 +53,7 @@ class SearchService:
         k: int = 6,
         doc_types: list[DocType] | None = None,
         min_score: float = 0.0,
+        language: str = "en",
     ) -> list[SearchResult]:
         """Perform semantic search within a case.
 
@@ -62,6 +63,7 @@ class SearchService:
             k: Number of results to return (default 6)
             doc_types: Optional filter by document types
             min_score: Minimum similarity score (0-1, default 0)
+            language: Language to filter results by (default "en")
 
         Returns:
             List of SearchResult objects sorted by similarity
@@ -85,6 +87,7 @@ class SearchService:
             )
             .join(Document, DocChunk.doc_id == Document.doc_id)
             .where(DocChunk.case_id == case_id)
+            .where(DocChunk.language == language)
             .where(DocChunk.embedding.isnot(None))
         )
 

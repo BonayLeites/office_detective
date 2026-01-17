@@ -49,11 +49,29 @@ def create_test_tools() -> list[StructuredTool]:
 
 
 def test_get_system_message_returns_prompt() -> None:
-    """get_system_message returns the ARIA system prompt."""
+    """get_system_message returns the ARIA system prompt with language instructions."""
     message = get_system_message()
-    assert message == ARIA_SYSTEM_PROMPT
+    # Message should contain the base prompt
+    assert ARIA_SYSTEM_PROMPT in message
     assert "ARIA" in message
     assert "citation" in message.lower()
+    # Default language is English
+    assert "Respond in English" in message
+
+
+def test_get_system_message_with_spanish() -> None:
+    """get_system_message returns Spanish instructions when language is 'es'."""
+    message = get_system_message("es")
+    assert ARIA_SYSTEM_PROMPT in message
+    assert "Responde en español" in message
+
+
+def test_get_system_message_unsupported_language_fallback() -> None:
+    """get_system_message falls back to English for unsupported languages."""
+    message = get_system_message("fr")  # French not supported
+    assert ARIA_SYSTEM_PROMPT in message
+    # Should fall back to English instructions
+    assert "Respond in English" in message
 
 
 def test_create_aria_graph_creates_graph() -> None:

@@ -92,7 +92,7 @@ async def test_search_docs_tool_returns_results(
     assert len(result) == 2
     assert result[0]["score"] == 0.95
     assert "fraud" in result[0]["text"]
-    mock_search_service.search.assert_called_once_with(case_id, "fraud", k=6)
+    mock_search_service.search.assert_called_once_with(case_id, "fraud", k=6, language="en")
 
 
 @pytest.mark.asyncio
@@ -450,3 +450,39 @@ async def test_graph_query_tool_path_invalid_target_id(
 
     assert "error" in result
     assert "Invalid target ID" in result["error"]
+
+
+# --- Language Parameter Tests ---
+
+
+@pytest.mark.asyncio
+async def test_search_docs_tool_with_spanish(
+    case_id: uuid.UUID,
+    mock_search_service: MagicMock,
+) -> None:
+    """search_docs tool passes Spanish language to search service."""
+    mock_search_service.search = AsyncMock(return_value=[])
+
+    tool = create_search_docs_tool(mock_search_service, case_id, language="es")
+    await tool.ainvoke({"query": "fraude", "k": 6})
+
+    mock_search_service.search.assert_called_once_with(
+        case_id, "fraude", k=6, language="es"
+    )
+
+
+@pytest.mark.asyncio
+async def test_search_docs_tool_defaults_to_english(
+    case_id: uuid.UUID,
+    mock_search_service: MagicMock,
+) -> None:
+    """search_docs tool defaults to English language."""
+    mock_search_service.search = AsyncMock(return_value=[])
+
+    # Create tool without specifying language (should default to "en")
+    tool = create_search_docs_tool(mock_search_service, case_id)
+    await tool.ainvoke({"query": "fraud", "k": 6})
+
+    mock_search_service.search.assert_called_once_with(
+        case_id, "fraud", k=6, language="en"
+    )

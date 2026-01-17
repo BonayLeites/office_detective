@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 
 from src.dependencies import DbSession
 from src.schemas.chat import ChatRequest, ChatResponse, HintRequest, HintResponse
@@ -21,6 +21,7 @@ async def chat_with_aria(
     case_id: UUID,
     request: ChatRequest,
     db: DbSession,
+    language: str = Query(default="en", pattern=r"^[a-z]{2}$"),
 ) -> ChatResponse:
     """Send a message to ARIA agent.
 
@@ -31,6 +32,7 @@ async def chat_with_aria(
         case_id: Case ID to investigate
         request: Chat request with user message
         db: Database session
+        language: Response language (ISO 639-1 code, default "en")
 
     Returns:
         ChatResponse with agent message and citations
@@ -47,8 +49,8 @@ async def chat_with_aria(
     # Initialize agent service (without Neo4j for now - optional)
     agent_service = AgentService(db=db, neo4j=None)
 
-    # Process chat message
-    return await agent_service.chat(case_id, request)
+    # Process chat message with language
+    return await agent_service.chat(case_id, request, language=language)
 
 
 @router.post(

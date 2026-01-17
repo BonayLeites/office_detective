@@ -9,7 +9,7 @@ import asyncio
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 import yaml
 from sqlalchemy import select
@@ -41,8 +41,11 @@ def generate_deterministic_uuid(namespace: str, name: str) -> uuid.UUID:
 class MallorySeeder:
     """Seeder for the Mallory case."""
 
-    def __init__(self, db: AsyncSession):
+    SUPPORTED_LANGUAGES: ClassVar[list[str]] = ["en", "es"]
+
+    def __init__(self, db: AsyncSession, language: str = "en"):
         self.db = db
+        self.language = language
         self.case_id: uuid.UUID | None = None
         self.entity_map: dict[str, uuid.UUID] = {}  # Maps P1, O2, etc. to UUIDs
 
@@ -50,8 +53,9 @@ class MallorySeeder:
         """Load and create the case from case.yaml."""
         case_data = load_yaml(DATA_DIR / "case.yaml")
 
-        # Generate deterministic UUID for case
-        self.case_id = generate_deterministic_uuid("mallory", case_data["case_id"])
+        # Generate deterministic UUID for case (include language for uniqueness)
+        case_key = f"{case_data['case_id']}_{self.language}"
+        self.case_id = generate_deterministic_uuid("mallory", case_key)
 
         # Check if case already exists
         existing = await self.db.execute(select(Case).where(Case.case_id == self.case_id))
@@ -66,6 +70,7 @@ class MallorySeeder:
             scenario_type=ScenarioType(case_data["scenario_type"]),
             difficulty=case_data["difficulty"],
             seed=case_data["seed"],
+            language=self.language,
             briefing=case_data["briefing"],
             ground_truth_json=case_data["ground_truth"],
         )
@@ -171,6 +176,7 @@ class MallorySeeder:
                 author_entity_id=author_entity_id,
                 subject=doc_data.get("subject"),
                 body=doc_data["body"],
+                language=self.language,
                 metadata_json=meta_json,
             )
             self.db.add(document)
@@ -209,17 +215,25 @@ class MallorySeeder:
         return result
 
 
-async def seed_mallory_case() -> dict[str, Any]:  # pragma: no cover
-    """Main function to seed the Mallory case (CLI entry point)."""
+async def seed_mallory_case(language: str = "en") -> dict[str, Any]:  # pragma: no cover
+    """Main function to seed the Mallory case (CLI entry point).
+
+    Args:
+        language: Language code (default "en")
+
+    Returns:
+        Dict with seeding results
+    """
     async with async_session_maker() as session:
-        seeder = MallorySeeder(session)
+        seeder = MallorySeeder(session, language=language)
         return await seeder.seed_all()
 
 
-async def clear_mallory_case() -> bool:  # pragma: no cover
+async def clear_mallory_case(language: str = "en") -> bool:  # pragma: no cover
     """Delete the Mallory case and all related data (CLI utility)."""
     async with async_session_maker() as session:
-        case_id = generate_deterministic_uuid("mallory", "case_001_mallory")
+        # Include language suffix to match seeder behavior
+        case_id = generate_deterministic_uuid("mallory", f"case_001_mallory_{language}")
 
         # Due to CASCADE, this will delete entities and documents too
         existing = await session.execute(select(Case).where(Case.case_id == case_id))
@@ -236,4 +250,13 @@ async def clear_mallory_case() -> bool:  # pragma: no cover
 
 
 if __name__ == "__main__":
-    asyncio.run(seed_mallory_case())
+    import sys
+
+    # Support language argument: python -m src.scripts.seed_mallory [language]
+    lang = sys.argv[1] if len(sys.argv) > 1 else "en"
+    if lang not in MallorySeeder.SUPPORTED_LANGUAGES:
+        print(f"Unsupported language: {lang}")
+        print(f"Supported: {MallorySeeder.SUPPORTED_LANGUAGES}")
+        sys.exit(1)
+
+    asyncio.run(seed_mallory_case(language=lang))

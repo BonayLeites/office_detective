@@ -15,6 +15,7 @@ class ChunkResponse(BaseModel):
     chunk_id: UUID
     chunk_index: int
     text: str
+    language: str = "en"
     has_embedding: bool = False
     meta_json: dict[str, Any] = Field(default_factory=dict)
 
@@ -28,6 +29,7 @@ class DocumentBase(BaseModel):
     ts: datetime
     subject: str | None = None
     body: str = Field(..., min_length=1)
+    language: str = Field(default="en", pattern=r"^[a-z]{2}$")
 
 
 class DocumentCreate(DocumentBase):

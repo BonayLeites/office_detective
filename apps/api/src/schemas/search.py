@@ -16,6 +16,7 @@ class SearchRequest(BaseModel):
     k: int = Field(default=6, ge=1, le=20)
     doc_types: list[DocType] | None = None
     min_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    language: str = Field(default="en", pattern=r"^[a-z]{2}$")
 
 
 class SearchResultItem(BaseModel):

@@ -10,7 +10,7 @@ from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import ToolNode
 
-from src.agent.prompts import ARIA_SYSTEM_PROMPT
+from src.agent.prompts import get_system_message
 from src.agent.state import ARIAState
 from src.config import settings
 
@@ -69,6 +69,5 @@ def create_aria_graph(
     return cast("CompiledStateGraph[Any]", graph.compile())
 
 
-def get_system_message() -> str:
-    """Get the ARIA system prompt."""
-    return ARIA_SYSTEM_PROMPT
+# Re-export get_system_message from prompts for backward compatibility
+__all__ = ["create_aria_graph", "get_system_message"]

@@ -33,7 +33,8 @@ class TestDeterministicUUID:
 @pytest.fixture
 async def seeded_mallory(db_session: AsyncSession) -> None:
     """Ensure Mallory case is seeded."""
-    case_id = generate_deterministic_uuid("mallory", "case_001_mallory")
+    # Include language suffix to match seeder behavior
+    case_id = generate_deterministic_uuid("mallory", "case_001_mallory_en")
 
     # Check if already seeded
     result = await db_session.execute(select(Case).where(Case.case_id == case_id))
@@ -49,7 +50,8 @@ class TestMallorySeeding:
     @pytest.mark.asyncio
     async def test_seed_creates_case(self, db_session: AsyncSession) -> None:
         """Seed creates exactly 1 case."""
-        case_id = generate_deterministic_uuid("mallory", "case_001_mallory")
+        # Include language suffix to match seeder behavior
+        case_id = generate_deterministic_uuid("mallory", "case_001_mallory_en")
 
         # Delete if exists
         await db_session.execute(delete(Case).where(Case.case_id == case_id))
@@ -76,7 +78,8 @@ class TestMallorySeeding:
         self, db_session: AsyncSession, seeded_mallory: None
     ) -> None:
         """Seed creates all 12 entities defined in YAML."""
-        case_id = generate_deterministic_uuid("mallory", "case_001_mallory")
+        # Include language suffix to match seeder behavior
+        case_id = generate_deterministic_uuid("mallory", "case_001_mallory_en")
 
         # Count entities
         result = await db_session.execute(
@@ -124,7 +127,8 @@ class TestMallorySeeding:
         self, db_session: AsyncSession, seeded_mallory: None
     ) -> None:
         """Seed creates all 19 documents defined in YAML."""
-        case_id = generate_deterministic_uuid("mallory", "case_001_mallory")
+        # Include language suffix to match seeder behavior
+        case_id = generate_deterministic_uuid("mallory", "case_001_mallory_en")
 
         # Count documents
         result = await db_session.execute(
@@ -189,7 +193,8 @@ class TestMallorySeeding:
     @pytest.mark.asyncio
     async def test_seed_idempotent(self, db_session: AsyncSession) -> None:
         """Running seed twice doesn't duplicate data."""
-        case_id = generate_deterministic_uuid("mallory", "case_001_mallory")
+        # Include language suffix to match seeder behavior
+        case_id = generate_deterministic_uuid("mallory", "case_001_mallory_en")
 
         # First seed
         seeder1 = MallorySeeder(db_session)
@@ -227,7 +232,8 @@ class TestMallorySeeding:
     @pytest.mark.asyncio
     async def test_clear_removes_case(self, db_session: AsyncSession) -> None:
         """Deleting case cascades to entities and documents."""
-        case_id = generate_deterministic_uuid("mallory", "case_001_mallory")
+        # Include language suffix to match seeder behavior
+        case_id = generate_deterministic_uuid("mallory", "case_001_mallory_en")
 
         # Ensure seeded
         seeder = MallorySeeder(db_session)

@@ -218,3 +218,73 @@ async def test_chat_message_too_long(
     )
 
     assert response.status_code == 422
+
+
+# --- Language Parameter Tests ---
+
+
+@pytest.mark.asyncio
+async def test_chat_with_spanish_language(
+    client: AsyncClient,
+    chat_test_case: Case,
+    mock_agent_graph: MagicMock,
+    mock_embedding_service: MagicMock,
+) -> None:
+    """POST /cases/{case_id}/chat accepts language=es query parameter."""
+    response = await client.post(
+        f"/api/cases/{chat_test_case.case_id}/chat?language=es",
+        json={"message": "¿Quién es sospechoso?"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert "message" in data
+    # Verify the agent was called (graph mock was invoked)
+    mock_agent_graph.return_value.ainvoke.assert_called()
+
+
+@pytest.mark.asyncio
+async def test_chat_with_invalid_language_rejected(
+    client: AsyncClient,
+    chat_test_case: Case,
+) -> None:
+    """POST /cases/{case_id}/chat rejects invalid language codes."""
+    # Invalid format (not 2 lowercase letters)
+    response = await client.post(
+        f"/api/cases/{chat_test_case.case_id}/chat?language=invalid",
+        json={"message": "Test message"},
+    )
+
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_chat_with_uppercase_language_rejected(
+    client: AsyncClient,
+    chat_test_case: Case,
+) -> None:
+    """POST /cases/{case_id}/chat rejects uppercase language codes."""
+    response = await client.post(
+        f"/api/cases/{chat_test_case.case_id}/chat?language=EN",
+        json={"message": "Test message"},
+    )
+
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_chat_defaults_to_english(
+    client: AsyncClient,
+    chat_test_case: Case,
+    mock_agent_graph: MagicMock,
+    mock_embedding_service: MagicMock,
+) -> None:
+    """POST /cases/{case_id}/chat defaults to English when no language specified."""
+    response = await client.post(
+        f"/api/cases/{chat_test_case.case_id}/chat",
+        json={"message": "Test without language param"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert "message" in data
