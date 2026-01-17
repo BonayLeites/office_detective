@@ -1,7 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { FileText, Pin, X } from 'lucide-react';
+import { FileText, LayoutGrid, Pin, X } from 'lucide-react';
 
 import { DocumentTypeBadge } from './document-type-badge';
 import { ChatRenderer } from './renderers/chat-renderer';
@@ -33,8 +33,10 @@ export function DocumentViewer({
   onClose,
 }: DocumentViewerProps) {
   const pinnedItems = useGameStore(state => state.pinnedItems);
+  const boardItems = useGameStore(state => state.boardItems);
   const pinItem = useGameStore(state => state.pinItem);
   const unpinItem = useGameStore(state => state.unpinItem);
+  const addToBoard = useGameStore(state => state.addToBoard);
 
   const { entity: author } = useEntity(caseId, document?.author_entity_id ?? null);
 
@@ -58,6 +60,7 @@ export function DocumentViewer({
   }
 
   const isPinned = pinnedItems.some(p => p.id === document.doc_id);
+  const isOnBoard = boardItems.some(b => b.id === `document-${document.doc_id}`);
 
   const handlePin = () => {
     if (isPinned) {
@@ -69,6 +72,18 @@ export function DocumentViewer({
         caseId,
         label: document.subject ?? `${document.doc_type} - ${document.doc_id.slice(0, 8)}`,
         data: { docType: document.doc_type, ts: document.ts },
+      });
+    }
+  };
+
+  const handleAddToBoard = () => {
+    if (!isOnBoard) {
+      addToBoard({
+        id: `document-${document.doc_id}`,
+        type: 'document',
+        caseId,
+        label: document.subject ?? `${document.doc_type} - ${document.doc_id.slice(0, 8)}`,
+        data: document as unknown as Record<string, unknown>,
       });
     }
   };
@@ -111,8 +126,17 @@ export function DocumentViewer({
           <Button
             variant="ghost"
             size="icon"
+            onClick={handleAddToBoard}
+            title={isOnBoard ? 'Ya en el tablero' : 'Añadir al tablero'}
+            disabled={isOnBoard}
+          >
+            <LayoutGrid className={cn('h-4 w-4', isOnBoard && 'fill-current text-purple-500')} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handlePin}
-            title={isPinned ? 'Unpin document' : 'Pin document'}
+            title={isPinned ? 'Quitar de evidencia' : 'Añadir a evidencia'}
           >
             <Pin className={cn('h-4 w-4', isPinned && 'text-primary fill-current')} />
           </Button>
