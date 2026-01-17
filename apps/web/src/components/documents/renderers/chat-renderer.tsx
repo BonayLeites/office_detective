@@ -99,7 +99,7 @@ function parseMessages(document: DocumentWithChunks): ChatMessageData[] {
       const headerMatch = /^(.+?)\s+(\d{1,2}:\d{2}\s*(?:AM|PM))$/i.exec(content);
       if (headerMatch?.[1] && headerMatch[2]) {
         // Save previous message if exists
-        if (currentMessage && currentMessage.content) {
+        if (currentMessage?.content) {
           messages.push(currentMessage);
         }
         // Start new message
@@ -115,7 +115,7 @@ function parseMessages(document: DocumentWithChunks): ChatMessageData[] {
     }
 
     // Don't forget the last message
-    if (currentMessage && currentMessage.content) {
+    if (currentMessage?.content) {
       messages.push(currentMessage);
     }
 
