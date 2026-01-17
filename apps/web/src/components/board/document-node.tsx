@@ -22,8 +22,9 @@ export function DocumentNode({ data, selected }: DocumentNodeProps) {
   const docType = document.doc_type;
   const subject = document.subject ?? docType;
 
-  const { pinItem, unpinItem, isPinned } = useGameStore();
-  const pinned = isPinned(document.doc_id);
+  const pinItem = useGameStore(state => state.pinItem);
+  const unpinItem = useGameStore(state => state.unpinItem);
+  const pinned = useGameStore(state => state.pinnedItems.some(p => p.id === document.doc_id));
 
   const handlePin = (e: React.MouseEvent) => {
     e.stopPropagation();
