@@ -2,7 +2,7 @@
 
 An AI-powered investigation game where players analyze corporate documents, uncover hidden connections, and solve fraud cases using semantic search and knowledge graph reasoning.
 
-[![CI](https://github.com/bonay/office-detective/actions/workflows/ci.yml/badge.svg)](https://github.com/bonay/office-detective/actions/workflows/ci.yml)
+[![CI](https://github.com/BonayLeites/office_detective/actions/workflows/ci.yml/badge.svg)](https://github.com/BonayLeites/office_detective/actions/workflows/ci.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
