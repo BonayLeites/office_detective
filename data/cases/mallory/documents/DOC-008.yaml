@@ -1,0 +1,56 @@
+# DOC-008: Invoice #4558 (March - Third) - Sunshine Supplies
+doc_id: DOC-008
+doc_type: invoice
+title: 'Invoice #4558 - Strategic Planning Support'
+ts: '2024-03-25T00:00:00'
+relevance: supporting
+is_key_evidence: false
+evidence_type: vague_description
+
+metadata:
+  vendor: 'Sunshine Supplies Ltd.'
+  vendor_entity: O2
+  invoice_number: '4558'
+  amount: 10000.00
+  currency: 'USD'
+  due_date: '2024-04-25'
+
+subject: 'Invoice #4558'
+
+body: |
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                                                 │
+  │  SUNSHINE SUPPLIES LTD.                          INVOICE        │
+  │  123 Oak Street                                  #4558          │
+  │  Austin, TX 78701                                               │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  Bill To:                      Date: March 25, 2024             │
+  │  TechFlow Industries           Due: April 25, 2024              │
+  │  500 Tech Plaza                                                 │
+  │  Austin, TX 78704              Payment Terms: Net 30            │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  Description                                     Amount         │
+  │  ─────────────────────────────────────────────────────────      │
+  │  Strategic Planning Support                      $10,000.00     │
+  │                                                                 │
+  │                                                                 │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │                                    Subtotal:     $10,000.00     │
+  │                                    Tax:          $0.00          │
+  │                                    TOTAL:        $10,000.00     │
+  │                                                                 │
+  │  Payment Info:                                                  │
+  │  First National Bank                                            │
+  │  Account: ****4521                                              │
+  │  Routing: 111000025                                             │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+evidence_notes: |
+  Back under $15K after #4534 went over

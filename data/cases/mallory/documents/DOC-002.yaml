@@ -1,0 +1,41 @@
+# DOC-002: Email - Marcus to Diana (Response)
+doc_id: DOC-002
+doc_type: email
+title: 'RE: Question about Sunshine Supplies'
+ts: '2024-04-02T10:42:00'
+relevance: supporting
+is_key_evidence: false
+
+metadata:
+  from: 'marcus.chen@techflow.com'
+  to: 'diana.walsh@techflow.com'
+  from_entity: P1
+  to_entity: P2
+
+subject: 'RE: Question about Sunshine Supplies'
+
+body: |
+  From: Marcus Chen <marcus.chen@techflow.com>
+  To: Diana Walsh <diana.walsh@techflow.com>
+  Date: April 2, 2024 10:42 AM
+  Subject: RE: Question about Sunshine Supplies
+
+  Diana,
+
+  Good question! Sunshine Supplies is a consulting firm that helps with
+  procurement strategy and process optimization. They came highly
+  recommended by a colleague at a previous company.
+
+  Their work has been valuable for streamlining our vendor evaluation
+  process. All invoices were within my approval authority and properly
+  documented.
+
+  Happy to discuss further if you'd like more details.
+
+  Best,
+  Marcus
+
+  ---
+  Marcus Chen
+  Procurement Manager | TechFlow Industries
+  marcus.chen@techflow.com

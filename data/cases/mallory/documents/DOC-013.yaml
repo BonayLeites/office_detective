@@ -1,0 +1,40 @@
+# DOC-013: Slack - Procurement Channel
+doc_id: DOC-013
+doc_type: chat
+title: 'Slack - #procurement - Sunshine Invoice Question'
+ts: '2024-03-10T10:23:00'
+relevance: supporting
+is_key_evidence: false
+
+metadata:
+  channel: '#procurement'
+  platform: 'slack'
+
+subject: '#procurement - Sunshine Invoice Question'
+
+body: |
+  #procurement
+  March 10, 2024
+
+  ┌─────────────────────────────────────────────────────────────────────────────┐
+  │ David Park                                                      10:23 AM   │
+  │ Anyone know who handles the Sunshine Supplies account? Got a question      │
+  │ about their invoice format.                                                │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │ Marcus Chen                                                     10:25 AM   │
+  │ That's me. What's up?                                                      │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │ David Park                                                      10:26 AM   │
+  │ Their invoices don't have detailed line items like our other vendors.      │
+  │ Is that normal for consulting?                                             │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │ Marcus Chen                                                     10:28 AM   │
+  │ Yeah, consulting contracts are usually project-based rather than           │
+  │ itemized. It's standard.                                                   │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │ David Park                                                      10:28 AM   │
+  │ Got it, thanks!                                                            │
+  └─────────────────────────────────────────────────────────────────────────────┘
+
+evidence_notes: |
+  Shows David questioned format but Marcus deflected with plausible explanation

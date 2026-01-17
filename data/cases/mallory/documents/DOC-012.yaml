@@ -1,0 +1,51 @@
+# DOC-012: Approval Log - KEY EVIDENCE
+doc_id: DOC-012
+doc_type: csv
+title: 'Invoice Approval Log Q1 2024'
+ts: '2024-03-31T00:00:00'
+relevance: critical
+is_key_evidence: true
+evidence_type: approval_pattern
+
+metadata:
+  report_type: 'approval_log'
+  period: 'Q1 2024'
+
+subject: 'Invoice Approval Log Q1 2024'
+
+body: |
+  ┌─────────────────────────────────────────────────────────────────────────────┐
+  │                                                                             │
+  │  TECHFLOW INDUSTRIES - INVOICE APPROVAL LOG                                 │
+  │  Q1 2024 (January - March)                                                  │
+  │                                                                             │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │                                                                             │
+  │  Invoice # │ Vendor              │ Amount     │ Approved By  │ Date        │
+  │  ─────────────────────────────────────────────────────────────────────────  │
+  │  4498      │ CloudServe Inc.     │ $8,500.00  │ Marcus Chen  │ Jan 28      │
+  │  4501      │ Sunshine Supplies   │ $8,500.00  │ Marcus Chen  │ Feb 08      │
+  │  4505      │ Office Depot        │ $2,340.00  │ David Park   │ Feb 12      │
+  │  4509      │ IT Support Plus     │ $4,200.00  │ Marcus Chen  │ Feb 20      │
+  │  4512      │ Office Depot        │ $1,890.00  │ Marcus Chen  │ Mar 01      │
+  │  4518      │ CloudServe Inc.     │ $8,500.00  │ David Park   │ Mar 05      │
+  │  4521      │ Sunshine Supplies   │ $12,000.00 │ Marcus Chen  │ Mar 08      │
+  │  4527      │ Office Depot        │ $1,890.00  │ David Park   │ Mar 10      │
+  │  4534      │ Sunshine Supplies   │ $15,250.00 │ Marcus Chen  │ Mar 15      │
+  │  4541      │ CloudServe Inc.     │ $8,500.00  │ Marcus Chen  │ Mar 18      │
+  │  4558      │ Sunshine Supplies   │ $10,000.00 │ Marcus Chen  │ Mar 28      │
+  │                                                                             │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │                                                                             │
+  │  SUMMARY BY VENDOR                                                          │
+  │  ─────────────────────────────────────────────────────────────────────────  │
+  │                                                                             │
+  │  Sunshine Supplies:  4 invoices, $45,750 total, 100% approved by M. Chen   │
+  │  CloudServe Inc.:    3 invoices, $25,500 total, 67% by M. Chen, 33% D. Park│
+  │  Office Depot:       3 invoices, $6,120 total, 33% by M. Chen, 67% D. Park │
+  │  IT Support Plus:    1 invoice, $4,200 total, 100% by M. Chen              │
+  │                                                                             │
+  └─────────────────────────────────────────────────────────────────────────────┘
+
+evidence_notes: |
+  CRITICAL EVIDENCE - Marcus approved ALL Sunshine invoices (100% - unique pattern)

@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+coverage/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ruff_cache/
+.mypy_cache/
+
+# IDE
+.idea/
+
+# Generated
+*.lock
+pnpm-lock.yaml
+package-lock.json
+
+# Data
+data/cases/generated/

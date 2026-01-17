@@ -1,0 +1,217 @@
+# The Mallory Procurement Irregularity
+# Case metadata and ground truth
+
+case_id: case_001_mallory
+slug: mallory-procurement-irregularity
+version: '1.0.0'
+
+# Display info
+title: 'The Mallory Procurement Irregularity'
+subtitle: "Something's not quite right in Procurement"
+
+# Classification
+difficulty: 2
+difficulty_label: 'Associate'
+scenario_type: vendor_fraud
+tags:
+  - procurement
+  - shell_company
+  - invoice_fraud
+  - single_culprit
+
+# Timing
+estimated_time_minutes: 20
+
+# Content counts
+document_count: 19
+entity_count: 12
+culprit_count: 1
+
+# Generation info
+is_generated: false
+seed: 42
+
+# Client briefing
+briefing: |
+  Good morning. Thank you for taking this case on such short notice.
+
+  I'm Diana Walsh, VP of Finance at TechFlow Industries. We're a mid-sized
+  software company — nothing flashy, but we've been growing steadily for
+  the past few years.
+
+  Here's the situation: during our Q1 close, I noticed some... irregularities
+  in our vendor payments. Specifically, there's a company called "Sunshine
+  Supplies Ltd." that we've been paying for "strategic consulting services."
+  The amounts aren't huge — around $45,000 total over three months — but
+  here's the thing: nobody seems to know what they actually do for us.
+
+  I asked around. Marketing hasn't worked with them. Engineering hasn't
+  either. The only paper trail leads back to our Procurement department,
+  specifically to Marcus Chen, our Procurement Manager. He says it's all
+  above board, but something feels off.
+
+  Before I involve legal or HR, I need to know what's really going on.
+  That's where you come in. I've compiled a dossier of relevant documents —
+  emails, invoices, vendor records. Everything you should need.
+
+  Find out if there's something here, or if I'm just being paranoid. Either
+  way, I need answers.
+
+  — Diana Walsh
+
+  YOUR OBJECTIVES:
+  • Determine if fraud occurred
+  • Identify the responsible party
+  • Explain how the fraud was committed
+  • Cite evidence supporting your findings
+  • Recommend preventive controls
+
+# Ground truth (SPOILER)
+ground_truth:
+  culprits:
+    - entity_id: P1 # Marcus Chen
+
+  mechanism: |
+    Marcus Chen created a shell company called "Sunshine Supplies Ltd." at his
+    girlfriend's residential address (123 Oak Street). As Procurement Manager,
+    he had authority to both register new vendors and approve invoices up to
+    $15,000. He submitted fake invoices for vague "consulting services" that
+    were never provided, approved them himself, and collected payments totaling
+    $45,750 over three months.
+
+  total_stolen: 45750
+  duration_months: 3
+
+  timeline:
+    - date: '2024-01-10'
+      event: 'Marcus incorporates Sunshine Supplies Ltd.'
+      actor: P1
+    - date: '2024-01-18'
+      event: 'Vendor registration submitted'
+      actor: P1
+      evidence: [DOC-010]
+    - date: '2024-01-20'
+      event: 'Vendor registration approved by Marcus'
+      actor: P1
+      evidence: [DOC-010]
+    - date: '2024-02-05'
+      event: 'First invoice submitted ($8,500)'
+      evidence: [DOC-005]
+    - date: '2024-02-08'
+      event: 'First invoice approved by Marcus'
+      actor: P1
+      evidence: [DOC-012]
+    - date: '2024-03-05'
+      event: 'Second invoice submitted ($12,000)'
+      evidence: [DOC-006]
+    - date: '2024-03-15'
+      event: 'Familiar tone email to Sunshine'
+      actor: P1
+      evidence: [DOC-003]
+    - date: '2024-04-01'
+      event: 'Diana notices irregularities'
+      actor: P2
+    - date: '2024-04-02'
+      event: 'Diana questions Marcus'
+      actor: P2
+      evidence: [DOC-001]
+
+  required_evidence:
+    - doc_id: DOC-010
+      description: 'Vendor registration - address match and self-approval'
+      strength: critical
+    - doc_id: DOC-012
+      description: 'Approval log - 100% Sunshine invoices approved by Marcus'
+      strength: critical
+    - doc_id: DOC-003
+      description: 'Email with familiar tone to supposed vendor'
+      strength: strong
+    - doc_id: DOC-005
+      description: 'Invoice with vague description'
+      strength: supporting
+    - doc_id: DOC-006
+      description: 'Invoice with vague description'
+      strength: supporting
+
+  red_herrings:
+    - doc_id: DOC-014
+      description: 'Finance Slack - budget complaints'
+      resolution: 'Normal corporate politics, unrelated to fraud'
+    - doc_id: DOC-015
+      description: "Sarah's expense report"
+      resolution: 'Legitimate conference travel with full receipts'
+    - doc_id: DOC-016
+      description: "IT ticket - 'delete my files'"
+      resolution: 'Standard offboarding for departing employee'
+
+# Scoring rubric
+scoring:
+  culprit_identification:
+    max_points: 35
+    correct_only: 35
+    correct_plus_wrong_accomplice: 25
+    wrong_primary_correct_secondary: 15
+
+  mechanism_explanation:
+    max_points: 25
+    elements:
+      - name: 'Shell company creation'
+        points: 10
+      - name: 'Fake invoices for non-services'
+        points: 8
+      - name: 'Self-approval abuse'
+        points: 7
+
+  evidence_quality:
+    max_points: 25
+    critical_evidence_bonus: 8
+    strong_evidence_bonus: 5
+    supporting_evidence_bonus: 4
+    red_herring_penalty: -2
+
+  efficiency:
+    max_points: 10
+    no_hints: 10
+    one_hint: 8
+    two_hints: 6
+    three_hints: 4
+    four_plus_hints: 2
+
+  recommendations:
+    max_points: 5
+
+# Hints by tier
+hints:
+  tier_0:
+    - text: 'Have you compared all the vendor registration forms?'
+      trigger: 'time:5m,docs_viewed:<2'
+    - text: 'Pay attention to who approves what in the approval log.'
+      trigger: 'doc_viewed:DOC-012'
+    - text: 'Email tone can tell you a lot about relationships.'
+      trigger: 'doc_type:email'
+
+  tier_1:
+    - text: 'One of these vendors was registered much more recently than the others.'
+      cost: 5
+    - text: 'Look at who submits AND approves vendor registrations.'
+      cost: 5
+
+  tier_2:
+    - text: 'Take a close look at the Sunshine Supplies vendor form - specifically the address.'
+      cost: 15
+      highlights: [DOC-010]
+    - text: "Check Invoice #4521's email thread. Notice anything about the tone?"
+      cost: 15
+      highlights: [DOC-003]
+
+  tier_3:
+    - text: "Compare the address on Sunshine's vendor form with typical business addresses. Is 123 Oak Street a commercial location?"
+      cost: 25
+    - text: 'Marcus Chen approved every single Sunshine invoice. No other vendor has this pattern.'
+      cost: 25
+
+  tier_4:
+    - text: "The address 123 Oak Street on Sunshine's registration is a residential address - possibly connected to Marcus Chen personally."
+      cost: 40
+    - text: "Marcus submitted, approved, and is the sole contact for Sunshine Supplies. He's paying himself through a shell company."
+      cost: 40

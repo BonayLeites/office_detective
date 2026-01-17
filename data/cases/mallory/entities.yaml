@@ -1,0 +1,194 @@
+# Entities for The Mallory Procurement Irregularity
+# 12 entities: 7 people, 5 organizations
+
+entities:
+  # === PEOPLE ===
+
+  - entity_id: P1
+    entity_type: person
+    name: 'Marcus Chen'
+    attrs:
+      role: 'Procurement Manager'
+      department: 'Procurement'
+      email: 'marcus.chen@techflow.com'
+      employee_id: 'TF-2019-0234'
+      reports_to: P2
+      start_date: '2019-03-15'
+      approval_limit: 15000
+      relevance: culprit
+      notes: 'Created and controls Sunshine Supplies shell company'
+
+  - entity_id: P2
+    entity_type: person
+    name: 'Diana Walsh'
+    attrs:
+      role: 'VP of Finance'
+      department: 'Finance'
+      email: 'diana.walsh@techflow.com'
+      relevance: contact
+      notes: 'Client contact, discovered irregularities'
+
+  - entity_id: P3
+    entity_type: person
+    name: 'Sarah Kim'
+    attrs:
+      role: 'CFO'
+      department: 'Finance'
+      email: 'sarah.kim@techflow.com'
+      relevance: red_herring
+      notes: 'Expense report looks suspicious but is legitimate'
+
+  - entity_id: P4
+    entity_type: person
+    name: 'David Park'
+    attrs:
+      role: 'Procurement Associate'
+      department: 'Procurement'
+      email: 'david.park@techflow.com'
+      relevance: context
+      notes: 'Questioned Sunshine invoice format, was deflected by Marcus'
+
+  - entity_id: P5
+    entity_type: person
+    name: 'James Liu'
+    attrs:
+      role: 'IT Manager'
+      department: 'IT'
+      email: 'james.liu@techflow.com'
+      relevance: context
+      notes: 'Processes offboarding tickets'
+
+  - entity_id: P6
+    entity_type: person
+    name: 'Emma Rodriguez'
+    attrs:
+      role: 'HR Director'
+      department: 'HR'
+      email: 'emma.rodriguez@techflow.com'
+      relevance: context
+      notes: 'HR records'
+
+  - entity_id: P7
+    entity_type: person
+    name: 'Tom Wilson'
+    attrs:
+      role: 'Marketing (Former)'
+      department: 'Marketing'
+      email: 'tom.wilson@techflow.com'
+      relevance: red_herring
+      notes: "'Delete my files' request - standard offboarding"
+
+  # === ORGANIZATIONS ===
+
+  - entity_id: O1
+    entity_type: org
+    name: 'TechFlow Industries'
+    attrs:
+      type: 'client'
+      industry: 'Technology / Software'
+      address: '500 Tech Plaza, Austin TX 78704'
+      size: '~200 employees'
+      relevance: client
+      notes: 'Your client company'
+
+  - entity_id: O2
+    entity_type: org
+    name: 'Sunshine Supplies Ltd.'
+    attrs:
+      type: 'shell_company'
+      address: '123 Oak Street, Austin TX 78701'
+      phone: '(512) 555-0147'
+      email: 'invoices@sunshine-supplies.com'
+      tax_id: '84-2847193'
+      bank_account: '****4521'
+      bank_name: 'First National Bank'
+      relevance: key_evidence
+      is_fraudulent: true
+      notes: 'Phantom vendor - residential address, no real services'
+
+  - entity_id: O3
+    entity_type: org
+    name: 'Office Depot'
+    attrs:
+      type: 'legitimate_vendor'
+      address: '6600 North Military Trail, Boca Raton FL 33496'
+      relevance: comparison
+      notes: 'Normal vendor for contrast'
+
+  - entity_id: O4
+    entity_type: org
+    name: 'CloudServe Inc.'
+    attrs:
+      type: 'legitimate_vendor'
+      relevance: comparison
+      notes: 'Normal vendor for contrast'
+
+  - entity_id: O5
+    entity_type: org
+    name: 'IT Support Plus'
+    attrs:
+      type: 'legitimate_vendor'
+      relevance: comparison
+      notes: 'Normal vendor for contrast'
+
+# Entity relationships (for graph)
+relationships:
+  - source: P1
+    target: O1
+    type: 'works_at'
+
+  - source: P2
+    target: O1
+    type: 'works_at'
+
+  - source: P3
+    target: O1
+    type: 'works_at'
+
+  - source: P4
+    target: O1
+    type: 'works_at'
+
+  - source: P5
+    target: O1
+    type: 'works_at'
+
+  - source: P6
+    target: O1
+    type: 'works_at'
+
+  - source: P7
+    target: O1
+    type: 'works_at'
+
+  - source: P1
+    target: P2
+    type: 'reports_to'
+
+  - source: P4
+    target: P1
+    type: 'reports_to'
+
+  - source: P1
+    target: O2
+    type: 'created'
+
+  - source: P1
+    target: O2
+    type: 'controls'
+
+  - source: O1
+    target: O2
+    type: 'pays'
+
+  - source: O1
+    target: O3
+    type: 'pays'
+
+  - source: O1
+    target: O4
+    type: 'pays'
+
+  - source: O1
+    target: O5
+    type: 'pays'

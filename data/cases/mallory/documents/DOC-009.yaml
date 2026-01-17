@@ -1,0 +1,48 @@
+# DOC-009: Invoice #4512 (Office Depot - Legitimate) - Comparison
+doc_id: DOC-009
+doc_type: invoice
+title: 'Invoice #OD-2024-8892 - Office Supplies'
+ts: '2024-03-01T00:00:00'
+relevance: comparison
+is_key_evidence: false
+
+metadata:
+  vendor: 'Office Depot'
+  vendor_entity: O3
+  invoice_number: 'OD-2024-8892'
+  amount: 1889.53
+  currency: 'USD'
+  due_date: '2024-03-31'
+
+subject: 'Invoice #OD-2024-8892'
+
+body: |
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                                                 │
+  │  OFFICE DEPOT                                    INVOICE        │
+  │  Business Solutions                              #OD-2024-8892  │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  Bill To:                      Date: March 1, 2024              │
+  │  TechFlow Industries           Due: March 31, 2024              │
+  │  ATTN: Accounts Payable                                         │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  Item #       Description              Qty    Unit     Amount   │
+  │  ─────────────────────────────────────────────────────────      │
+  │  OD-78234     HP LaserJet Toner 26X    12    $89.99   $1,079.88 │
+  │  OD-45621     Copy Paper 8.5x11 Case   20    $32.99   $659.80   │
+  │  OD-11234     Stapler, Heavy Duty       5    $18.99   $94.95    │
+  │  OD-99012     Pen, Ballpoint 12pk      10    $5.49    $54.90    │
+  │  ─────────────────────────────────────────────────────────      │
+  │                                                                 │
+  │                                    Subtotal:     $1,889.53      │
+  │                                    Tax:          $0.00          │
+  │                                    TOTAL:        $1,889.53      │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+evidence_notes: |
+  COMPARISON - Shows what a legitimate invoice looks like (itemized with specific products)

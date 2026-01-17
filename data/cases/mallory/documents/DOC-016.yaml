@@ -1,0 +1,50 @@
+# DOC-016: IT Ticket (Red Herring)
+doc_id: DOC-016
+doc_type: ticket
+title: 'IT Ticket - Account Deactivation Request'
+ts: '2024-03-08T00:00:00'
+relevance: red_herring
+is_key_evidence: false
+
+metadata:
+  ticket_number: 'INC-2024-0892'
+  requester: P7
+  resolved_by: P5
+  status: 'resolved'
+
+subject: 'IT Ticket INC-2024-0892 - Please delete my files'
+
+body: |
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                                                 │
+  │  TECHFLOW IT SUPPORT SYSTEM                                     │
+  │                                                                 │
+  │  Ticket #:    INC-2024-0892                                     │
+  │  Status:      ✓ Resolved                                        │
+  │  Priority:    Normal                                            │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  Submitted:   March 8, 2024                                     │
+  │  Requester:   Tom Wilson (Marketing)                            │
+  │  Category:    Account Deactivation                              │
+  │                                                                 │
+  │  Subject:     Please delete my files                            │
+  │                                                                 │
+  │  Description:                                                   │
+  │  Last day is Friday. Please delete my personal files from the   │
+  │  shared drive and deactivate my accounts per offboarding        │
+  │  procedure.                                                     │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  RESOLUTION (March 12, 2024)                                    │
+  │  User account deactivated. Personal files deleted per request.  │
+  │  Work files archived per retention policy.                      │
+  │                                                                 │
+  │  Resolved by: James Liu, IT Manager                             │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+evidence_notes: |
+  RED HERRING - "Delete my files" sounds suspicious but standard offboarding
