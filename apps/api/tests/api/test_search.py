@@ -240,3 +240,59 @@ async def test_ingest_document_not_found(client: AsyncClient, test_case: Case) -
         f"/api/cases/{test_case.case_id}/ingest/{fake_id}",
     )
     assert response.status_code == 404
+
+
+# --- Language Parameter Tests ---
+
+
+@pytest.mark.asyncio
+async def test_search_with_language_filter(client: AsyncClient, test_case: Case) -> None:
+    """POST /search accepts language field in request."""
+    with patch("src.services.search_service.EmbeddingService") as mock_embedding_class:
+        mock_embedding = AsyncMock()
+        mock_embedding.embed_query = AsyncMock(return_value=[0.1] * 1536)
+        mock_embedding_class.return_value = mock_embedding
+
+        response = await client.post(
+            f"/api/cases/{test_case.case_id}/search",
+            json={"query": "fraude", "language": "es"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["query"] == "fraude"
+        # Results would be filtered by language in actual DB
+
+
+@pytest.mark.asyncio
+async def test_search_invalid_language_rejected(client: AsyncClient, test_case: Case) -> None:
+    """POST /search rejects invalid language codes."""
+    response = await client.post(
+        f"/api/cases/{test_case.case_id}/search",
+        json={"query": "test", "language": "invalid"},
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_search_uppercase_language_rejected(client: AsyncClient, test_case: Case) -> None:
+    """POST /search rejects uppercase language codes."""
+    response = await client.post(
+        f"/api/cases/{test_case.case_id}/search",
+        json={"query": "test", "language": "ES"},
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_search_defaults_to_english(client: AsyncClient, test_case: Case) -> None:
+    """POST /search defaults to English when no language specified."""
+    with patch("src.services.search_service.EmbeddingService") as mock_embedding_class:
+        mock_embedding = AsyncMock()
+        mock_embedding.embed_query = AsyncMock(return_value=[0.1] * 1536)
+        mock_embedding_class.return_value = mock_embedding
+
+        response = await client.post(
+            f"/api/cases/{test_case.case_id}/search",
+            json={"query": "test query"},  # No language field
+        )
+        assert response.status_code == 200

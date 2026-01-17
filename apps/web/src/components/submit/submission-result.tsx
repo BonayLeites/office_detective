@@ -1,9 +1,10 @@
 'use client';
 
 import { Award, CheckCircle2, RefreshCw, XCircle } from 'lucide-react';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
+import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 
 interface SubmissionResultProps {
@@ -23,6 +24,7 @@ export function SubmissionResult({
   feedback,
   onRetry,
 }: SubmissionResultProps) {
+  const t = useTranslations('results');
   const percentage = Math.round((score / maxScore) * 100);
   const isPerfect = score === maxScore;
   const isPassing = percentage >= 70;
@@ -55,30 +57,26 @@ export function SubmissionResult({
         </div>
 
         <h1 className="mb-2 text-3xl font-bold">
-          {isPerfect ? 'Perfect!' : isPassing ? 'Case Solved!' : 'Not Quite...'}
+          {isPerfect ? t('perfect') : isPassing ? t('solved') : t('notQuite')}
         </h1>
 
         <p className="text-muted-foreground text-lg">
-          You scored{' '}
-          <span className="text-foreground font-bold">
-            {score} / {maxScore}
-          </span>{' '}
-          points ({percentage}%)
+          {t('score', { score, maxScore, percentage })}
         </p>
       </div>
 
       {/* Breakdown */}
       <div className="space-y-4 rounded-lg border p-4">
-        <h2 className="font-semibold">Results Breakdown</h2>
+        <h2 className="font-semibold">{t('breakdown')}</h2>
 
         {/* Correct identifications */}
         {correctMatches.length > 0 && (
           <div className="flex items-start gap-2">
             <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
             <div>
-              <p className="font-medium text-green-600">Correctly Identified</p>
+              <p className="font-medium text-green-600">{t('correctlyIdentified')}</p>
               <p className="text-muted-foreground text-sm">
-                You correctly identified {correctMatches.length} culprit(s).
+                {t('correctlyIdentifiedDesc', { count: correctMatches.length })}
               </p>
             </div>
           </div>
@@ -89,9 +87,9 @@ export function SubmissionResult({
           <div className="flex items-start gap-2">
             <XCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
             <div>
-              <p className="font-medium text-red-600">Incorrect Accusations</p>
+              <p className="font-medium text-red-600">{t('incorrectAccusations')}</p>
               <p className="text-muted-foreground text-sm">
-                You accused {incorrectGuesses.length} innocent person(s).
+                {t('incorrectAccusationsDesc', { count: incorrectGuesses.length })}
               </p>
             </div>
           </div>
@@ -102,9 +100,9 @@ export function SubmissionResult({
           <div className="flex items-start gap-2">
             <XCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
             <div>
-              <p className="font-medium text-amber-600">Missed Culprits</p>
+              <p className="font-medium text-amber-600">{t('missedCulprits')}</p>
               <p className="text-muted-foreground text-sm">
-                You missed {missedCulprits.length} actual culprit(s).
+                {t('missedCulpritsDesc', { count: missedCulprits.length })}
               </p>
             </div>
           </div>
@@ -113,7 +111,7 @@ export function SubmissionResult({
 
       {/* Feedback */}
       <div className="bg-muted rounded-lg p-4">
-        <h2 className="mb-2 font-semibold">Feedback</h2>
+        <h2 className="mb-2 font-semibold">{t('feedback')}</h2>
         <p className="text-muted-foreground text-sm">{feedback}</p>
       </div>
 
@@ -121,10 +119,13 @@ export function SubmissionResult({
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button variant="outline" onClick={onRetry} className="flex-1 gap-2">
           <RefreshCw className="h-4 w-4" />
-          Try This Case Again
+          {t('tryAgain')}
         </Button>
-        <Link href="/cases" className="flex-1">
-          <Button className="w-full">Browse Other Cases</Button>
+        <Link
+          href="/cases"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 flex-1 items-center justify-center rounded-md px-4 py-2 text-sm font-medium"
+        >
+          {t('browseOther')}
         </Link>
       </div>
     </div>

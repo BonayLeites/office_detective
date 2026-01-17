@@ -45,6 +45,7 @@ class Case(Base, TimestampMixin):
         nullable=False,
     )
     seed: Mapped[int] = mapped_column(Integer, nullable=False)
+    language: Mapped[str] = mapped_column(String(5), nullable=False, default="en")
     briefing: Mapped[str] = mapped_column(Text, nullable=False, default="")
     ground_truth_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
 

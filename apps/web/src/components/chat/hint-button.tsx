@@ -1,6 +1,7 @@
 'use client';
 
 import { Lightbulb } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ interface HintButtonProps {
 }
 
 export function HintButton({ hintsRemaining, onRequestHint, disabled = false }: HintButtonProps) {
+  const t = useTranslations('chat.hint');
   const [isConfirming, setIsConfirming] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,15 +48,13 @@ export function HintButton({ hintsRemaining, onRequestHint, disabled = false }: 
     >
       <Lightbulb className="h-4 w-4" />
       {isLoading ? (
-        'Getting hint...'
+        t('getting')
       ) : isConfirming ? (
-        'Click to confirm'
+        t('confirm')
       ) : noHints ? (
-        'No hints left'
+        t('noHints')
       ) : (
-        <>
-          Hint <span className="text-muted-foreground">({hintsRemaining})</span>
-        </>
+        <>{t('button', { count: hintsRemaining })}</>
       )}
     </Button>
   );

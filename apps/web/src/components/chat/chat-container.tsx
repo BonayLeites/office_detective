@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2, MessageSquare } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
 import { ChatInput } from './chat-input';
@@ -19,6 +20,8 @@ interface ChatContainerProps {
 }
 
 export function ChatContainer({ caseId, onCitationClick }: ChatContainerProps) {
+  const t = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const { messages, isLoading, error, hintsRemaining, sendMessage, requestHint, clearChat } =
     useChat(caseId);
 
@@ -41,7 +44,7 @@ export function ChatContainer({ caseId, onCitationClick }: ChatContainerProps) {
       <div className="border-border flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5" />
-          <h2 className="font-semibold">ARIA Assistant</h2>
+          <h2 className="font-semibold">{t('title')}</h2>
         </div>
         <div className="flex items-center gap-2">
           <HintButton
@@ -51,7 +54,7 @@ export function ChatContainer({ caseId, onCitationClick }: ChatContainerProps) {
           />
           {messages.length > 0 && (
             <Button variant="ghost" size="sm" onClick={clearChat}>
-              Clear
+              {tCommon('clear')}
             </Button>
           )}
         </div>
@@ -69,7 +72,7 @@ export function ChatContainer({ caseId, onCitationClick }: ChatContainerProps) {
             {isLoading && (
               <div className="text-muted-foreground flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm">ARIA is thinking...</span>
+                <span className="text-sm">{t('thinking')}</span>
               </div>
             )}
           </div>
@@ -88,20 +91,23 @@ export function ChatContainer({ caseId, onCitationClick }: ChatContainerProps) {
 }
 
 function EmptyState() {
+  const t = useTranslations('chat');
+
   return (
     <div className="flex h-full flex-col items-center justify-center text-center">
       <MessageSquare className="text-muted-foreground mb-4 h-12 w-12 opacity-50" />
-      <h3 className="mb-2 text-lg font-medium">Start a conversation</h3>
+      <h3 className="mb-2 text-lg font-medium">{t('emptyTitle')}</h3>
       <p className="text-muted-foreground max-w-md text-sm">
-        Ask ARIA about the case. You can inquire about documents, entities, relationships, or
-        request help finding evidence. ARIA will cite relevant documents in responses.
+        {t('emptyDescription')} {t('citationNote')}
       </p>
       <div className="mt-6 space-y-2 text-left">
-        <p className="text-muted-foreground text-xs font-medium uppercase">Example questions:</p>
+        <p className="text-muted-foreground text-xs font-medium uppercase">
+          {t('exampleQuestions')}
+        </p>
         <ul className="text-muted-foreground space-y-1 text-sm">
-          <li>&quot;Who approved the suspicious invoices?&quot;</li>
-          <li>&quot;What connections exist between the vendor and employees?&quot;</li>
-          <li>&quot;Find emails mentioning payment discrepancies&quot;</li>
+          <li>&quot;{t('examples.approvals')}&quot;</li>
+          <li>&quot;{t('examples.connections')}&quot;</li>
+          <li>&quot;{t('examples.payments')}&quot;</li>
         </ul>
       </div>
     </div>

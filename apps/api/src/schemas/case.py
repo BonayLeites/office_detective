@@ -44,6 +44,7 @@ class CaseBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=255)
     scenario_type: ScenarioType
     difficulty: int = Field(..., ge=1, le=5)
+    language: str = Field(default="en", pattern=r"^[a-z]{2}$")
 
 
 class CaseCreate(CaseBase):

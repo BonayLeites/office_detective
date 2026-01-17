@@ -1,11 +1,12 @@
 'use client';
 
 import { ArrowRight, Building2, FileText, Star, Trash2, User } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useEntities } from '@/hooks/use-entities';
+import { Link } from '@/i18n/navigation';
 import { useGameStore } from '@/stores/game-store';
 
 interface EvidencePanelProps {
@@ -13,7 +14,7 @@ interface EvidencePanelProps {
 }
 
 export function EvidencePanel({ caseId }: EvidencePanelProps) {
-  const router = useRouter();
+  const t = useTranslations('evidencePanel');
   const pinnedItems = useGameStore(state => state.pinnedItems);
   const suspectedEntities = useGameStore(state => state.suspectedEntities);
   const unpinItem = useGameStore(state => state.unpinItem);
@@ -34,8 +35,8 @@ export function EvidencePanel({ caseId }: EvidencePanelProps) {
     <div className="border-border bg-background flex h-full w-72 flex-col border-l">
       {/* Header */}
       <div className="border-border border-b px-4 py-3">
-        <h2 className="text-lg font-semibold">Mi Evidencia</h2>
-        <p className="text-muted-foreground text-xs">Pinea documentos y marca sospechosos</p>
+        <h2 className="text-lg font-semibold">{t('title')}</h2>
+        <p className="text-muted-foreground text-xs">{t('subtitle')}</p>
       </div>
 
       {/* Content */}
@@ -43,10 +44,10 @@ export function EvidencePanel({ caseId }: EvidencePanelProps) {
         <div className="space-y-4 p-4">
           {/* Suspects Section */}
           <Section
-            title="Sospechosos"
+            title={t('suspects')}
             icon={<Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />}
             count={suspects.length}
-            emptyText="Marca personas como sospechosas desde el board"
+            emptyText={t('emptySuspects')}
           >
             {suspects.map(suspect => {
               const attrs = suspect.attrs_json as { role?: string };
@@ -58,6 +59,7 @@ export function EvidencePanel({ caseId }: EvidencePanelProps) {
                   onRemove={() => {
                     toggleSuspect(suspect.entity_id);
                   }}
+                  removeTitle={t('removeSuspect')}
                 />
               );
             })}
@@ -65,10 +67,10 @@ export function EvidencePanel({ caseId }: EvidencePanelProps) {
 
           {/* Documents Section */}
           <Section
-            title="Documentos"
+            title={t('documents')}
             icon={<FileText className="h-4 w-4 text-blue-500" />}
             count={documents.length}
-            emptyText="Pinea documentos como evidencia"
+            emptyText={t('emptyDocuments')}
           >
             {documents.map(doc => (
               <EvidenceItem
@@ -78,16 +80,17 @@ export function EvidencePanel({ caseId }: EvidencePanelProps) {
                 onRemove={() => {
                   unpinItem(doc.id);
                 }}
+                removeTitle={t('removeEvidence')}
               />
             ))}
           </Section>
 
           {/* Entities Section */}
           <Section
-            title="Entidades"
+            title={t('entities')}
             icon={<Building2 className="h-4 w-4 text-purple-500" />}
             count={pinnedEntities.length}
-            emptyText="Pinea organizaciones u otras entidades"
+            emptyText={t('emptyEntities')}
           >
             {pinnedEntities.map(ent => (
               <EvidenceItem
@@ -97,6 +100,7 @@ export function EvidencePanel({ caseId }: EvidencePanelProps) {
                 onRemove={() => {
                   unpinItem(ent.id);
                 }}
+                removeTitle={t('removeEvidence')}
               />
             ))}
           </Section>
@@ -105,20 +109,22 @@ export function EvidencePanel({ caseId }: EvidencePanelProps) {
 
       {/* Footer with action */}
       <div className="border-border border-t p-4">
-        <Button
-          className="w-full gap-2"
-          disabled={!canSubmit}
-          onClick={() => {
-            router.push(`/cases/${caseId}/submit`);
-          }}
-        >
-          Resolver Caso
-          <ArrowRight className="h-4 w-4" />
-        </Button>
+        {canSubmit ? (
+          <Link
+            href={`/cases/${caseId}/submit`}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium"
+          >
+            {t('resolveCase')}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        ) : (
+          <Button className="w-full gap-2" disabled>
+            {t('resolveCase')}
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        )}
         {!canSubmit && (
-          <p className="text-muted-foreground mt-2 text-center text-xs">
-            Necesitas al menos 1 sospechoso y 1 evidencia
-          </p>
+          <p className="text-muted-foreground mt-2 text-center text-xs">{t('requirements')}</p>
         )}
       </div>
     </div>
@@ -158,10 +164,12 @@ function SuspectItem({
   name,
   role,
   onRemove,
+  removeTitle,
 }: {
   name: string;
   role?: string;
   onRemove: () => void;
+  removeTitle: string;
 }) {
   return (
     <div className="group flex items-center justify-between rounded-md border border-yellow-200 bg-yellow-50 px-2.5 py-1.5 dark:border-yellow-900 dark:bg-yellow-950">
@@ -175,7 +183,7 @@ function SuspectItem({
       <button
         onClick={onRemove}
         className="opacity-0 transition-opacity group-hover:opacity-100"
-        title="Quitar sospechoso"
+        title={removeTitle}
       >
         <Trash2 className="text-muted-foreground hover:text-destructive h-3.5 w-3.5" />
       </button>
@@ -188,10 +196,12 @@ function EvidenceItem({
   icon,
   label,
   onRemove,
+  removeTitle,
 }: {
   icon: React.ReactNode;
   label: string;
   onRemove: () => void;
+  removeTitle: string;
 }) {
   return (
     <div className="bg-muted/50 group flex items-center justify-between rounded-md border px-2.5 py-1.5">
@@ -202,7 +212,7 @@ function EvidenceItem({
       <button
         onClick={onRemove}
         className="flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-        title="Quitar evidencia"
+        title={removeTitle}
       >
         <Trash2 className="text-muted-foreground hover:text-destructive h-3.5 w-3.5" />
       </button>

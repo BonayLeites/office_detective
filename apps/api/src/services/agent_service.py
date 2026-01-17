@@ -56,6 +56,7 @@ class AgentService:
         case_id: UUID,
         request: ChatRequest,
         hint_budget: int = 3,
+        language: str = "en",
     ) -> ChatResponse:
         """Process a chat message and return ARIA's response.
 
@@ -63,13 +64,14 @@ class AgentService:
             case_id: Case ID being investigated
             request: Chat request with user message
             hint_budget: Remaining hints for this session
+            language: Language for response and search (default "en")
 
         Returns:
             ChatResponse with agent message and citations
         """
-        # Create tools bound to this case
+        # Create tools bound to this case and language
         tools = [
-            create_search_docs_tool(self.search_service, case_id),
+            create_search_docs_tool(self.search_service, case_id, language=language),
             create_get_document_tool(self.document_service, case_id),
             create_get_entity_tool(self.entity_service, case_id),
         ]
@@ -86,8 +88,9 @@ class AgentService:
             "ARIAState",
             {
                 "case_id": case_id,
+                "language": language,
                 "messages": [
-                    SystemMessage(content=get_system_message()),
+                    SystemMessage(content=get_system_message(language)),
                     HumanMessage(content=request.message),
                 ],
                 "retrieved_chunks": [],

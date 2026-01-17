@@ -1,4 +1,6 @@
-import Link from 'next/link';
+import { LanguageSwitcher } from './language-switcher';
+
+import { Link } from '@/i18n/navigation';
 
 export function Header() {
   return (
@@ -14,6 +16,7 @@ export function Header() {
           >
             Cases
           </Link>
+          <LanguageSwitcher />
         </nav>
       </div>
     </header>

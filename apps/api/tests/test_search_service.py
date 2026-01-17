@@ -246,3 +246,140 @@ async def test_get_similar_chunks_no_embedding(
     results = await service.get_similar_chunks(chunk.chunk_id, k=5)
 
     assert results == []
+
+
+# --- Language Filtering Tests ---
+
+
+@pytest.fixture
+async def multilingual_chunks(
+    db_session: AsyncSession, search_case: Case, search_documents: list[Document]
+) -> dict[str, list[DocChunk]]:
+    """Create test chunks in both English and Spanish."""
+    mock_embedding = [0.1] * 1536
+    english_chunks = []
+    spanish_chunks = []
+
+    doc = search_documents[0]
+
+    # Create English chunks
+    for i in range(2):
+        chunk = DocChunk(
+            chunk_id=uuid.uuid4(),
+            doc_id=doc.doc_id,
+            case_id=search_case.case_id,
+            chunk_index=i,
+            text=f"English chunk {i} about the fraud investigation",
+            embedding=mock_embedding,
+            meta_json={"doc_type": doc.doc_type.value},
+            language="en",
+        )
+        english_chunks.append(chunk)
+        db_session.add(chunk)
+
+    # Create Spanish chunks
+    for i in range(2):
+        chunk = DocChunk(
+            chunk_id=uuid.uuid4(),
+            doc_id=doc.doc_id,
+            case_id=search_case.case_id,
+            chunk_index=i + 10,  # Different indices
+            text=f"Fragmento en español {i} sobre la investigación de fraude",
+            embedding=mock_embedding,
+            meta_json={"doc_type": doc.doc_type.value},
+            language="es",
+        )
+        spanish_chunks.append(chunk)
+        db_session.add(chunk)
+
+    await db_session.commit()
+    return {"en": english_chunks, "es": spanish_chunks}
+
+
+@pytest.mark.asyncio
+async def test_search_filters_by_language(
+    db_session: AsyncSession,
+    search_case: Case,
+    search_documents: list[Document],
+    multilingual_chunks: dict[str, list[DocChunk]],
+) -> None:
+    """Search with language parameter only returns chunks in that language."""
+    mock_embedding_service = AsyncMock()
+    mock_embedding_service.embed_query = AsyncMock(return_value=[0.1] * 1536)
+
+    service = SearchService(db_session, embedding=mock_embedding_service)
+
+    # Search for Spanish chunks
+    results = await service.search(
+        case_id=search_case.case_id,
+        query="fraude",
+        k=10,
+        language="es",
+    )
+
+    # Should only get Spanish chunks
+    spanish_chunk_ids = {c.chunk_id for c in multilingual_chunks["es"]}
+    for result in results:
+        assert result.chunk_id in spanish_chunk_ids
+
+
+@pytest.mark.asyncio
+async def test_search_defaults_to_english_language(
+    db_session: AsyncSession,
+    search_case: Case,
+    search_documents: list[Document],
+    multilingual_chunks: dict[str, list[DocChunk]],
+) -> None:
+    """Search without language parameter defaults to English."""
+    mock_embedding_service = AsyncMock()
+    mock_embedding_service.embed_query = AsyncMock(return_value=[0.1] * 1536)
+
+    service = SearchService(db_session, embedding=mock_embedding_service)
+
+    # Search without specifying language (should default to "en")
+    results = await service.search(
+        case_id=search_case.case_id,
+        query="fraud",
+        k=10,
+    )
+
+    # Should only get English chunks
+    english_chunk_ids = {c.chunk_id for c in multilingual_chunks["en"]}
+    for result in results:
+        assert result.chunk_id in english_chunk_ids
+
+
+@pytest.mark.asyncio
+async def test_search_language_scopes_are_independent(
+    db_session: AsyncSession,
+    search_case: Case,
+    search_documents: list[Document],
+    multilingual_chunks: dict[str, list[DocChunk]],
+) -> None:
+    """Search in different languages returns non-overlapping results."""
+    mock_embedding_service = AsyncMock()
+    mock_embedding_service.embed_query = AsyncMock(return_value=[0.1] * 1536)
+
+    service = SearchService(db_session, embedding=mock_embedding_service)
+
+    # Search in English
+    en_results = await service.search(
+        case_id=search_case.case_id,
+        query="investigation",
+        k=10,
+        language="en",
+    )
+
+    # Search in Spanish
+    es_results = await service.search(
+        case_id=search_case.case_id,
+        query="investigación",
+        k=10,
+        language="es",
+    )
+
+    # Results should not overlap
+    en_chunk_ids = {r.chunk_id for r in en_results}
+    es_chunk_ids = {r.chunk_id for r in es_results}
+
+    assert en_chunk_ids.isdisjoint(es_chunk_ids)

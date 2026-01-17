@@ -44,12 +44,14 @@ class GraphQueryInput(BaseModel):
 def create_search_docs_tool(
     search_service: SearchService,
     case_id: UUID,
+    language: str = "en",
 ) -> StructuredTool:
-    """Create search_docs tool bound to a specific case.
+    """Create search_docs tool bound to a specific case and language.
 
     Args:
         search_service: SearchService instance
         case_id: Case ID to search within
+        language: Language to filter results (default "en")
 
     Returns:
         StructuredTool for semantic search
@@ -65,7 +67,7 @@ def create_search_docs_tool(
         Returns:
             List of chunks with doc_id, chunk_id, text, score
         """
-        results = await search_service.search(case_id, query, k=k)
+        results = await search_service.search(case_id, query, k=k, language=language)
         return [
             {
                 "doc_id": str(r.doc_id),

@@ -104,6 +104,7 @@ class Document(Base, TimestampMixin):
     )
     subject: Mapped[str | None] = mapped_column(Text, nullable=True)
     body: Mapped[str] = mapped_column(Text, nullable=False)
+    language: Mapped[str] = mapped_column(String(5), nullable=False, default="en")
     metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
 
     # Relationships
@@ -147,6 +148,7 @@ class DocChunk(Base):
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
     text: Mapped[str] = mapped_column(Text, nullable=False)
     embedding: Mapped[list[float] | None] = mapped_column(Vector(1536), nullable=True)
+    language: Mapped[str] = mapped_column(String(5), nullable=False, default="en")
     meta_json: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
 
     # Relationships

@@ -1,0 +1,190 @@
+{
+  "common": {
+    "appName": "Office Detective",
+    "loading": "Cargando...",
+    "error": "Ocurrio un error",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "clear": "Limpiar",
+    "search": "Buscar"
+  },
+  "nav": {
+    "overview": "Resumen",
+    "inbox": "Bandeja",
+    "search": "Buscar",
+    "chat": "Chat",
+    "board": "Tablero",
+    "submit": "Enviar"
+  },
+  "home": {
+    "title": "Office Detective",
+    "subtitle": "Resuelve casos de investigacion corporativa analizando documentos, conectando evidencia y descubriendo la verdad con herramientas de IA.",
+    "startInvestigation": "Iniciar Investigacion",
+    "features": {
+      "analyzeDocuments": {
+        "title": "Analiza Documentos",
+        "description": "Revisa correos, chats, facturas y mas para encontrar evidencia crucial."
+      },
+      "aiAssistant": {
+        "title": "Asistente IA",
+        "description": "Haz preguntas y obtén información con citas de fuentes."
+      },
+      "buildCase": {
+        "title": "Construye tu Caso",
+        "description": "Conecta entidades en el tablero de evidencia y presenta tus hallazgos."
+      }
+    }
+  },
+  "cases": {
+    "title": "Casos de Investigacion",
+    "subtitle": "Selecciona un caso para comenzar tu investigacion",
+    "noCases": "No hay casos disponibles. Inicia el servidor backend y crea tu primer caso.",
+    "difficulty": "Dificultad",
+    "documents": "{count} documentos",
+    "entities": "{count} entidades"
+  },
+  "caseDetail": {
+    "notFound": "Caso No Encontrado",
+    "notFoundDesc": "El caso que buscas no existe o ha sido eliminado.",
+    "backToCases": "Volver a Casos",
+    "documentsLabel": "Documentos",
+    "entitiesLabel": "Entidades",
+    "hintsUsed": "Pistas Usadas",
+    "progress": "Progreso",
+    "gettingStarted": "Primeros Pasos",
+    "instructions": {
+      "browse": "Revisa la bandeja de documentos para leer correos, chats y otra evidencia",
+      "askAria": "Pide ayuda a ARIA para analizar documentos y encontrar conexiones",
+      "buildBoard": "Construye tu tablero de evidencia marcando documentos y entidades clave",
+      "submit": "Presenta tus hallazgos cuando hayas identificado al culpable"
+    }
+  },
+  "chat": {
+    "title": "Asistente ARIA",
+    "thinking": "ARIA esta pensando...",
+    "emptyTitle": "Inicia una conversacion",
+    "emptyDescription": "Pregunta a ARIA sobre el caso. Puedes consultar sobre documentos, entidades, relaciones o pedir ayuda para encontrar evidencia.",
+    "citationNote": "ARIA citara documentos relevantes en sus respuestas.",
+    "exampleQuestions": "Preguntas de ejemplo:",
+    "examples": {
+      "approvals": "Quien aprobo las facturas sospechosas?",
+      "connections": "Que conexiones existen entre el proveedor y los empleados?",
+      "payments": "Encuentra correos que mencionen discrepancias de pago"
+    },
+    "inputPlaceholder": "Pregunta a ARIA sobre el caso...",
+    "sendHint": "Presiona Enter para enviar, Shift+Enter para nueva linea",
+    "hint": {
+      "button": "Pista ({count})",
+      "confirm": "Clic para confirmar",
+      "getting": "Obteniendo pista...",
+      "noHints": "Sin pistas"
+    }
+  },
+  "board": {
+    "title": "Tablero de Evidencia",
+    "searchPlaceholder": "Buscar entidades para agregar...",
+    "syncGraph": "Sincronizar Grafo",
+    "loadHubs": "Cargar Nodos Clave",
+    "autoLayout": "Auto Ordenar",
+    "evidence": "evidencia",
+    "suspects": "sospechosos",
+    "goToSubmit": "Ir a Enviar",
+    "nodes": "{count} nodos",
+    "emptyTitle": "Tu tablero de investigacion",
+    "emptyDescription": "Busca personas o documentos para comenzar. Marca sospechosos y recolecta evidencia.",
+    "trySearching": "Intenta buscar:",
+    "viewInbox": "Ver Bandeja",
+    "askAria": "Pregunta a ARIA"
+  },
+  "evidencePanel": {
+    "title": "Mi Evidencia",
+    "subtitle": "Marca documentos y sospechosos",
+    "suspects": "Sospechosos",
+    "documents": "Documentos",
+    "entities": "Entidades",
+    "emptySuspects": "Marca personas como sospechosos desde el tablero",
+    "emptyDocuments": "Fija documentos como evidencia",
+    "emptyEntities": "Fija organizaciones u otras entidades",
+    "resolveCase": "Resolver Caso",
+    "requirements": "Necesitas al menos 1 sospechoso y 1 evidencia",
+    "removeSuspect": "Quitar sospechoso",
+    "removeEvidence": "Quitar evidencia"
+  },
+  "submit": {
+    "warningTitle": "Listo para enviar tus hallazgos?",
+    "warningDescription": "Esta accion no se puede deshacer. Asegurate de haber revisado toda la evidencia y estar seguro de tu conclusion antes de enviar.",
+    "culprit": {
+      "title": "1. Identifica al Culpable",
+      "description": "Selecciona la(s) persona(s) responsable(s) de la actividad fraudulenta.",
+      "empty": "No se encontraron entidades de personas. Asegurate de que el caso se haya cargado correctamente."
+    },
+    "evidence": {
+      "title": "2. Selecciona Evidencia de Apoyo",
+      "description": "Elige los documentos y evidencia que respalden tu conclusion."
+    },
+    "explanation": {
+      "title": "3. Explica tu Razonamiento",
+      "description": "Proporciona una breve explicacion de como se cometio el fraude y como llegaste a tu conclusion.",
+      "placeholder": "Describe el mecanismo del fraude y tu razonamiento...",
+      "minChars": "{count}/20 caracteres minimo"
+    },
+    "submitButton": "Enviar Solucion del Caso",
+    "validation": {
+      "needCulprit": "Selecciona al menos un culpable.",
+      "needEvidence": "Selecciona al menos una evidencia.",
+      "needExplanation": "La explicacion debe tener al menos 20 caracteres."
+    }
+  },
+  "results": {
+    "perfect": "Perfecto!",
+    "solved": "Caso Resuelto!",
+    "notQuite": "No del todo...",
+    "score": "Puntuaste {score} / {maxScore} puntos ({percentage}%)",
+    "breakdown": "Desglose de Resultados",
+    "correctlyIdentified": "Identificados Correctamente",
+    "correctlyIdentifiedDesc": "Identificaste correctamente {count} culpable(s).",
+    "incorrectAccusations": "Acusaciones Incorrectas",
+    "incorrectAccusationsDesc": "Acusaste a {count} persona(s) inocente(s).",
+    "missedCulprits": "Culpables No Identificados",
+    "missedCulpritsDesc": "No identificaste a {count} culpable(s) real(es).",
+    "feedback": "Retroalimentacion",
+    "tryAgain": "Intentar Este Caso de Nuevo",
+    "browseOther": "Ver Otros Casos"
+  },
+  "search": {
+    "placeholder": "Buscar documentos semanticamente...",
+    "searching": "Buscando",
+    "noResults": "No se encontraron resultados para \"{query}\"",
+    "tryDifferent": "Intenta una consulta diferente o ajusta los filtros."
+  },
+  "documents": {
+    "types": {
+      "all": "Todos",
+      "email": "Correo",
+      "emails": "Correos",
+      "chat": "Chat",
+      "chats": "Chats",
+      "invoice": "Factura",
+      "invoices": "Facturas",
+      "ticket": "Ticket",
+      "tickets": "Tickets",
+      "report": "Reporte",
+      "reports": "Reportes",
+      "csv": "CSV",
+      "note": "Nota"
+    },
+    "noDocuments": "No se encontraron documentos",
+    "loadError": "Error al cargar documentos",
+    "addToBoard": "Agregar al tablero",
+    "alreadyOnBoard": "Ya esta en el tablero",
+    "addToEvidence": "Agregar a evidencia",
+    "removeFromEvidence": "Quitar de evidencia"
+  },
+  "entities": {
+    "markSuspect": "Marcar como sospechoso",
+    "removeSuspect": "Quitar sospechoso",
+    "addToEvidence": "Agregar a evidencia",
+    "removeFromEvidence": "Quitar de evidencia"
+  }
+}

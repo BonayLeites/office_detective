@@ -43,6 +43,7 @@ async def search_documents(
         k=request.k,
         doc_types=request.doc_types,
         min_score=request.min_score,
+        language=request.language,
     )
 
     return SearchResponse(

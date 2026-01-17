@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2, Search, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { type KeyboardEvent, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,8 @@ interface SearchBarProps {
 }
 
 export function SearchBar({ onSearch, isSearching = false, initialQuery = '' }: SearchBarProps) {
+  const t = useTranslations('search');
+  const tCommon = useTranslations('common');
   const [query, setQuery] = useState(initialQuery);
 
   const handleSubmit = () => {
@@ -41,7 +44,7 @@ export function SearchBar({ onSearch, isSearching = false, initialQuery = '' }: 
             setQuery(e.target.value);
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Search documents semantically..."
+          placeholder={t('placeholder')}
           className="pl-9 pr-9"
           disabled={isSearching}
         />
@@ -59,10 +62,10 @@ export function SearchBar({ onSearch, isSearching = false, initialQuery = '' }: 
         {isSearching ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Searching
+            {t('searching')}
           </>
         ) : (
-          'Search'
+          tCommon('search')
         )}
       </Button>
     </div>

@@ -1,8 +1,9 @@
-import Link from 'next/link';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import type { Case } from '@/types';
 
 import { Card } from '@/components/ui/card';
+import { Link } from '@/i18n/navigation';
 import { api } from '@/lib/api';
 
 async function getCases(): Promise<Case[]> {
@@ -15,21 +16,27 @@ async function getCases(): Promise<Case[]> {
   }
 }
 
-export default async function CasesPage() {
+interface CasesPageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function CasesPage({ params }: CasesPageProps) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  const t = await getTranslations('cases');
   const cases = await getCases();
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Investigation Cases</h1>
-        <p className="text-muted-foreground">Select a case to begin your investigation</p>
+        <h1 className="text-3xl font-bold">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       {cases.length === 0 ? (
         <Card className="p-8 text-center">
-          <p className="text-muted-foreground">
-            No cases available yet. Start the backend server and create your first case.
-          </p>
+          <p className="text-muted-foreground">{t('noCases')}</p>
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -40,12 +47,12 @@ export default async function CasesPage() {
                 <div className="mb-4 flex gap-2">
                   <span className="bg-secondary rounded px-2 py-1 text-xs">{c.scenario_type}</span>
                   <span className="bg-secondary rounded px-2 py-1 text-xs">
-                    Difficulty: {c.difficulty}/5
+                    {t('difficulty')}: {c.difficulty}/5
                   </span>
                 </div>
                 <div className="text-muted-foreground text-sm">
-                  <p>{c.document_count} documents</p>
-                  <p>{c.entity_count} entities</p>
+                  <p>{t('documents', { count: c.document_count })}</p>
+                  <p>{t('entities', { count: c.entity_count })}</p>
                 </div>
               </Card>
             </Link>

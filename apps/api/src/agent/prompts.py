@@ -32,3 +32,32 @@ CRITICAL: Every factual claim MUST include a citation to the source document.
 - Don't make up information not in the documents
 - Encourage the player to form their own conclusions
 """
+
+# Language-specific instructions appended to base prompt
+ARIA_LANGUAGE_INSTRUCTIONS: dict[str, str] = {
+    "en": """
+## Language
+Respond in English. Use professional investigative language.
+When citing documents, maintain the original language of quotes.
+""",
+    "es": """
+## Language
+Responde en español. Usa lenguaje investigativo profesional.
+Al citar documentos, mantén el idioma original de las citas.
+""",
+}
+
+
+def get_system_message(language: str = "en") -> str:
+    """Get ARIA system prompt with language instruction.
+
+    Args:
+        language: ISO 639-1 language code (default "en")
+
+    Returns:
+        Complete system prompt with language instruction appended
+    """
+    lang_instruction = ARIA_LANGUAGE_INSTRUCTIONS.get(
+        language, ARIA_LANGUAGE_INSTRUCTIONS["en"]
+    )
+    return f"{ARIA_SYSTEM_PROMPT}{lang_instruction}"

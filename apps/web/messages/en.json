@@ -1,0 +1,190 @@
+{
+  "common": {
+    "appName": "Office Detective",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "clear": "Clear",
+    "search": "Search"
+  },
+  "nav": {
+    "overview": "Overview",
+    "inbox": "Inbox",
+    "search": "Search",
+    "chat": "Chat",
+    "board": "Board",
+    "submit": "Submit"
+  },
+  "home": {
+    "title": "Office Detective",
+    "subtitle": "Solve corporate investigation cases by analyzing documents, connecting evidence, and uncovering the truth using AI-powered tools.",
+    "startInvestigation": "Start Investigation",
+    "features": {
+      "analyzeDocuments": {
+        "title": "Analyze Documents",
+        "description": "Browse emails, chats, invoices, and more to find crucial evidence."
+      },
+      "aiAssistant": {
+        "title": "AI Assistant",
+        "description": "Ask questions and get AI-powered insights with source citations."
+      },
+      "buildCase": {
+        "title": "Build Your Case",
+        "description": "Connect entities on the evidence board and submit your findings."
+      }
+    }
+  },
+  "cases": {
+    "title": "Investigation Cases",
+    "subtitle": "Select a case to begin your investigation",
+    "noCases": "No cases available yet. Start the backend server and create your first case.",
+    "difficulty": "Difficulty",
+    "documents": "{count} documents",
+    "entities": "{count} entities"
+  },
+  "caseDetail": {
+    "notFound": "Case Not Found",
+    "notFoundDesc": "The case you're looking for doesn't exist or has been removed.",
+    "backToCases": "Back to Cases",
+    "documentsLabel": "Documents",
+    "entitiesLabel": "Entities",
+    "hintsUsed": "Hints Used",
+    "progress": "Progress",
+    "gettingStarted": "Getting Started",
+    "instructions": {
+      "browse": "Browse the document inbox to read emails, chats, and other evidence",
+      "askAria": "Ask ARIA for help analyzing documents and finding connections",
+      "buildBoard": "Build your evidence board by pinning key documents and entities",
+      "submit": "Submit your findings when you've identified the culprit(s)"
+    }
+  },
+  "chat": {
+    "title": "ARIA Assistant",
+    "thinking": "ARIA is thinking...",
+    "emptyTitle": "Start a conversation",
+    "emptyDescription": "Ask ARIA about the case. You can inquire about documents, entities, relationships, or request help finding evidence.",
+    "citationNote": "ARIA will cite relevant documents in responses.",
+    "exampleQuestions": "Example questions:",
+    "examples": {
+      "approvals": "Who approved the suspicious invoices?",
+      "connections": "What connections exist between the vendor and employees?",
+      "payments": "Find emails mentioning payment discrepancies"
+    },
+    "inputPlaceholder": "Ask ARIA about the case...",
+    "sendHint": "Press Enter to send, Shift+Enter for new line",
+    "hint": {
+      "button": "Hint ({count})",
+      "confirm": "Click to confirm",
+      "getting": "Getting hint...",
+      "noHints": "No hints left"
+    }
+  },
+  "board": {
+    "title": "Evidence Board",
+    "searchPlaceholder": "Search entities to add...",
+    "syncGraph": "Sync Graph",
+    "loadHubs": "Load Hubs",
+    "autoLayout": "Auto Layout",
+    "evidence": "evidence",
+    "suspects": "suspects",
+    "goToSubmit": "Go to Submit",
+    "nodes": "{count} nodes",
+    "emptyTitle": "Your investigation board",
+    "emptyDescription": "Search for people or documents to begin. Mark suspects and collect evidence.",
+    "trySearching": "Try searching:",
+    "viewInbox": "View Inbox",
+    "askAria": "Ask ARIA"
+  },
+  "evidencePanel": {
+    "title": "My Evidence",
+    "subtitle": "Pin documents and mark suspects",
+    "suspects": "Suspects",
+    "documents": "Documents",
+    "entities": "Entities",
+    "emptySuspects": "Mark people as suspects from the board",
+    "emptyDocuments": "Pin documents as evidence",
+    "emptyEntities": "Pin organizations or other entities",
+    "resolveCase": "Resolve Case",
+    "requirements": "You need at least 1 suspect and 1 piece of evidence",
+    "removeSuspect": "Remove suspect",
+    "removeEvidence": "Remove evidence"
+  },
+  "submit": {
+    "warningTitle": "Ready to submit your findings?",
+    "warningDescription": "This action cannot be undone. Make sure you've reviewed all evidence and are confident in your conclusion before submitting.",
+    "culprit": {
+      "title": "1. Identify the Culprit(s)",
+      "description": "Select the person(s) responsible for the fraudulent activity.",
+      "empty": "No person entities found. Make sure the case has been loaded properly."
+    },
+    "evidence": {
+      "title": "2. Select Supporting Evidence",
+      "description": "Choose the documents and evidence that support your conclusion."
+    },
+    "explanation": {
+      "title": "3. Explain Your Reasoning",
+      "description": "Provide a brief explanation of how the fraud was committed and how you reached your conclusion.",
+      "placeholder": "Describe the fraud mechanism and your reasoning...",
+      "minChars": "{count}/20 characters minimum"
+    },
+    "submitButton": "Submit Case Solution",
+    "validation": {
+      "needCulprit": "Select at least one culprit.",
+      "needEvidence": "Select at least one piece of evidence.",
+      "needExplanation": "Explanation must be at least 20 characters."
+    }
+  },
+  "results": {
+    "perfect": "Perfect!",
+    "solved": "Case Solved!",
+    "notQuite": "Not Quite...",
+    "score": "You scored {score} / {maxScore} points ({percentage}%)",
+    "breakdown": "Results Breakdown",
+    "correctlyIdentified": "Correctly Identified",
+    "correctlyIdentifiedDesc": "You correctly identified {count} culprit(s).",
+    "incorrectAccusations": "Incorrect Accusations",
+    "incorrectAccusationsDesc": "You accused {count} innocent person(s).",
+    "missedCulprits": "Missed Culprits",
+    "missedCulpritsDesc": "You missed {count} actual culprit(s).",
+    "feedback": "Feedback",
+    "tryAgain": "Try This Case Again",
+    "browseOther": "Browse Other Cases"
+  },
+  "search": {
+    "placeholder": "Search documents semantically...",
+    "searching": "Searching",
+    "noResults": "No results found for \"{query}\"",
+    "tryDifferent": "Try a different search query or adjust filters."
+  },
+  "documents": {
+    "types": {
+      "all": "All",
+      "email": "Email",
+      "emails": "Emails",
+      "chat": "Chat",
+      "chats": "Chats",
+      "invoice": "Invoice",
+      "invoices": "Invoices",
+      "ticket": "Ticket",
+      "tickets": "Tickets",
+      "report": "Report",
+      "reports": "Reports",
+      "csv": "CSV",
+      "note": "Note"
+    },
+    "noDocuments": "No documents found",
+    "loadError": "Failed to load documents",
+    "addToBoard": "Add to board",
+    "alreadyOnBoard": "Already on board",
+    "addToEvidence": "Add to evidence",
+    "removeFromEvidence": "Remove from evidence"
+  },
+  "entities": {
+    "markSuspect": "Mark as suspect",
+    "removeSuspect": "Remove suspect",
+    "addToEvidence": "Add to evidence",
+    "removeFromEvidence": "Remove from evidence"
+  }
+}
