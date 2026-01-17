@@ -31,9 +31,11 @@ export function DocumentList({ caseId, selectedDocId, onSelectDoc }: DocumentLis
   const { documents, isLoading, error, hasMore, loadMore } = useDocuments(caseId);
   const openedDocs = useGameStore(state => state.openedDocs);
   const pinnedItems = useGameStore(state => state.pinnedItems);
+  const boardItems = useGameStore(state => state.boardItems);
   const openDoc = useGameStore(state => state.openDoc);
   const pinItem = useGameStore(state => state.pinItem);
   const unpinItem = useGameStore(state => state.unpinItem);
+  const addToBoard = useGameStore(state => state.addToBoard);
 
   const handleSelect = (docId: string) => {
     openDoc(docId);
@@ -59,6 +61,20 @@ export function DocumentList({ caseId, selectedDocId, onSelectDoc }: DocumentLis
   };
 
   const isPinned = (docId: string) => pinnedItems.some(p => p.id === docId);
+  const isOnBoard = (docId: string) => boardItems.some(b => b.id === `document-${docId}`);
+
+  const handleAddToBoard = (docId: string) => {
+    const doc = documents.find(d => d.doc_id === docId);
+    if (!doc) return;
+
+    addToBoard({
+      id: `document-${docId}`,
+      type: 'document',
+      caseId,
+      label: doc.subject ?? `${doc.doc_type} - ${doc.doc_id.slice(0, 8)}`,
+      data: doc as unknown as Record<string, unknown>,
+    });
+  };
 
   // Handle infinite scroll
   useEffect(() => {
@@ -104,10 +120,12 @@ export function DocumentList({ caseId, selectedDocId, onSelectDoc }: DocumentLis
                       key={doc.doc_id}
                       document={doc}
                       isSelected={doc.doc_id === selectedDocId}
-                      isRead={openedDocs.has(doc.doc_id)}
+                      isRead={openedDocs.includes(doc.doc_id)}
                       isPinned={isPinned(doc.doc_id)}
+                      isOnBoard={isOnBoard(doc.doc_id)}
                       onSelect={handleSelect}
                       onPin={handlePin}
+                      onAddToBoard={handleAddToBoard}
                     />
                   ))}
 
