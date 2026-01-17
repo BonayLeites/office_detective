@@ -41,7 +41,9 @@ export function BoardToolbar({
 }: BoardToolbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
-  const { pinnedItems, suspectedEntities, currentCaseId } = useGameStore();
+  const pinnedItems = useGameStore(state => state.pinnedItems);
+  const suspectedEntities = useGameStore(state => state.suspectedEntities);
+  const currentCaseId = useGameStore(state => state.currentCaseId);
 
   // Filter items for current case
   const casePinnedCount = pinnedItems.filter(p => p.caseId === caseId).length;
