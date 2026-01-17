@@ -1,0 +1,82 @@
+# DOC-010: Vendor Registration Form - Sunshine - KEY EVIDENCE
+doc_id: DOC-010
+doc_type: note
+title: 'Vendor Registration Form - Sunshine Supplies Ltd.'
+ts: '2024-01-18T00:00:00'
+relevance: critical
+is_key_evidence: true
+evidence_type: address_match
+
+metadata:
+  form_type: 'vendor_registration'
+  form_number: 'VS-2024-018'
+  submitted_by: P1
+  approved_by: P1
+
+subject: 'Vendor Registration Form VS-2024-018'
+
+body: |
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                                                 │
+  │              TECHFLOW INDUSTRIES                                │
+  │              VENDOR REGISTRATION FORM                           │
+  │                                                                 │
+  │              Form #: VS-2024-018                                │
+  │              Date Submitted: January 18, 2024                   │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  VENDOR INFORMATION                                             │
+  │  ─────────────────────────────────────────────────────────      │
+  │                                                                 │
+  │  Company Name:    Sunshine Supplies Ltd.                        │
+  │  DBA:             N/A                                           │
+  │  Tax ID (EIN):    84-2847193                                    │
+  │                                                                 │
+  │  Business Address:                                              │
+  │  ┌─────────────────────────────────────────────────────────┐   │
+  │  │  123 Oak Street                                         │   │
+  │  │  Austin, TX 78701                                       │   │
+  │  └─────────────────────────────────────────────────────────┘   │
+  │                                                                 │
+  │  Phone:           (512) 555-0147                                │
+  │  Email:           invoices@sunshine-supplies.com                │
+  │  Website:         N/A                                           │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  SERVICES PROVIDED                                              │
+  │  ─────────────────────────────────────────────────────────      │
+  │                                                                 │
+  │  Category:        Professional Services / Consulting            │
+  │  Description:     Strategic consulting and process optimization │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  BANKING INFORMATION                                            │
+  │  ─────────────────────────────────────────────────────────      │
+  │                                                                 │
+  │  Bank Name:       First National Bank                           │
+  │  Account #:       ****4521                                      │
+  │  Routing #:       111000025                                     │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  APPROVALS                                                      │
+  │  ─────────────────────────────────────────────────────────      │
+  │                                                                 │
+  │  Submitted by:    Marcus Chen           Date: 01/18/2024        │
+  │  Approved by:     Marcus Chen           Date: 01/20/2024        │
+  │                                                                 │
+  │  ☑ W-9 Received                                                │
+  │  ☑ Insurance Certificate (if applicable)                       │
+  │  ☑ Background Check (if applicable)                            │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+evidence_notes: |
+  CRITICAL EVIDENCE:
+  - Address is residential (123 Oak Street)
+  - Same person submitted AND approved (Marcus Chen)
+  - No website listed
+  - Vague service description

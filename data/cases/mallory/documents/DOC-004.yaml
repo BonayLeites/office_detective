@@ -1,0 +1,40 @@
+# DOC-004: Email - Sunshine to Marcus (Invoice Submission)
+doc_id: DOC-004
+doc_type: email
+title: 'Invoice #4521 - March Services'
+ts: '2024-03-05T14:30:00'
+relevance: supporting
+is_key_evidence: false
+
+metadata:
+  from: 'invoices@sunshine-supplies.com'
+  to: 'marcus.chen@techflow.com'
+  from_entity: O2
+  to_entity: P1
+
+subject: 'Invoice #4521 - March Services'
+
+body: |
+  From: invoices@sunshine-supplies.com
+  To: Marcus Chen <marcus.chen@techflow.com>
+  Date: March 5, 2024 02:30 PM
+  Subject: Invoice #4521 - March Services
+
+  Dear Mr. Chen,
+
+  Please find attached Invoice #4521 for services rendered in March.
+
+  Amount: $12,000.00
+  Description: Market Analysis Phase 1
+
+  As always, thank you for your continued partnership.
+
+  Best regards,
+  Sunshine Supplies Ltd.
+  Accounts Receivable
+
+  ---
+  [Attachment: INV-4521.pdf]
+
+evidence_notes: |
+  Note formal tone FROM Sunshine vs casual tone TO Sunshine in DOC-003

@@ -1,0 +1,38 @@
+# DOC-001: Email - Diana to Marcus (Inquiry)
+doc_id: DOC-001
+doc_type: email
+title: 'Question about Sunshine Supplies'
+ts: '2024-04-02T09:15:00'
+relevance: context
+is_key_evidence: false
+
+metadata:
+  from: 'diana.walsh@techflow.com'
+  to: 'marcus.chen@techflow.com'
+  from_entity: P2
+  to_entity: P1
+
+subject: 'Question about Sunshine Supplies'
+
+body: |
+  From: Diana Walsh <diana.walsh@techflow.com>
+  To: Marcus Chen <marcus.chen@techflow.com>
+  Date: April 2, 2024 09:15 AM
+  Subject: Question about Sunshine Supplies
+
+  Marcus,
+
+  Quick question — I was reviewing our Q1 vendor payments and noticed
+  we've paid about $45k to a company called Sunshine Supplies Ltd. for
+  "consulting services."
+
+  Can you give me some background on this vendor? I don't recall approving
+  them and I'm not sure what services they're providing.
+
+  Thanks,
+  Diana
+
+  ---
+  Diana Walsh
+  VP of Finance | TechFlow Industries
+  diana.walsh@techflow.com

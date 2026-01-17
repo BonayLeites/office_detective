@@ -1,0 +1,45 @@
+# DOC-003: Email - Marcus to Sunshine (Familiar Tone) - KEY EVIDENCE
+doc_id: DOC-003
+doc_type: email
+title: 'RE: Invoice #4521'
+ts: '2024-03-15T09:42:00'
+relevance: critical
+is_key_evidence: true
+evidence_type: familiar_tone
+
+metadata:
+  from: 'marcus.chen@techflow.com'
+  to: 'invoices@sunshine-supplies.com'
+  from_entity: P1
+  to_entity: O2
+
+subject: 'RE: Invoice #4521'
+
+body: |
+  From: Marcus Chen <marcus.chen@techflow.com>
+  To: invoices@sunshine-supplies.com
+  Date: March 15, 2024 09:42 AM
+  Subject: RE: Invoice #4521
+
+  Hi there,
+
+  Got the invoice, looks good. Same arrangement as before — I'll push
+  it through by EOD.
+
+  Let me know about next month's order. Maybe we can bump it up a bit
+  since Q2 budget just got approved? Thinking around 12-15k if the
+  numbers work.
+
+  Talk soon,
+  M
+
+  ---
+  Marcus Chen
+  Procurement Manager | TechFlow Industries
+
+evidence_notes: |
+  CRITICAL EVIDENCE:
+  - "Hi there" - casual greeting to supposed vendor
+  - "Same arrangement as before" - implies ongoing scheme
+  - "M" - informal signature (vs full signature in DOC-002)
+  - Discusses coordinating invoice amounts

@@ -1,0 +1,43 @@
+# DOC-019: Vendor Payment Summary
+doc_id: DOC-019
+doc_type: csv
+title: 'Vendor Payment Summary Q1 2024'
+ts: '2024-03-31T00:00:00'
+relevance: context
+is_key_evidence: false
+
+metadata:
+  report_type: 'payment_summary'
+  period: 'Q1 2024'
+
+subject: 'Vendor Payment Summary Q1 2024'
+
+body: |
+  ┌─────────────────────────────────────────────────────────────────────────────┐
+  │                                                                             │
+  │  TECHFLOW INDUSTRIES                                                        │
+  │  VENDOR PAYMENT SUMMARY - Q1 2024                                           │
+  │                                                                             │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │                                                                             │
+  │  Vendor              │ Jan       │ Feb       │ Mar       │ Q1 Total        │
+  │  ─────────────────────────────────────────────────────────────────────────  │
+  │  Sunshine Supplies   │ $0        │ $8,500    │ $37,250   │ $45,750         │
+  │  CloudServe Inc.     │ $8,500    │ $0        │ $17,000   │ $25,500         │
+  │  Office Depot        │ $3,200    │ $2,340    │ $3,780    │ $9,320          │
+  │  IT Support Plus     │ $4,200    │ $4,200    │ $4,200    │ $12,600         │
+  │  AWS                 │ $12,450   │ $13,200   │ $14,100   │ $39,750         │
+  │  ─────────────────────────────────────────────────────────────────────────  │
+  │                                                                             │
+  │  Q1 TOTAL:                                                    $132,920      │
+  │                                                                             │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │                                                                             │
+  │  NOTES:                                                                     │
+  │  - Sunshine Supplies: New vendor, first invoice Feb 2024                   │
+  │  - Significant ramp in March spend for Sunshine ($37,250)                  │
+  │                                                                             │
+  └─────────────────────────────────────────────────────────────────────────────┘
+
+evidence_notes: |
+  Context - Shows Sunshine's rapid spend increase compared to other vendors

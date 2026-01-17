@@ -1,0 +1,56 @@
+# DOC-011: Vendor Registration Form - Office Depot (Comparison)
+doc_id: DOC-011
+doc_type: note
+title: 'Vendor Registration Form - Office Depot'
+ts: '2021-06-15T00:00:00'
+relevance: comparison
+is_key_evidence: false
+
+metadata:
+  form_type: 'vendor_registration'
+  form_number: 'VS-2021-042'
+  submitted_by: P4
+  approved_by: P1
+
+subject: 'Vendor Registration Form VS-2021-042'
+
+body: |
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                                                 │
+  │              TECHFLOW INDUSTRIES                                │
+  │              VENDOR REGISTRATION FORM                           │
+  │                                                                 │
+  │              Form #: VS-2021-042                                │
+  │              Date Submitted: June 15, 2021                      │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  VENDOR INFORMATION                                             │
+  │  ─────────────────────────────────────────────────────────      │
+  │                                                                 │
+  │  Company Name:    Office Depot, Inc.                            │
+  │  DBA:             Office Depot Business Solutions               │
+  │  Tax ID (EIN):    59-2663954                                    │
+  │                                                                 │
+  │  Business Address:                                              │
+  │  ┌─────────────────────────────────────────────────────────┐   │
+  │  │  6600 North Military Trail                              │   │
+  │  │  Boca Raton, FL 33496                                   │   │
+  │  └─────────────────────────────────────────────────────────┘   │
+  │                                                                 │
+  │  Phone:           1-888-263-3423                                │
+  │  Email:           business@officedepot.com                      │
+  │  Website:         www.officedepot.com                           │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  APPROVALS                                                      │
+  │  ─────────────────────────────────────────────────────────      │
+  │                                                                 │
+  │  Submitted by:    David Park            Date: 06/15/2021        │
+  │  Approved by:     Marcus Chen           Date: 06/18/2021        │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+evidence_notes: |
+  COMPARISON - Different submitter and approver (proper separation of duties)

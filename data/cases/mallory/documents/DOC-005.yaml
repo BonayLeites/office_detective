@@ -1,0 +1,56 @@
+# DOC-005: Invoice #4501 (February) - Sunshine Supplies
+doc_id: DOC-005
+doc_type: invoice
+title: 'Invoice #4501 - Q1 Strategy Consulting'
+ts: '2024-02-05T00:00:00'
+relevance: supporting
+is_key_evidence: false
+evidence_type: vague_description
+
+metadata:
+  vendor: 'Sunshine Supplies Ltd.'
+  vendor_entity: O2
+  invoice_number: '4501'
+  amount: 8500.00
+  currency: 'USD'
+  due_date: '2024-02-28'
+
+subject: 'Invoice #4501'
+
+body: |
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                                                 │
+  │  SUNSHINE SUPPLIES LTD.                          INVOICE        │
+  │  123 Oak Street                                  #4501          │
+  │  Austin, TX 78701                                               │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  Bill To:                      Date: February 5, 2024           │
+  │  TechFlow Industries           Due: February 28, 2024           │
+  │  500 Tech Plaza                                                 │
+  │  Austin, TX 78704              Payment Terms: Net 30            │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  Description                                     Amount         │
+  │  ─────────────────────────────────────────────────────────      │
+  │  Q1 Strategy Consulting                          $8,500.00      │
+  │                                                                 │
+  │                                                                 │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │                                    Subtotal:     $8,500.00      │
+  │                                    Tax:          $0.00          │
+  │                                    TOTAL:        $8,500.00      │
+  │                                                                 │
+  │  Payment Info:                                                  │
+  │  First National Bank                                            │
+  │  Account: ****4521                                              │
+  │  Routing: 111000025                                             │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+evidence_notes: |
+  Vague description "Q1 Strategy Consulting" - no deliverables listed

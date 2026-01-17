@@ -1,0 +1,51 @@
+# DOC-015: Sarah Kim Expense Report (Red Herring)
+doc_id: DOC-015
+doc_type: note
+title: 'Expense Report - Sarah Kim - CFO Summit'
+ts: '2024-03-01T00:00:00'
+relevance: red_herring
+is_key_evidence: false
+
+metadata:
+  form_type: 'expense_report'
+  form_number: 'EXP-2024-0234'
+  employee: P3
+  approved_by: P2
+
+subject: 'Expense Report EXP-2024-0234'
+
+body: |
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                                                 │
+  │              TECHFLOW INDUSTRIES                                │
+  │              EXPENSE REPORT                                     │
+  │                                                                 │
+  │              Report #: EXP-2024-0234                            │
+  │              Employee: Sarah Kim (CFO)                          │
+  │              Period: February 19-23, 2024                       │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  Date       │ Description              │ Category    │ Amount   │
+  │  ─────────────────────────────────────────────────────────────  │
+  │  Feb 19     │ Flight: AUS → SFO        │ Travel      │ $487.00  │
+  │  Feb 19     │ Uber to hotel            │ Transport   │ $62.00   │
+  │  Feb 19-22  │ Hotel: Marriott Union Sq │ Lodging     │ $1,245.00│
+  │  Feb 20     │ CFO Summit Registration  │ Conference  │ $850.00  │
+  │  Feb 20     │ Client dinner (4 people) │ Meals       │ $312.00  │
+  │  Feb 21     │ Working lunch            │ Meals       │ $78.00   │
+  │  Feb 22     │ Flight: SFO → AUS        │ Travel      │ $523.00  │
+  │  ─────────────────────────────────────────────────────────────  │
+  │                                                                 │
+  │                                         TOTAL:       $3,557.00  │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  ATTACHMENTS: ✓ All receipts attached                          │
+  │  PURPOSE: Annual CFO Summit - San Francisco                     │
+  │  APPROVED BY: Diana Walsh, VP Finance      Date: Mar 5, 2024   │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+evidence_notes: |
+  RED HERRING - Large expense looks suspicious but fully documented with receipts

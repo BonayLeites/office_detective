@@ -1,0 +1,56 @@
+# DOC-007: Invoice #4534 (March - Second) - Sunshine Supplies
+doc_id: DOC-007
+doc_type: invoice
+title: 'Invoice #4534 - Process Optimization Review'
+ts: '2024-03-12T00:00:00'
+relevance: supporting
+is_key_evidence: false
+evidence_type: amount_pattern
+
+metadata:
+  vendor: 'Sunshine Supplies Ltd.'
+  vendor_entity: O2
+  invoice_number: '4534'
+  amount: 15250.00
+  currency: 'USD'
+  due_date: '2024-04-15'
+
+subject: 'Invoice #4534'
+
+body: |
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                                                 │
+  │  SUNSHINE SUPPLIES LTD.                          INVOICE        │
+  │  123 Oak Street                                  #4534          │
+  │  Austin, TX 78701                                               │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  Bill To:                      Date: March 12, 2024             │
+  │  TechFlow Industries           Due: April 15, 2024              │
+  │  500 Tech Plaza                                                 │
+  │  Austin, TX 78704              Payment Terms: Net 30            │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  Description                                     Amount         │
+  │  ─────────────────────────────────────────────────────────      │
+  │  Process Optimization Review                     $15,250.00     │
+  │                                                                 │
+  │                                                                 │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │                                    Subtotal:     $15,250.00     │
+  │                                    Tax:          $0.00          │
+  │                                    TOTAL:        $15,250.00     │
+  │                                                                 │
+  │  Payment Info:                                                  │
+  │  First National Bank                                            │
+  │  Account: ****4521                                              │
+  │  Routing: 111000025                                             │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+evidence_notes: |
+  $15,250 is just above Marcus's $15K approval limit (requires secondary approval)

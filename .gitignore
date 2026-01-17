@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+*.egg-info/
+htmlcov/
+.coverage
+.coverage.*
+
+# IDE
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Generated
+data/cases/generated/
+
+# Claude Code (excluded from public repo)
+CLAUDE.md
+CLAUDE.local.md
+.claude/

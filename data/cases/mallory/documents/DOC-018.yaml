@@ -1,0 +1,63 @@
+# DOC-018: HR Record - Marcus Chen
+doc_id: DOC-018
+doc_type: note
+title: 'HR Record - Marcus Chen'
+ts: '2024-01-01T00:00:00'
+relevance: context
+is_key_evidence: false
+
+metadata:
+  record_type: 'employee_record'
+  employee: P1
+  confidential: true
+
+subject: 'Employee Record - Marcus Chen'
+
+body: |
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                                                 │
+  │              TECHFLOW INDUSTRIES                                │
+  │              EMPLOYEE RECORD                                    │
+  │              [CONFIDENTIAL]                                     │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  PERSONAL INFORMATION                                           │
+  │  ─────────────────────────────────────────────────────────      │
+  │  Name:            Marcus Chen                                   │
+  │  Employee ID:     TF-2019-0234                                  │
+  │  Department:      Procurement                                   │
+  │  Title:           Procurement Manager                           │
+  │  Reports To:      Diana Walsh, VP Finance                       │
+  │  Start Date:      March 15, 2019                                │
+  │  Salary Band:     Level 6                                       │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  APPROVAL AUTHORITY                                             │
+  │  ─────────────────────────────────────────────────────────      │
+  │  Vendor Registration:    Up to $100,000 annual spend            │
+  │  Invoice Approval:       Up to $15,000 per invoice              │
+  │  Contract Signing:       Up to $25,000 total value              │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  EMPLOYMENT HISTORY                                             │
+  │  ─────────────────────────────────────────────────────────      │
+  │  Mar 2019 - Dec 2021:    Procurement Associate                  │
+  │  Jan 2022 - Present:     Procurement Manager (promoted)         │
+  │                                                                 │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │  PERFORMANCE                                                    │
+  │  ─────────────────────────────────────────────────────────      │
+  │  2023:    Exceeds Expectations                                  │
+  │  2022:    Exceeds Expectations                                  │
+  │  2021:    Meets Expectations                                    │
+  │                                                                 │
+  │  DISCIPLINARY RECORD:    None                                   │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+evidence_notes: |
+  Context - Confirms Marcus has authority to approve invoices up to $15K and register vendors
