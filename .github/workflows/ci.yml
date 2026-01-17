@@ -67,7 +67,11 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: postgresql+asyncpg://detective:detective_secret@localhost:5432/office_detective_test
+      POSTGRES_USER: detective
+      POSTGRES_PASSWORD: detective_secret
+      POSTGRES_DB: office_detective_test
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: '5432'
       NEO4J_URI: ''
       NEO4J_USER: ''
       NEO4J_PASSWORD: ''
