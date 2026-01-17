@@ -9,11 +9,22 @@ interface PinnedItem {
   data: Record<string, unknown>;
 }
 
+interface BoardItem {
+  id: string;
+  type: 'entity' | 'document';
+  caseId: string;
+  label: string;
+  position: { x: number; y: number };
+  data: Record<string, unknown>;
+}
+
 interface GameState {
-  // State
+  // State (using arrays instead of Sets for better persist compatibility)
   currentCaseId: string | null;
-  openedDocs: Set<string>;
+  openedDocs: string[];
   pinnedItems: PinnedItem[];
+  suspectedEntities: string[];
+  boardItems: BoardItem[];
   hintsUsed: number;
 
   // Actions
@@ -21,16 +32,28 @@ interface GameState {
   openDoc: (docId: string) => void;
   pinItem: (item: PinnedItem) => void;
   unpinItem: (itemId: string) => void;
+  toggleSuspect: (entityId: string) => void;
+  addToBoard: (item: Omit<BoardItem, 'position'>) => void;
+  removeFromBoard: (id: string) => void;
+  updateBoardPosition: (id: string, position: { x: number; y: number }) => void;
+  clearBoard: () => void;
   useHint: () => void;
   resetCase: () => void;
+
+  // Helpers
+  isPinned: (itemId: string) => boolean;
+  isSuspected: (entityId: string) => boolean;
+  isOnBoard: (itemId: string) => boolean;
 }
 
 export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
       currentCaseId: null,
-      openedDocs: new Set(),
+      openedDocs: [],
       pinnedItems: [],
+      suspectedEntities: [],
+      boardItems: [],
       hintsUsed: 0,
 
       setCurrentCase: caseId => {
@@ -38,17 +61,20 @@ export const useGameStore = create<GameState>()(
         if (current !== caseId) {
           set({
             currentCaseId: caseId,
-            openedDocs: new Set(),
+            openedDocs: [],
             pinnedItems: [],
+            suspectedEntities: [],
+            boardItems: [],
             hintsUsed: 0,
           });
         }
       },
 
       openDoc: docId => {
-        set(state => ({
-          openedDocs: new Set([...state.openedDocs, docId]),
-        }));
+        set(state => {
+          if (state.openedDocs.includes(docId)) return state;
+          return { openedDocs: [...state.openedDocs, docId] };
+        });
       },
 
       pinItem: item => {
@@ -67,6 +93,52 @@ export const useGameStore = create<GameState>()(
         }));
       },
 
+      toggleSuspect: entityId => {
+        set(state => {
+          const exists = state.suspectedEntities.includes(entityId);
+          if (exists) {
+            return { suspectedEntities: state.suspectedEntities.filter(id => id !== entityId) };
+          } else {
+            return { suspectedEntities: [...state.suspectedEntities, entityId] };
+          }
+        });
+      },
+
+      addToBoard: item => {
+        set(state => {
+          const exists = state.boardItems.some(b => b.id === item.id);
+          if (exists) return state;
+          return {
+            boardItems: [
+              ...state.boardItems,
+              {
+                ...item,
+                position: {
+                  x: Math.random() * 400 + 100,
+                  y: Math.random() * 300 + 100,
+                },
+              },
+            ],
+          };
+        });
+      },
+
+      removeFromBoard: id => {
+        set(state => ({
+          boardItems: state.boardItems.filter(b => b.id !== id),
+        }));
+      },
+
+      updateBoardPosition: (id, position) => {
+        set(state => ({
+          boardItems: state.boardItems.map(b => (b.id === id ? { ...b, position } : b)),
+        }));
+      },
+
+      clearBoard: () => {
+        set({ boardItems: [] });
+      },
+
       useHint: () => {
         set(state => ({
           hintsUsed: state.hintsUsed + 1,
@@ -75,31 +147,20 @@ export const useGameStore = create<GameState>()(
 
       resetCase: () => {
         set({
-          openedDocs: new Set(),
+          openedDocs: [],
           pinnedItems: [],
+          suspectedEntities: [],
+          boardItems: [],
           hintsUsed: 0,
         });
       },
+
+      isPinned: itemId => get().pinnedItems.some(p => p.id === itemId),
+      isSuspected: entityId => get().suspectedEntities.includes(entityId),
+      isOnBoard: itemId => get().boardItems.some(b => b.id === itemId),
     }),
     {
       name: 'office-detective-game',
-      partialize: state => ({
-        currentCaseId: state.currentCaseId,
-        openedDocs: Array.from(state.openedDocs),
-        pinnedItems: state.pinnedItems,
-        hintsUsed: state.hintsUsed,
-      }),
-      merge: (persisted, current) => {
-        const persistedState = persisted as Record<string, unknown>;
-        const openedDocsArray = Array.isArray(persistedState['openedDocs'])
-          ? (persistedState['openedDocs'] as string[])
-          : [];
-        return {
-          ...current,
-          ...persistedState,
-          openedDocs: new Set<string>(openedDocsArray),
-        };
-      },
     },
   ),
 );

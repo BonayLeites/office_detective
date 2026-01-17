@@ -47,7 +47,7 @@ export function BoardToolbar({
 
   // Filter items for current case
   const casePinnedCount = pinnedItems.filter(p => p.caseId === caseId).length;
-  const caseSuspectedCount = currentCaseId === caseId ? suspectedEntities.size : 0;
+  const caseSuspectedCount = currentCaseId === caseId ? suspectedEntities.length : 0;
 
   const canSubmit = casePinnedCount > 0 && caseSuspectedCount > 0;
 
