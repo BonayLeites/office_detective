@@ -48,7 +48,7 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
 
   const { entities } = useEntities(caseId);
   const { isLoading, syncGraph, getHubs } = useGraph(caseId);
-  const { setCurrentCase } = useGameStore();
+  const setCurrentCase = useGameStore(state => state.setCurrentCase);
 
   // Set current case on mount
   useEffect(() => {
