@@ -1,11 +1,22 @@
 'use client';
 
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { Building2, CreditCard, MapPin, Package, Server, Ticket, User } from 'lucide-react';
+import {
+  Building2,
+  CreditCard,
+  MapPin,
+  Package,
+  Pin,
+  Server,
+  Star,
+  Ticket,
+  User,
+} from 'lucide-react';
 
 import type { Entity, EntityType } from '@/types';
 
 import { cn } from '@/lib/utils';
+import { useGameStore } from '@/stores/game-store';
 
 const entityIcons: Record<EntityType, React.ComponentType<{ className?: string }>> = {
   person: User,
@@ -79,27 +90,89 @@ const entityColors: Record<EntityType, EntityColorScheme> = {
 export interface EntityNodeData extends Record<string, unknown> {
   entity: Entity;
   label: string;
+  caseId: string;
 }
 
 type EntityNodeProps = NodeProps & { data: EntityNodeData };
 
 export function EntityNode({ data, selected }: EntityNodeProps) {
-  const { entity } = data;
+  const { entity, caseId } = data;
   const entityType = entity.entity_type;
   const Icon = entityIcons[entityType];
   const colors = entityColors[entityType];
+
+  const { pinItem, unpinItem, toggleSuspect, isPinned, isSuspected } = useGameStore();
+  const pinned = isPinned(entity.entity_id);
+  const suspected = isSuspected(entity.entity_id);
+  const isPerson = entityType === 'person';
+
+  const handlePin = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (pinned) {
+      unpinItem(entity.entity_id);
+    } else {
+      pinItem({
+        id: entity.entity_id,
+        type: 'entity',
+        caseId,
+        label: entity.name,
+        data: entity as unknown as Record<string, unknown>,
+      });
+    }
+  };
+
+  const handleSuspect = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleSuspect(entity.entity_id);
+  };
 
   return (
     <>
       <Handle type="target" position={Position.Top} className="!bg-primary !h-2 !w-2" />
       <div
         className={cn(
-          'flex min-w-[140px] flex-col items-center rounded-xl border-2 px-4 py-3 shadow-lg transition-all hover:shadow-xl',
+          'group relative flex min-w-[140px] flex-col items-center rounded-xl border-2 px-4 py-3 shadow-lg transition-all hover:shadow-xl',
           colors.bg,
           colors.border,
           selected && 'ring-primary ring-2 ring-offset-2',
+          suspected && 'ring-2 ring-yellow-500 ring-offset-1',
         )}
       >
+        {/* Action buttons - visible on hover or when active */}
+        <div
+          className={cn(
+            'absolute -top-2 right-0 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100',
+            (pinned || suspected) && 'opacity-100',
+          )}
+        >
+          {isPerson && (
+            <button
+              onClick={handleSuspect}
+              className={cn(
+                'flex h-6 w-6 items-center justify-center rounded-full border shadow-sm transition-colors',
+                suspected
+                  ? 'border-yellow-400 bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400'
+                  : 'border-gray-300 bg-white text-gray-400 hover:border-yellow-400 hover:text-yellow-500 dark:border-gray-600 dark:bg-gray-800',
+              )}
+              title={suspected ? 'Quitar sospechoso' : 'Marcar como sospechoso'}
+            >
+              <Star className={cn('h-3.5 w-3.5', suspected && 'fill-current')} />
+            </button>
+          )}
+          <button
+            onClick={handlePin}
+            className={cn(
+              'flex h-6 w-6 items-center justify-center rounded-full border shadow-sm transition-colors',
+              pinned
+                ? 'border-blue-400 bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+                : 'border-gray-300 bg-white text-gray-400 hover:border-blue-400 hover:text-blue-500 dark:border-gray-600 dark:bg-gray-800',
+            )}
+            title={pinned ? 'Quitar de evidencia' : 'Agregar a evidencia'}
+          >
+            <Pin className={cn('h-3.5 w-3.5', pinned && 'fill-current')} />
+          </button>
+        </div>
+
         <div
           className={cn(
             'mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 dark:bg-slate-900/80',
