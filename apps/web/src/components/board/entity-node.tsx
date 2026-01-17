@@ -105,7 +105,7 @@ export function EntityNode({ data, selected }: EntityNodeProps) {
   const unpinItem = useGameStore(state => state.unpinItem);
   const toggleSuspect = useGameStore(state => state.toggleSuspect);
   const pinned = useGameStore(state => state.pinnedItems.some(p => p.id === entity.entity_id));
-  const suspected = useGameStore(state => state.suspectedEntities.has(entity.entity_id));
+  const suspected = useGameStore(state => state.suspectedEntities.includes(entity.entity_id));
   const isPerson = entityType === 'person';
 
   const handlePin = (e: React.MouseEvent) => {
