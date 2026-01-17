@@ -33,9 +33,7 @@ async def search_case(db_session: AsyncSession) -> Case:
 
 
 @pytest.fixture
-async def search_documents(
-    db_session: AsyncSession, search_case: Case
-) -> list[Document]:
+async def search_documents(db_session: AsyncSession, search_case: Case) -> list[Document]:
     """Create test documents with different types."""
     docs = []
     for i, doc_type in enumerate([DocType.email, DocType.chat, DocType.ticket]):
@@ -205,9 +203,7 @@ async def test_get_similar_chunks_same_document(
     reference_chunk = search_chunks[0]
     reference_doc_id = reference_chunk.doc_id
 
-    results = await service.get_similar_chunks(
-        reference_chunk.chunk_id, k=5, same_document=True
-    )
+    results = await service.get_similar_chunks(reference_chunk.chunk_id, k=5, same_document=True)
 
     # All results should be from the same document
     for result in results:

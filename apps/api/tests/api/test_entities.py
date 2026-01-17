@@ -154,9 +154,7 @@ async def test_list_entities_pagination(
     await db_session.commit()
 
     # Get first 2
-    response = await client.get(
-        f"/api/cases/{test_case.case_id}/entities", params={"limit": 2}
-    )
+    response = await client.get(f"/api/cases/{test_case.case_id}/entities", params={"limit": 2})
     assert response.status_code == 200
     data = response.json()
     assert len(data["entities"]) == 2
@@ -172,13 +170,9 @@ async def test_list_entities_pagination(
 
 
 @pytest.mark.asyncio
-async def test_get_entity_found(
-    client: AsyncClient, test_case: Case, test_entity: Entity
-) -> None:
+async def test_get_entity_found(client: AsyncClient, test_case: Case, test_entity: Entity) -> None:
     """GET /api/cases/{case_id}/entities/{entity_id} returns entity when found."""
-    response = await client.get(
-        f"/api/cases/{test_case.case_id}/entities/{test_entity.entity_id}"
-    )
+    response = await client.get(f"/api/cases/{test_case.case_id}/entities/{test_entity.entity_id}")
     assert response.status_code == 200
     data = response.json()
     assert data["entity_id"] == str(test_entity.entity_id)
@@ -192,9 +186,7 @@ async def test_get_entity_with_document_count(
 ) -> None:
     """GET /api/cases/{case_id}/entities/{entity_id} returns document count."""
     entity, _documents = test_entity_with_documents
-    response = await client.get(
-        f"/api/cases/{test_case.case_id}/entities/{entity.entity_id}"
-    )
+    response = await client.get(f"/api/cases/{test_case.case_id}/entities/{entity.entity_id}")
     assert response.status_code == 200
     data = response.json()
     assert data["document_count"] == 2
@@ -226,9 +218,7 @@ async def test_get_entity_wrong_case(
     await db_session.commit()
 
     # Try to access entity from wrong case
-    response = await client.get(
-        f"/api/cases/{other_case.case_id}/entities/{test_entity.entity_id}"
-    )
+    response = await client.get(f"/api/cases/{other_case.case_id}/entities/{test_entity.entity_id}")
     assert response.status_code == 404
 
 
@@ -240,9 +230,7 @@ async def test_create_entity(client: AsyncClient, test_case: Case) -> None:
         "name": "New Person",
         "attrs_json": {"email": "new@example.com", "department": "Engineering"},
     }
-    response = await client.post(
-        f"/api/cases/{test_case.case_id}/entities", json=entity_data
-    )
+    response = await client.post(f"/api/cases/{test_case.case_id}/entities", json=entity_data)
     assert response.status_code == 201
     data = response.json()
     assert data["entity_type"] == "person"
@@ -260,9 +248,7 @@ async def test_create_entity_org(client: AsyncClient, test_case: Case) -> None:
         "name": "Acme Corp",
         "attrs_json": {"industry": "Manufacturing", "iban": "DE89370400440532013000"},
     }
-    response = await client.post(
-        f"/api/cases/{test_case.case_id}/entities", json=entity_data
-    )
+    response = await client.post(f"/api/cases/{test_case.case_id}/entities", json=entity_data)
     assert response.status_code == 201
     data = response.json()
     assert data["entity_type"] == "org"
@@ -276,9 +262,7 @@ async def test_create_entity_validation_error(client: AsyncClient, test_case: Ca
     entity_data = {
         "entity_type": "person",
     }
-    response = await client.post(
-        f"/api/cases/{test_case.case_id}/entities", json=entity_data
-    )
+    response = await client.post(f"/api/cases/{test_case.case_id}/entities", json=entity_data)
     assert response.status_code == 422
 
 
@@ -289,9 +273,7 @@ async def test_create_entity_name_too_long(client: AsyncClient, test_case: Case)
         "entity_type": "person",
         "name": "A" * 300,  # Over 255 limit
     }
-    response = await client.post(
-        f"/api/cases/{test_case.case_id}/entities", json=entity_data
-    )
+    response = await client.post(f"/api/cases/{test_case.case_id}/entities", json=entity_data)
     assert response.status_code == 422
 
 
@@ -302,9 +284,7 @@ async def test_delete_entity(
     """DELETE /api/cases/{case_id}/entities/{entity_id} removes entity."""
     entity_id = test_entity.entity_id
 
-    response = await client.delete(
-        f"/api/cases/{test_case.case_id}/entities/{entity_id}"
-    )
+    response = await client.delete(f"/api/cases/{test_case.case_id}/entities/{entity_id}")
     assert response.status_code == 204
 
     # Verify entity is deleted
@@ -318,9 +298,7 @@ async def test_delete_entity(
 async def test_delete_entity_not_found(client: AsyncClient, test_case: Case) -> None:
     """DELETE /api/cases/{case_id}/entities/{entity_id} returns 404 when not found."""
     fake_id = uuid.uuid4()
-    response = await client.delete(
-        f"/api/cases/{test_case.case_id}/entities/{fake_id}"
-    )
+    response = await client.delete(f"/api/cases/{test_case.case_id}/entities/{fake_id}")
     assert response.status_code == 404
 
 
@@ -335,9 +313,7 @@ async def test_delete_entity_sets_document_author_null(
     entity, documents = test_entity_with_documents
     doc_ids = [d.doc_id for d in documents]
 
-    response = await client.delete(
-        f"/api/cases/{test_case.case_id}/entities/{entity.entity_id}"
-    )
+    response = await client.delete(f"/api/cases/{test_case.case_id}/entities/{entity.entity_id}")
     assert response.status_code == 204
 
     # Verify documents still exist but author is NULL

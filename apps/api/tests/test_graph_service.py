@@ -35,9 +35,7 @@ async def graph_case(db_session: AsyncSession) -> Case:
 
 
 @pytest.fixture
-async def graph_entities(
-    db_session: AsyncSession, graph_case: Case
-) -> list[Entity]:
+async def graph_entities(db_session: AsyncSession, graph_case: Case) -> list[Entity]:
     """Create test entities for graph service tests."""
     entities = []
     for i, etype in enumerate([EntityType.person, EntityType.org, EntityType.person]):

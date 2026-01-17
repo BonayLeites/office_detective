@@ -149,6 +149,7 @@ class AgentService:
                 if isinstance(content, str):
                     try:
                         import json
+
                         data = json.loads(content)
                         if isinstance(data, list):
                             for item in data:
@@ -216,9 +217,11 @@ class AgentService:
 
         # Always suggest some general actions
         if len(suggestions) < 2:
-            suggestions.extend([
-                "Search for financial or transaction-related documents",
-                "Look for communication patterns between key people",
-            ])
+            suggestions.extend(
+                [
+                    "Search for financial or transaction-related documents",
+                    "Look for communication patterns between key people",
+                ]
+            )
 
         return suggestions[:3]  # Limit to 3 suggestions

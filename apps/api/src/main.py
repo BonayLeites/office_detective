@@ -40,16 +40,8 @@ app.add_middleware(
 # Include routers
 app.include_router(health.router, tags=["health"])
 app.include_router(cases.router, prefix="/api/cases", tags=["cases"])
-app.include_router(
-    documents.router, prefix="/api/cases/{case_id}/documents", tags=["documents"]
-)
-app.include_router(
-    entities.router, prefix="/api/cases/{case_id}/entities", tags=["entities"]
-)
-app.include_router(
-    search.router, prefix="/api/cases/{case_id}", tags=["search"]
-)
-app.include_router(
-    graph.router, prefix="/api/cases/{case_id}", tags=["graph"]
-)
+app.include_router(documents.router, prefix="/api/cases/{case_id}/documents", tags=["documents"])
+app.include_router(entities.router, prefix="/api/cases/{case_id}/entities", tags=["entities"])
+app.include_router(search.router, prefix="/api/cases/{case_id}", tags=["search"])
+app.include_router(graph.router, prefix="/api/cases/{case_id}", tags=["graph"])
 app.include_router(chat.router, prefix="/api", tags=["chat"])

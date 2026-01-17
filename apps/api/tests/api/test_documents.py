@@ -49,9 +49,7 @@ async def test_entity(db_session: AsyncSession, test_case: Case) -> Entity:
 
 
 @pytest.fixture
-async def test_document(
-    db_session: AsyncSession, test_case: Case, test_entity: Entity
-) -> Document:
+async def test_document(db_session: AsyncSession, test_case: Case, test_entity: Entity) -> Document:
     """Create a test document for API tests."""
     doc = Document(
         doc_id=uuid.uuid4(),
@@ -176,9 +174,7 @@ async def test_list_documents_pagination(
     await db_session.commit()
 
     # Get first 2
-    response = await client.get(
-        f"/api/cases/{test_case.case_id}/documents", params={"limit": 2}
-    )
+    response = await client.get(f"/api/cases/{test_case.case_id}/documents", params={"limit": 2})
     assert response.status_code == 200
     data = response.json()
     assert len(data["documents"]) == 2
@@ -198,9 +194,7 @@ async def test_get_document_found(
     client: AsyncClient, test_case: Case, test_document: Document
 ) -> None:
     """GET /api/cases/{case_id}/documents/{doc_id} returns document when found."""
-    response = await client.get(
-        f"/api/cases/{test_case.case_id}/documents/{test_document.doc_id}"
-    )
+    response = await client.get(f"/api/cases/{test_case.case_id}/documents/{test_document.doc_id}")
     assert response.status_code == 200
     data = response.json()
     assert data["doc_id"] == str(test_document.doc_id)
@@ -234,9 +228,7 @@ async def test_get_document_wrong_case(
     await db_session.commit()
 
     # Try to access document from wrong case
-    response = await client.get(
-        f"/api/cases/{other_case.case_id}/documents/{test_document.doc_id}"
-    )
+    response = await client.get(f"/api/cases/{other_case.case_id}/documents/{test_document.doc_id}")
     assert response.status_code == 404
 
 
@@ -246,9 +238,7 @@ async def test_get_document_full(
 ) -> None:
     """GET /api/cases/{case_id}/documents/{doc_id}/full returns document with chunks."""
     doc, _chunks = test_document_with_chunks
-    response = await client.get(
-        f"/api/cases/{test_case.case_id}/documents/{doc.doc_id}/full"
-    )
+    response = await client.get(f"/api/cases/{test_case.case_id}/documents/{doc.doc_id}/full")
     assert response.status_code == 200
     data = response.json()
     assert data["doc_id"] == str(doc.doc_id)
@@ -270,9 +260,7 @@ async def test_create_document(client: AsyncClient, test_case: Case) -> None:
         "body": "This is a new email body.",
         "metadata_json": {"tag": "test"},
     }
-    response = await client.post(
-        f"/api/cases/{test_case.case_id}/documents", json=doc_data
-    )
+    response = await client.post(f"/api/cases/{test_case.case_id}/documents", json=doc_data)
     assert response.status_code == 201
     data = response.json()
     assert data["doc_type"] == "email"
@@ -293,27 +281,21 @@ async def test_create_document_with_author(
         "body": "Chat message",
         "author_entity_id": str(test_entity.entity_id),
     }
-    response = await client.post(
-        f"/api/cases/{test_case.case_id}/documents", json=doc_data
-    )
+    response = await client.post(f"/api/cases/{test_case.case_id}/documents", json=doc_data)
     assert response.status_code == 201
     data = response.json()
     assert data["author_entity_id"] == str(test_entity.entity_id)
 
 
 @pytest.mark.asyncio
-async def test_create_document_validation_error(
-    client: AsyncClient, test_case: Case
-) -> None:
+async def test_create_document_validation_error(client: AsyncClient, test_case: Case) -> None:
     """POST /api/cases/{case_id}/documents returns 422 for invalid data."""
     # Missing required field 'body'
     doc_data = {
         "doc_type": "email",
         "ts": datetime.now(UTC).isoformat(),
     }
-    response = await client.post(
-        f"/api/cases/{test_case.case_id}/documents", json=doc_data
-    )
+    response = await client.post(f"/api/cases/{test_case.case_id}/documents", json=doc_data)
     assert response.status_code == 422
 
 
@@ -324,9 +306,7 @@ async def test_delete_document(
     """DELETE /api/cases/{case_id}/documents/{doc_id} removes document."""
     doc_id = test_document.doc_id
 
-    response = await client.delete(
-        f"/api/cases/{test_case.case_id}/documents/{doc_id}"
-    )
+    response = await client.delete(f"/api/cases/{test_case.case_id}/documents/{doc_id}")
     assert response.status_code == 204
 
     # Verify document is deleted
@@ -340,9 +320,7 @@ async def test_delete_document(
 async def test_delete_document_not_found(client: AsyncClient, test_case: Case) -> None:
     """DELETE /api/cases/{case_id}/documents/{doc_id} returns 404 when not found."""
     fake_id = uuid.uuid4()
-    response = await client.delete(
-        f"/api/cases/{test_case.case_id}/documents/{fake_id}"
-    )
+    response = await client.delete(f"/api/cases/{test_case.case_id}/documents/{fake_id}")
     assert response.status_code == 404
 
 
@@ -357,16 +335,12 @@ async def test_delete_document_cascades_chunks(
     doc, chunks = test_document_with_chunks
     chunk_ids = [c.chunk_id for c in chunks]
 
-    response = await client.delete(
-        f"/api/cases/{test_case.case_id}/documents/{doc.doc_id}"
-    )
+    response = await client.delete(f"/api/cases/{test_case.case_id}/documents/{doc.doc_id}")
     assert response.status_code == 204
 
     # Verify chunks are deleted
     await db_session.commit()
     db_session.expire_all()
     for chunk_id in chunk_ids:
-        result = await db_session.execute(
-            select(DocChunk).where(DocChunk.chunk_id == chunk_id)
-        )
+        result = await db_session.execute(select(DocChunk).where(DocChunk.chunk_id == chunk_id))
         assert result.scalar_one_or_none() is None

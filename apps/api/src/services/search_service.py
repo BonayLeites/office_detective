@@ -137,9 +137,7 @@ class SearchService:
             List of similar SearchResult objects
         """
         # Get the reference chunk
-        result = await self.db.execute(
-            select(DocChunk).where(DocChunk.chunk_id == chunk_id)
-        )
+        result = await self.db.execute(select(DocChunk).where(DocChunk.chunk_id == chunk_id))
         ref_chunk = result.scalar_one_or_none()
 
         if not ref_chunk or ref_chunk.embedding is None:
@@ -167,9 +165,7 @@ class SearchService:
         if same_document:
             stmt = stmt.where(DocChunk.doc_id == ref_chunk.doc_id)
 
-        stmt = stmt.order_by(
-            DocChunk.embedding.cosine_distance(ref_chunk.embedding)
-        ).limit(k)
+        stmt = stmt.order_by(DocChunk.embedding.cosine_distance(ref_chunk.embedding)).limit(k)
 
         result = await self.db.execute(stmt)
         rows = result.all()

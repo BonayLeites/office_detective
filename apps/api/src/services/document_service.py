@@ -25,9 +25,7 @@ class DocumentService:
     async def get_with_chunks(self, doc_id: UUID) -> Document | None:
         """Get document with its chunks loaded."""
         result = await self.db.execute(
-            select(Document)
-            .where(Document.doc_id == doc_id)
-            .options(selectinload(Document.chunks))
+            select(Document).where(Document.doc_id == doc_id).options(selectinload(Document.chunks))
         )
         return result.scalar_one_or_none()
 

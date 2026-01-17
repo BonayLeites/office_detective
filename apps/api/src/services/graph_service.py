@@ -77,9 +77,7 @@ class GraphService:
         Returns:
             Number of nodes created
         """
-        result = await self.db.execute(
-            select(Entity).where(Entity.case_id == case_id)
-        )
+        result = await self.db.execute(select(Entity).where(Entity.case_id == case_id))
         entities = list(result.scalars().all())
 
         nodes_created = 0
@@ -110,9 +108,7 @@ class GraphService:
         Returns:
             Number of relationships created
         """
-        result = await self.db.execute(
-            select(Document).where(Document.case_id == case_id)
-        )
+        result = await self.db.execute(select(Document).where(Document.case_id == case_id))
         documents = list(result.scalars().all())
 
         relationships_created = 0
@@ -322,9 +318,7 @@ class GraphService:
         node_result = await self.neo4j.run(node_query, case_id=str(case_id))
         node_records = [record async for record in node_result]
 
-        node_types: dict[str, int] = {
-            r["label"]: r["count"] for r in node_records if r["label"]
-        }
+        node_types: dict[str, int] = {r["label"]: r["count"] for r in node_records if r["label"]}
         total_nodes = sum(node_types.values())
 
         # Count relationships by type
@@ -335,9 +329,7 @@ class GraphService:
         rel_result = await self.neo4j.run(rel_query, case_id=str(case_id))
         rel_records = [record async for record in rel_result]
 
-        rel_types: dict[str, int] = {
-            r["type"]: r["count"] for r in rel_records if r["type"]
-        }
+        rel_types: dict[str, int] = {r["type"]: r["count"] for r in rel_records if r["type"]}
         total_edges = sum(rel_types.values())
 
         return GraphStatsResponse(

@@ -90,15 +90,17 @@ def test_extract_citations_from_tool_messages(agent_service: AgentService) -> No
     """_extract_citations extracts citations from tool results."""
     doc_id = uuid.uuid4()
     chunk_id = uuid.uuid4()
-    tool_result = json.dumps([
-        {
-            "doc_id": str(doc_id),
-            "chunk_id": str(chunk_id),
-            "text": "This is evidence text",
-            "doc_type": "email",
-            "score": 0.95,
-        }
-    ])
+    tool_result = json.dumps(
+        [
+            {
+                "doc_id": str(doc_id),
+                "chunk_id": str(chunk_id),
+                "text": "This is evidence text",
+                "doc_type": "email",
+                "score": 0.95,
+            }
+        ]
+    )
     messages = [
         ToolMessage(content=tool_result, tool_call_id="call_123", name="search_docs"),
     ]
@@ -114,11 +116,13 @@ def test_extract_citations_from_tool_messages(agent_service: AgentService) -> No
 def test_extract_citations_dict_result(agent_service: AgentService) -> None:
     """_extract_citations handles dict tool results."""
     doc_id = uuid.uuid4()
-    tool_result = json.dumps({
-        "doc_id": str(doc_id),
-        "subject": "Important Email",
-        "doc_type": "email",
-    })
+    tool_result = json.dumps(
+        {
+            "doc_id": str(doc_id),
+            "subject": "Important Email",
+            "doc_type": "email",
+        }
+    )
     messages = [
         ToolMessage(content=tool_result, tool_call_id="call_123", name="get_document"),
     ]
