@@ -21,9 +21,7 @@ async def test_embed_texts_with_texts() -> None:
     """Embed texts returns embeddings for each text."""
     with patch("src.services.embedding_service.OpenAIEmbeddings") as mock_class:
         mock_embedder = MagicMock()
-        mock_embedder.aembed_documents = AsyncMock(
-            return_value=[[0.1] * 1536, [0.2] * 1536]
-        )
+        mock_embedder.aembed_documents = AsyncMock(return_value=[[0.1] * 1536, [0.2] * 1536])
         mock_class.return_value = mock_embedder
 
         service = EmbeddingService()

@@ -27,7 +27,8 @@ def long_document() -> MagicMock:
     doc.doc_type = DocType.report
     doc.subject = "Quarterly Report"
     # Create a body that will require multiple chunks
-    doc.body = """
+    doc.body = (
+        """
     This is the first section of the document. It contains important information about the project.
 
     The second section discusses the technical implementation details and architecture decisions
@@ -42,7 +43,9 @@ def long_document() -> MagicMock:
 
     Finally, we conclude with a summary of the key findings and recommendations for next steps.
     This document serves as a comprehensive overview of the project status.
-    """ * 3  # Repeat to make it longer
+    """
+        * 3
+    )  # Repeat to make it longer
     doc.ts = datetime.now(UTC)
     return doc
 

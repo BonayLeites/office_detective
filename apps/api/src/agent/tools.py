@@ -34,15 +34,11 @@ class GetEntityInput(BaseModel):
 class GraphQueryInput(BaseModel):
     """Input schema for graph_query tool."""
 
-    query_type: str = Field(
-        description="Type of graph query: 'neighbors', 'path', or 'hubs'"
-    )
+    query_type: str = Field(description="Type of graph query: 'neighbors', 'path', or 'hubs'")
     entity_id: str | None = Field(
         default=None, description="Source entity ID for neighbors/path queries"
     )
-    target_id: str | None = Field(
-        default=None, description="Target entity ID for path queries"
-    )
+    target_id: str | None = Field(default=None, description="Target entity ID for path queries")
 
 
 def create_search_docs_tool(
@@ -199,8 +195,7 @@ def create_get_entity_tool(
         coroutine=get_entity,
         name="get_entity",
         description=(
-            "Get details about a person or organization by ID. "
-            "Returns name, type, and attributes."
+            "Get details about a person or organization by ID. Returns name, type, and attributes."
         ),
         args_schema=GetEntityInput,
     )

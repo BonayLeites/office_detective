@@ -35,9 +35,7 @@ async def graph_test_case(db_session: AsyncSession) -> Case:
 
 
 @pytest.fixture
-async def graph_test_entities(
-    db_session: AsyncSession, graph_test_case: Case
-) -> list[Entity]:
+async def graph_test_entities(db_session: AsyncSession, graph_test_case: Case) -> list[Entity]:
     """Create test entities for graph API tests."""
     entities = []
     for i in range(3):

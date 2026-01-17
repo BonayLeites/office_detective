@@ -311,10 +311,12 @@ async def test_graph_query_tool_neighbors(
     mock_graph_service.query_neighbors = AsyncMock(return_value=(mock_nodes, mock_edges))
 
     tool = create_graph_query_tool(mock_graph_service, case_id)
-    result = await tool.ainvoke({
-        "query_type": "neighbors",
-        "entity_id": str(entity_id),
-    })
+    result = await tool.ainvoke(
+        {
+            "query_type": "neighbors",
+            "entity_id": str(entity_id),
+        }
+    )
 
     assert result["query_type"] == "neighbors"
     assert len(result["nodes"]) == 1
@@ -351,11 +353,13 @@ async def test_graph_query_tool_path(
     mock_graph_service.query_path = AsyncMock(return_value=mock_path)
 
     tool = create_graph_query_tool(mock_graph_service, case_id)
-    result = await tool.ainvoke({
-        "query_type": "path",
-        "entity_id": str(entity_id),
-        "target_id": str(target_id),
-    })
+    result = await tool.ainvoke(
+        {
+            "query_type": "path",
+            "entity_id": str(entity_id),
+            "target_id": str(target_id),
+        }
+    )
 
     assert result["query_type"] == "path"
     assert result["found"] is True
@@ -369,10 +373,12 @@ async def test_graph_query_tool_invalid_query_type(
 ) -> None:
     """graph_query tool handles invalid query type."""
     tool = create_graph_query_tool(mock_graph_service, case_id)
-    result = await tool.ainvoke({
-        "query_type": "invalid",
-        "entity_id": str(uuid.uuid4()),
-    })
+    result = await tool.ainvoke(
+        {
+            "query_type": "invalid",
+            "entity_id": str(uuid.uuid4()),
+        }
+    )
 
     assert "error" in result
     assert "Unknown query_type" in result["error"]
@@ -398,10 +404,12 @@ async def test_graph_query_tool_path_missing_target(
 ) -> None:
     """graph_query tool requires target_id for path."""
     tool = create_graph_query_tool(mock_graph_service, case_id)
-    result = await tool.ainvoke({
-        "query_type": "path",
-        "entity_id": str(uuid.uuid4()),
-    })
+    result = await tool.ainvoke(
+        {
+            "query_type": "path",
+            "entity_id": str(uuid.uuid4()),
+        }
+    )
 
     assert "error" in result
     assert "target_id is required" in result["error"]
@@ -414,10 +422,12 @@ async def test_graph_query_tool_invalid_entity_id(
 ) -> None:
     """graph_query tool handles invalid entity_id UUID."""
     tool = create_graph_query_tool(mock_graph_service, case_id)
-    result = await tool.ainvoke({
-        "query_type": "neighbors",
-        "entity_id": "not-a-valid-uuid",
-    })
+    result = await tool.ainvoke(
+        {
+            "query_type": "neighbors",
+            "entity_id": "not-a-valid-uuid",
+        }
+    )
 
     assert "error" in result
     assert "Invalid entity ID" in result["error"]
@@ -430,11 +440,13 @@ async def test_graph_query_tool_path_invalid_target_id(
 ) -> None:
     """graph_query tool handles invalid target_id UUID for path."""
     tool = create_graph_query_tool(mock_graph_service, case_id)
-    result = await tool.ainvoke({
-        "query_type": "path",
-        "entity_id": str(uuid.uuid4()),
-        "target_id": "invalid-target-uuid",
-    })
+    result = await tool.ainvoke(
+        {
+            "query_type": "path",
+            "entity_id": str(uuid.uuid4()),
+            "target_id": "invalid-target-uuid",
+        }
+    )
 
     assert "error" in result
     assert "Invalid target ID" in result["error"]

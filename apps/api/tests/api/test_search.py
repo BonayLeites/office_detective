@@ -77,9 +77,7 @@ async def test_document_with_chunks(
 @pytest.mark.asyncio
 async def test_search_no_results(client: AsyncClient, test_case: Case) -> None:
     """POST /search returns empty results when no chunks exist."""
-    with patch(
-        "src.services.search_service.EmbeddingService"
-    ) as mock_embedding_class:
+    with patch("src.services.search_service.EmbeddingService") as mock_embedding_class:
         mock_embedding = AsyncMock()
         mock_embedding.embed_query = AsyncMock(return_value=[0.1] * 1536)
         mock_embedding_class.return_value = mock_embedding
@@ -102,9 +100,7 @@ async def test_search_with_results(
     test_document_with_chunks: tuple[Document, list[DocChunk]],
 ) -> None:
     """POST /search returns matching chunks."""
-    with patch(
-        "src.services.search_service.EmbeddingService"
-    ) as mock_embedding_class:
+    with patch("src.services.search_service.EmbeddingService") as mock_embedding_class:
         mock_embedding = AsyncMock()
         # Return an embedding similar to the chunk embeddings
         mock_embedding.embed_query = AsyncMock(return_value=[0.1] * 1536)
@@ -147,17 +143,11 @@ async def test_search_validation_error(client: AsyncClient, test_case: Case) -> 
 
 
 @pytest.mark.asyncio
-async def test_ingest_case(
-    client: AsyncClient, test_case: Case, test_document: Document
-) -> None:
+async def test_ingest_case(client: AsyncClient, test_case: Case, test_document: Document) -> None:
     """POST /ingest creates chunks for case documents."""
     with (
-        patch(
-            "src.services.ingestion_service.EmbeddingService"
-        ) as mock_embedding_class,
-        patch(
-            "src.services.ingestion_service.ChunkingService"
-        ) as mock_chunking_class,
+        patch("src.services.ingestion_service.EmbeddingService") as mock_embedding_class,
+        patch("src.services.ingestion_service.ChunkingService") as mock_chunking_class,
     ):
         # Mock chunking service
         mock_chunking = AsyncMock()
@@ -190,9 +180,7 @@ async def test_ingest_case_no_embeddings(
     client: AsyncClient, test_case: Case, test_document: Document
 ) -> None:
     """POST /ingest with generate_embeddings=false skips embedding generation."""
-    with patch(
-        "src.services.ingestion_service.ChunkingService"
-    ) as mock_chunking_class:
+    with patch("src.services.ingestion_service.ChunkingService") as mock_chunking_class:
         # Mock chunking service
         mock_chunking = AsyncMock()
         mock_chunk_result = AsyncMock()
@@ -217,12 +205,8 @@ async def test_ingest_document(
 ) -> None:
     """POST /ingest/{doc_id} creates chunks for single document."""
     with (
-        patch(
-            "src.services.ingestion_service.EmbeddingService"
-        ) as mock_embedding_class,
-        patch(
-            "src.services.ingestion_service.ChunkingService"
-        ) as mock_chunking_class,
+        patch("src.services.ingestion_service.EmbeddingService") as mock_embedding_class,
+        patch("src.services.ingestion_service.ChunkingService") as mock_chunking_class,
     ):
         # Mock chunking service
         mock_chunking = AsyncMock()

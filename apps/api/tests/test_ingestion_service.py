@@ -33,9 +33,7 @@ async def ingestion_case(db_session: AsyncSession) -> Case:
 
 
 @pytest.fixture
-async def ingestion_document(
-    db_session: AsyncSession, ingestion_case: Case
-) -> Document:
+async def ingestion_document(db_session: AsyncSession, ingestion_case: Case) -> Document:
     """Create a test document for ingestion tests."""
     doc = Document(
         doc_id=uuid.uuid4(),
@@ -85,9 +83,7 @@ async def test_ingest_document_empty_chunks(
 
     mock_embedding = AsyncMock()
 
-    service = IngestionService(
-        db=db_session, chunking=mock_chunking, embedding=mock_embedding
-    )
+    service = IngestionService(db=db_session, chunking=mock_chunking, embedding=mock_embedding)
 
     result = await service.ingest_document(ingestion_document.doc_id)
 
@@ -174,13 +170,9 @@ async def test_ingest_document_with_embeddings(
     mock_embedding = AsyncMock()
     mock_embedding.embed_texts = AsyncMock(return_value=[[0.1] * 1536])
 
-    service = IngestionService(
-        db=db_session, chunking=mock_chunking, embedding=mock_embedding
-    )
+    service = IngestionService(db=db_session, chunking=mock_chunking, embedding=mock_embedding)
 
-    result = await service.ingest_document(
-        ingestion_document.doc_id, generate_embeddings=True
-    )
+    result = await service.ingest_document(ingestion_document.doc_id, generate_embeddings=True)
 
     assert result.chunks_created == 1
     assert result.embeddings_generated == 1
@@ -203,13 +195,9 @@ async def test_ingest_document_without_embeddings(
 
     mock_embedding = AsyncMock()
 
-    service = IngestionService(
-        db=db_session, chunking=mock_chunking, embedding=mock_embedding
-    )
+    service = IngestionService(db=db_session, chunking=mock_chunking, embedding=mock_embedding)
 
-    result = await service.ingest_document(
-        ingestion_document.doc_id, generate_embeddings=False
-    )
+    result = await service.ingest_document(ingestion_document.doc_id, generate_embeddings=False)
 
     assert result.chunks_created == 1
     assert result.embeddings_generated == 0
@@ -234,9 +222,7 @@ async def test_ingest_case(
     mock_embedding = AsyncMock()
     mock_embedding.embed_texts = AsyncMock(return_value=[[0.1] * 1536])
 
-    service = IngestionService(
-        db=db_session, chunking=mock_chunking, embedding=mock_embedding
-    )
+    service = IngestionService(db=db_session, chunking=mock_chunking, embedding=mock_embedding)
 
     result = await service.ingest_case(ingestion_case.case_id)
 
@@ -257,9 +243,7 @@ async def test_ingest_case_empty(
 
     from src.models import Document
 
-    await db_session.execute(
-        delete(Document).where(Document.case_id == ingestion_case.case_id)
-    )
+    await db_session.execute(delete(Document).where(Document.case_id == ingestion_case.case_id))
     await db_session.commit()
 
     service = IngestionService(db=db_session)

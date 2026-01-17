@@ -48,6 +48,7 @@ def make_ground_truth() -> dict[str, Any]:
         "red_herrings": [],
     }
 
+
 # Fixed embedding vector for deterministic tests
 MOCK_EMBEDDING = [0.1] * 1536
 
@@ -125,9 +126,7 @@ async def test_full_case_creation_flow(
 
     entity_ids = []
     for entity_data in entities_data:
-        response = await client.post(
-            f"/api/cases/{case_id}/entities", json=entity_data
-        )
+        response = await client.post(f"/api/cases/{case_id}/entities", json=entity_data)
         assert response.status_code == 201
         entity_ids.append(response.json()["entity_id"])
 
@@ -164,9 +163,7 @@ async def test_full_case_creation_flow(
 
     doc_ids = []
     for doc_data in documents_data:
-        response = await client.post(
-            f"/api/cases/{case_id}/documents", json=doc_data
-        )
+        response = await client.post(f"/api/cases/{case_id}/documents", json=doc_data)
         assert response.status_code == 201
         doc_ids.append(response.json()["doc_id"])
 
@@ -184,15 +181,11 @@ async def test_full_case_creation_flow(
     assert documents["total"] == 4
 
     # Verify in database
-    result = await db_session.execute(
-        select(Entity).where(Entity.case_id == case_id)
-    )
+    result = await db_session.execute(select(Entity).where(Entity.case_id == case_id))
     db_entities = list(result.scalars().all())
     assert len(db_entities) == 3
 
-    result = await db_session.execute(
-        select(Document).where(Document.case_id == case_id)
-    )
+    result = await db_session.execute(select(Document).where(Document.case_id == case_id))
     db_documents = list(result.scalars().all())
     assert len(db_documents) == 4
 
@@ -241,9 +234,7 @@ async def test_ingestion_and_search_flow(
     ]
 
     for doc_data in documents_data:
-        response = await client.post(
-            f"/api/cases/{case_id}/documents", json=doc_data
-        )
+        response = await client.post(f"/api/cases/{case_id}/documents", json=doc_data)
         assert response.status_code == 201
 
     # 3. Ingest all documents
@@ -254,9 +245,7 @@ async def test_ingestion_and_search_flow(
     assert ingest_result["total_chunks"] > 0
 
     # 4. Verify chunks created in database
-    result = await db_session.execute(
-        select(DocChunk).where(DocChunk.case_id == case_id)
-    )
+    result = await db_session.execute(select(DocChunk).where(DocChunk.case_id == case_id))
     chunks = list(result.scalars().all())
     assert len(chunks) > 0
     # Verify embeddings are set
@@ -268,9 +257,7 @@ async def test_ingestion_and_search_flow(
         "query": "confidential database transfer",
         "k": 5,
     }
-    response = await client.post(
-        f"/api/cases/{case_id}/search", json=search_request
-    )
+    response = await client.post(f"/api/cases/{case_id}/search", json=search_request)
     assert response.status_code == 200
     search_results = response.json()
     assert "results" in search_results
@@ -380,9 +367,7 @@ async def test_graph_sync_and_query_flow(
         mock_driver.session = MagicMock(return_value=mock_ctx)
         mock_driver_func.return_value = mock_driver
 
-        response = await client.get(
-            f"/api/cases/{case_id}/graph/neighbors/{entity_ids[0]}"
-        )
+        response = await client.get(f"/api/cases/{case_id}/graph/neighbors/{entity_ids[0]}")
         assert response.status_code == 200
         neighbors_result = response.json()
         assert "entity_id" in neighbors_result
@@ -519,9 +504,7 @@ async def test_complete_investigation_workflow(
 
     # 5. Search for relevant documents
     search_request = {"query": "payment shell company", "k": 10}
-    response = await client.post(
-        f"/api/cases/{case_id}/search", json=search_request
-    )
+    response = await client.post(f"/api/cases/{case_id}/search", json=search_request)
     assert response.status_code == 200
     search_results = response.json()
     assert "results" in search_results
@@ -535,23 +518,17 @@ async def test_complete_investigation_workflow(
 
     # 7. Verify complete data flow
     # Check entities in DB
-    result = await db_session.execute(
-        select(Entity).where(Entity.case_id == case_id)
-    )
+    result = await db_session.execute(select(Entity).where(Entity.case_id == case_id))
     db_entities = list(result.scalars().all())
     assert len(db_entities) == 3
 
     # Check documents in DB
-    result = await db_session.execute(
-        select(Document).where(Document.case_id == case_id)
-    )
+    result = await db_session.execute(select(Document).where(Document.case_id == case_id))
     db_docs = list(result.scalars().all())
     assert len(db_docs) == 3
 
     # Check chunks in DB
-    result = await db_session.execute(
-        select(DocChunk).where(DocChunk.case_id == case_id)
-    )
+    result = await db_session.execute(select(DocChunk).where(DocChunk.case_id == case_id))
     db_chunks = list(result.scalars().all())
     assert len(db_chunks) > 0
 

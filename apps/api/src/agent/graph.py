@@ -63,9 +63,7 @@ def create_aria_graph(
     graph.set_entry_point("agent")
 
     # Add edges
-    graph.add_conditional_edges(
-        "agent", should_continue, {"tools": "tools", "__end__": END}
-    )
+    graph.add_conditional_edges("agent", should_continue, {"tools": "tools", "__end__": END})
     graph.add_edge("tools", "agent")
 
     return cast("CompiledStateGraph[Any]", graph.compile())
