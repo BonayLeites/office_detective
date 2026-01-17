@@ -103,6 +103,9 @@ jobs:
       - name: Type check (mypy)
         run: uv run mypy .
 
+      - name: Initialize database schema
+        run: PGPASSWORD=$POSTGRES_PASSWORD psql -h localhost -U $POSTGRES_USER -d $POSTGRES_DB -f ../../infra/postgres/init.sql
+
       - name: Run database migrations
         run: uv run alembic upgrade head
 
