@@ -57,7 +57,5 @@ def get_system_message(language: str = "en") -> str:
     Returns:
         Complete system prompt with language instruction appended
     """
-    lang_instruction = ARIA_LANGUAGE_INSTRUCTIONS.get(
-        language, ARIA_LANGUAGE_INSTRUCTIONS["en"]
-    )
+    lang_instruction = ARIA_LANGUAGE_INSTRUCTIONS.get(language, ARIA_LANGUAGE_INSTRUCTIONS["en"])
     return f"{ARIA_SYSTEM_PROMPT}{lang_instruction}"

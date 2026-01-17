@@ -466,9 +466,7 @@ async def test_search_docs_tool_with_spanish(
     tool = create_search_docs_tool(mock_search_service, case_id, language="es")
     await tool.ainvoke({"query": "fraude", "k": 6})
 
-    mock_search_service.search.assert_called_once_with(
-        case_id, "fraude", k=6, language="es"
-    )
+    mock_search_service.search.assert_called_once_with(case_id, "fraude", k=6, language="es")
 
 
 @pytest.mark.asyncio
@@ -483,6 +481,4 @@ async def test_search_docs_tool_defaults_to_english(
     tool = create_search_docs_tool(mock_search_service, case_id)
     await tool.ainvoke({"query": "fraud", "k": 6})
 
-    mock_search_service.search.assert_called_once_with(
-        case_id, "fraud", k=6, language="en"
-    )
+    mock_search_service.search.assert_called_once_with(case_id, "fraud", k=6, language="en")

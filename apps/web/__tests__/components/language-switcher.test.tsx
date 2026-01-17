@@ -37,8 +37,8 @@ describe('LanguageSwitcher', () => {
   it('shows current locale as selected', () => {
     render(<LanguageSwitcher />);
 
-    const select = screen.getByRole('combobox') as HTMLSelectElement;
-    expect(select.value).toBe('en');
+    const select = screen.getByRole('combobox');
+    expect(select).toHaveValue('en');
   });
 
   it('calls router.replace when language is changed', async () => {
