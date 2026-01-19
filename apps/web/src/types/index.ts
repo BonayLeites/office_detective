@@ -1,3 +1,36 @@
+// Auth Types
+export interface User {
+  user_id: string;
+  email: string;
+  name: string;
+  preferred_language: 'en' | 'es';
+  created_at: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
+export interface UserRegister {
+  email: string;
+  password: string;
+  name: string;
+  preferred_language?: 'en' | 'es';
+}
+
+export interface UserLogin {
+  email: string;
+  password: string;
+}
+
+export interface UserUpdate {
+  name?: string;
+  preferred_language?: 'en' | 'es';
+}
+
+// Case Types
 export interface Case {
   case_id: string;
   title: string;

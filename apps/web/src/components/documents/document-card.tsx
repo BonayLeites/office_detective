@@ -1,7 +1,8 @@
 'use client';
 
 import { format } from 'date-fns';
-import { LayoutGrid, Pin } from 'lucide-react';
+import { Pin } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { DocumentTypeBadge } from './document-type-badge';
 
@@ -14,10 +15,8 @@ interface DocumentCardProps {
   isSelected?: boolean;
   isRead?: boolean;
   isPinned?: boolean;
-  isOnBoard?: boolean;
   onSelect: (docId: string) => void;
   onPin: (docId: string) => void;
-  onAddToBoard?: (docId: string) => void;
 }
 
 export function DocumentCard({
@@ -25,11 +24,10 @@ export function DocumentCard({
   isSelected = false,
   isRead = true,
   isPinned = false,
-  isOnBoard = false,
   onSelect,
   onPin,
-  onAddToBoard,
 }: DocumentCardProps) {
+  const t = useTranslations('documents');
   const formattedDate = format(new Date(document.ts), 'MMM d, yyyy HH:mm');
   const previewText = document.body.slice(0, 100) + (document.body.length > 100 ? '...' : '');
 
@@ -62,45 +60,23 @@ export function DocumentCard({
         />
       )}
 
-      {/* Action buttons */}
-      <div
+      {/* Pin button */}
+      <button
         className={cn(
-          'absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100',
-          (isPinned || isOnBoard) && 'opacity-100',
+          'absolute right-2 top-2 rounded p-1 transition-opacity',
+          isPinned
+            ? 'text-primary opacity-100'
+            : 'text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100',
           !isRead && 'right-6',
         )}
+        onClick={e => {
+          e.stopPropagation();
+          onPin(document.doc_id);
+        }}
+        title={isPinned ? t('removeFromEvidence') : t('addToEvidence')}
       >
-        {onAddToBoard && (
-          <button
-            className={cn(
-              'rounded p-1',
-              isOnBoard
-                ? 'text-purple-500 opacity-100'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-            onClick={e => {
-              e.stopPropagation();
-              onAddToBoard(document.doc_id);
-            }}
-            title={isOnBoard ? 'En el tablero' : 'Añadir al tablero'}
-          >
-            <LayoutGrid className={cn('h-4 w-4', isOnBoard && 'fill-current')} />
-          </button>
-        )}
-        <button
-          className={cn(
-            'rounded p-1',
-            isPinned ? 'text-primary opacity-100' : 'text-muted-foreground hover:text-foreground',
-          )}
-          onClick={e => {
-            e.stopPropagation();
-            onPin(document.doc_id);
-          }}
-          title={isPinned ? 'Quitar de evidencia' : 'Añadir a evidencia'}
-        >
-          <Pin className={cn('h-4 w-4', isPinned && 'fill-current')} />
-        </button>
-      </div>
+        <Pin className={cn('h-4 w-4', isPinned && 'fill-current')} />
+      </button>
 
       {/* Header */}
       <div className="mb-2 flex items-center gap-2">

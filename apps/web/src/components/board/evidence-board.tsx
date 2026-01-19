@@ -21,11 +21,41 @@ import { DocumentNode, type DocumentNodeData } from './document-node';
 import { EntityNode, type EntityNodeData } from './entity-node';
 import { NodeDetailsPanel } from './node-details-panel';
 
-import type { Document, Entity } from '@/types';
+import type { Document, Entity, GraphEdge } from '@/types';
 
 import { useEntities } from '@/hooks/use-entities';
 import { useGraph } from '@/hooks/use-graph';
 import { useGameStore } from '@/stores/game-store';
+
+// Color palette for relationship types
+function getEdgeColor(type: string): string {
+  const colors: Record<string, string> = {
+    SENT: '#3b82f6', // blue - emails
+    MENTIONS: '#8b5cf6', // purple - references
+    APPROVED: '#22c55e', // green - approvals
+    PAID_TO: '#f59e0b', // amber - payments
+    WORKS_AT: '#6b7280', // gray - employment
+    RECEIVED: '#06b6d4', // cyan - received
+    BELONGS_TO: '#ec4899', // pink - membership
+  };
+  return colors[type] ?? '#94a3b8';
+}
+
+// Convert API GraphEdge to React Flow Edge
+function graphEdgeToReactFlowEdge(edge: GraphEdge): Edge {
+  return {
+    id: `edge-${edge.source_id}-${edge.target_id}-${edge.relationship_type}`,
+    source: `entity-${edge.source_id}`,
+    target: `entity-${edge.target_id}`,
+    label: edge.relationship_type,
+    type: 'smoothstep',
+    animated: false,
+    style: { stroke: getEdgeColor(edge.relationship_type), strokeWidth: 2 },
+    labelStyle: { fontSize: 10, fill: '#64748b' },
+    labelBgStyle: { fill: 'white', fillOpacity: 0.8 },
+    labelBgPadding: [4, 2] as [number, number],
+  };
+}
 
 const nodeTypes = {
   entity: EntityNode,
@@ -47,8 +77,11 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
   >(null);
 
   const { entities } = useEntities(caseId);
-  const { isLoading, syncGraph, getHubs } = useGraph(caseId);
+  const { isLoading, syncGraph, getHubs, getNeighbors } = useGraph(caseId);
   const setCurrentCase = useGameStore(state => state.setCurrentCase);
+
+  // Track which entities have been expanded to avoid loops
+  const [expandedEntities, setExpandedEntities] = useState<Set<string>>(new Set());
 
   // Set current case on mount
   useEffect(() => {
@@ -82,11 +115,12 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
     [],
   );
 
-  const addEntityToBoard = useCallback(
-    (entity: Entity, position?: { x: number; y: number }) => {
+  // Add entity node to board (without expanding)
+  const addEntityNodeOnly = useCallback(
+    (entity: Entity, position?: { x: number; y: number }): boolean => {
       const nodeId = `entity-${entity.entity_id}`;
       const exists = nodes.some(n => n.id === nodeId);
-      if (exists) return;
+      if (exists) return false;
 
       const newNode: Node<EntityNodeData> = {
         id: nodeId,
@@ -103,8 +137,65 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
       };
 
       setNodes(nds => [...nds, newNode]);
+      return true;
     },
     [nodes, setNodes, caseId],
+  );
+
+  // Expand connections for an entity (fetch neighbors and edges from Neo4j)
+  const expandEntityConnections = useCallback(
+    async (entityId: string, centerPosition: { x: number; y: number }) => {
+      // Don't expand if already expanded
+      if (expandedEntities.has(entityId)) return;
+
+      const response = await getNeighbors(entityId, 1);
+      if (!response || response.neighbors.length === 0) return;
+
+      // Mark as expanded
+      setExpandedEntities(prev => new Set(prev).add(entityId));
+
+      // Limit to 10 neighbors to avoid visual clutter
+      const limitedNeighbors = response.neighbors.slice(0, 10);
+
+      // Add neighbor entities in a circle around the center
+      const radius = 150;
+      limitedNeighbors.forEach((neighbor, index) => {
+        const angle = (2 * Math.PI * index) / limitedNeighbors.length;
+        const x = centerPosition.x + radius * Math.cos(angle);
+        const y = centerPosition.y + radius * Math.sin(angle);
+
+        const entity = entities.find(e => e.entity_id === neighbor.entity_id);
+        if (entity) {
+          addEntityNodeOnly(entity, { x, y });
+        }
+      });
+
+      // Add edges
+      const newEdges = response.edges.map(graphEdgeToReactFlowEdge);
+      setEdges(eds => {
+        const existingIds = new Set(eds.map(e => e.id));
+        return [...eds, ...newEdges.filter(e => !existingIds.has(e.id))];
+      });
+    },
+    [expandedEntities, getNeighbors, entities, addEntityNodeOnly, setEdges],
+  );
+
+  // Add entity to board AND auto-expand its connections
+  const addEntityToBoard = useCallback(
+    async (entity: Entity, position?: { x: number; y: number }) => {
+      const pos = position ?? {
+        x: Math.random() * 400 + 100,
+        y: Math.random() * 300 + 100,
+      };
+
+      const wasAdded = addEntityNodeOnly(entity, pos);
+
+      // Auto-expand connections if this is a new node
+      if (wasAdded) {
+        await expandEntityConnections(entity.entity_id, pos);
+      }
+    },
+    [addEntityNodeOnly, expandEntityConnections],
   );
 
   const handleLoadHubs = useCallback(async () => {
@@ -122,7 +213,7 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
         const angle = (2 * Math.PI * index) / hubsResponse.hubs.length;
         const x = centerX + radius * Math.cos(angle);
         const y = centerY + radius * Math.sin(angle);
-        addEntityToBoard(entity, { x, y });
+        void addEntityToBoard(entity, { x, y });
       }
     });
   }, [getHubs, entities, addEntityToBoard]);
@@ -135,6 +226,7 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
     setNodes([]);
     setEdges([]);
     setSelectedNode(null);
+    setExpandedEntities(new Set());
   }, [setNodes, setEdges]);
 
   const handleAutoLayout = useCallback(() => {
@@ -163,7 +255,7 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
       );
 
       matchingEntities.slice(0, 5).forEach((entity, index) => {
-        addEntityToBoard(entity, {
+        void addEntityToBoard(entity, {
           x: 100 + index * 150,
           y: 100,
         });

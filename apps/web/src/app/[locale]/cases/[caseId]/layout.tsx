@@ -1,5 +1,8 @@
+'use client';
+
 import { use } from 'react';
 
+import { EvidenceSidebar } from '@/components/board/evidence-sidebar';
 import { Sidebar } from '@/components/layout/sidebar';
 
 export default function CaseLayout({
@@ -14,6 +17,7 @@ export default function CaseLayout({
     <div className="flex h-[calc(100vh-4rem)]">
       <Sidebar caseId={caseId} />
       <main className="relative flex-1 overflow-hidden">{children}</main>
+      <EvidenceSidebar caseId={caseId} />
     </div>
   );
 }

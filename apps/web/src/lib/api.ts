@@ -47,12 +47,52 @@ function mergeHeaders(base: HeadersInit, additional?: HeadersInit): HeadersInit 
   return result;
 }
 
+// Shape of persisted Zustand auth store
+interface PersistedAuthState {
+  state: {
+    token?: string;
+  };
+}
+
+function isPersistedAuthState(value: unknown): value is PersistedAuthState {
+  if (typeof value !== 'object' || value === null) return false;
+  if (!('state' in value)) return false;
+  const state = (value as { state: unknown }).state;
+  return typeof state === 'object' && state !== null;
+}
+
+// Get auth token from localStorage (for use outside React components)
+function getAuthToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem('office-detective-auth');
+    if (stored) {
+      const parsed: unknown = JSON.parse(stored);
+      if (isPersistedAuthState(parsed)) {
+        const { token } = parsed.state;
+        return typeof token === 'string' ? token : null;
+      }
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const token = getAuthToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export const api = {
   async get<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       method: 'GET',
-      headers: mergeHeaders({ 'Content-Type': 'application/json' }, options?.headers),
+      headers: mergeHeaders(
+        { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        options?.headers,
+      ),
     });
     return handleResponse<T>(response);
   },
@@ -62,7 +102,10 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       method: 'POST',
-      headers: mergeHeaders({ 'Content-Type': 'application/json' }, options?.headers),
+      headers: mergeHeaders(
+        { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        options?.headers,
+      ),
       body,
     });
     return handleResponse<T>(response);
@@ -73,7 +116,24 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       method: 'PUT',
-      headers: mergeHeaders({ 'Content-Type': 'application/json' }, options?.headers),
+      headers: mergeHeaders(
+        { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        options?.headers,
+      ),
+      body,
+    });
+    return handleResponse<T>(response);
+  },
+
+  async patch<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
+    const body = data !== undefined ? JSON.stringify(data) : null;
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      method: 'PATCH',
+      headers: mergeHeaders(
+        { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        options?.headers,
+      ),
       body,
     });
     return handleResponse<T>(response);
@@ -83,7 +143,10 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       method: 'DELETE',
-      headers: mergeHeaders({ 'Content-Type': 'application/json' }, options?.headers),
+      headers: mergeHeaders(
+        { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        options?.headers,
+      ),
     });
     return handleResponse<T>(response);
   },

@@ -22,6 +22,9 @@ dependencies = [
     "alembic>=1.14.0",
     "psycopg2-binary>=2.9.9",
     "pyyaml>=6.0.2",
+    "passlib[argon2]>=1.7.4",
+    "pyjwt>=2.8.0",
+    "email-validator>=2.1.0",
 ]
 
 [project.optional-dependencies]
@@ -80,10 +83,12 @@ ignore = [
     "D104",   # Missing docstring in public package
     "D107",   # Missing docstring in __init__
     "S101",   # Use of assert (allowed in tests)
+    "B008",   # Depends() in function defaults is FastAPI pattern
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "ARG001", "ARG002", "B017", "PT011", "B007", "PT003", "PT004"]
+"tests/**/*.py" = ["S101", "ARG001", "ARG002", "B017", "PT011", "B007", "PT003", "PT004", "S105", "S106"]
+"src/schemas/user.py" = ["S105"]  # token_type = "bearer" is not a password
 "src/**/models.py" = ["A003"]  # Allow id as attribute name
 "src/scripts/*.py" = ["T201"]  # Allow print in CLI scripts
 "alembic/**/*.py" = ["UP007", "UP035", "I001"]  # Alembic template style

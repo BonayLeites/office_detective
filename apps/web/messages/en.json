@@ -10,6 +10,7 @@
     "search": "Search"
   },
   "nav": {
+    "cases": "Cases",
     "overview": "Overview",
     "inbox": "Inbox",
     "search": "Search",
@@ -95,7 +96,16 @@
     "emptyDescription": "Search for people or documents to begin. Mark suspects and collect evidence.",
     "trySearching": "Try searching:",
     "viewInbox": "View Inbox",
-    "askAria": "Ask ARIA"
+    "askAria": "Ask ARIA",
+    "relationships": {
+      "SENT": "Sent",
+      "MENTIONS": "Mentions",
+      "APPROVED": "Approved",
+      "PAID_TO": "Paid to",
+      "WORKS_AT": "Works at",
+      "RECEIVED": "Received",
+      "BELONGS_TO": "Belongs to"
+    }
   },
   "evidencePanel": {
     "title": "My Evidence",
@@ -186,5 +196,40 @@
     "removeSuspect": "Remove suspect",
     "addToEvidence": "Add to evidence",
     "removeFromEvidence": "Remove from evidence"
+  },
+  "evidenceSidebar": {
+    "title": "Evidence",
+    "expand": "Expand evidence panel",
+    "collapse": "Collapse evidence panel",
+    "evidence": "Evidence",
+    "suspects": "Suspects",
+    "documents": "Documents",
+    "entities": "Entities",
+    "viewBoard": "View Board",
+    "remove": "Remove from evidence",
+    "empty": "Pin documents or entities to collect evidence"
+  },
+  "auth": {
+    "login": "Log in",
+    "loginDescription": "Enter your credentials to access your account",
+    "loggingIn": "Logging in...",
+    "register": "Sign up",
+    "registerDescription": "Create an account to start solving cases",
+    "registering": "Creating account...",
+    "createAccount": "Create account",
+    "logout": "Log out",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "passwordRequirement": "Minimum 8 characters",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "Enter your password again",
+    "passwordMismatch": "Passwords do not match",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "noAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "myCases": "My Cases"
   }
 }

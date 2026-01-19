@@ -1,9 +1,8 @@
 import { useTranslations } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 
-import { Button } from '@/components/ui/button';
+import { StartButton } from '@/components/home/start-button';
 import { Card } from '@/components/ui/card';
-import { Link } from '@/i18n/navigation';
 
 interface HomePageProps {
   params: Promise<{ locale: string }>;
@@ -26,9 +25,7 @@ function HomePageContent() {
         <p className="text-muted-foreground mb-8 text-lg">{t('subtitle')}</p>
 
         <div className="mb-12">
-          <Link href="/cases">
-            <Button size="lg">{t('startInvestigation')}</Button>
-          </Link>
+          <StartButton />
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">

@@ -10,6 +10,7 @@
     "search": "Buscar"
   },
   "nav": {
+    "cases": "Casos",
     "overview": "Resumen",
     "inbox": "Bandeja",
     "search": "Buscar",
@@ -95,7 +96,16 @@
     "emptyDescription": "Busca personas o documentos para comenzar. Marca sospechosos y recolecta evidencia.",
     "trySearching": "Intenta buscar:",
     "viewInbox": "Ver Bandeja",
-    "askAria": "Pregunta a ARIA"
+    "askAria": "Pregunta a ARIA",
+    "relationships": {
+      "SENT": "Envio",
+      "MENTIONS": "Menciona",
+      "APPROVED": "Aprobo",
+      "PAID_TO": "Pago a",
+      "WORKS_AT": "Trabaja en",
+      "RECEIVED": "Recibio",
+      "BELONGS_TO": "Pertenece a"
+    }
   },
   "evidencePanel": {
     "title": "Mi Evidencia",
@@ -186,5 +196,40 @@
     "removeSuspect": "Quitar sospechoso",
     "addToEvidence": "Agregar a evidencia",
     "removeFromEvidence": "Quitar de evidencia"
+  },
+  "evidenceSidebar": {
+    "title": "Evidencia",
+    "expand": "Expandir panel de evidencia",
+    "collapse": "Colapsar panel de evidencia",
+    "evidence": "Evidencia",
+    "suspects": "Sospechosos",
+    "documents": "Documentos",
+    "entities": "Entidades",
+    "viewBoard": "Ver Tablero",
+    "remove": "Quitar de evidencia",
+    "empty": "Fija documentos o entidades para recolectar evidencia"
+  },
+  "auth": {
+    "login": "Iniciar sesion",
+    "loginDescription": "Ingresa tus credenciales para acceder a tu cuenta",
+    "loggingIn": "Iniciando sesion...",
+    "register": "Registrarse",
+    "registerDescription": "Crea una cuenta para comenzar a resolver casos",
+    "registering": "Creando cuenta...",
+    "createAccount": "Crear cuenta",
+    "logout": "Cerrar sesion",
+    "email": "Correo electronico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "password": "Contrasena",
+    "passwordPlaceholder": "Ingresa tu contrasena",
+    "passwordRequirement": "Minimo 8 caracteres",
+    "confirmPassword": "Confirmar contrasena",
+    "confirmPasswordPlaceholder": "Ingresa tu contrasena de nuevo",
+    "passwordMismatch": "Las contrasenas no coinciden",
+    "name": "Nombre",
+    "namePlaceholder": "Tu nombre",
+    "noAccount": "No tienes cuenta?",
+    "alreadyHaveAccount": "Ya tienes cuenta?",
+    "myCases": "Mis Casos"
   }
 }

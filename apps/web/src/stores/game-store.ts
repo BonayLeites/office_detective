@@ -18,6 +18,25 @@ interface BoardItem {
   data: Record<string, unknown>;
 }
 
+// Calculate position for new board items: documents on left, entities on right
+function calculateNextPosition(
+  existingItems: BoardItem[],
+  itemType: 'entity' | 'document',
+): { x: number; y: number } {
+  const baseX = itemType === 'document' ? 100 : 500;
+  const baseY = 100;
+  const spacing = 140;
+
+  const typeItems = existingItems.filter(b => b.type === itemType);
+  const col = typeItems.length % 3;
+  const row = Math.floor(typeItems.length / 3);
+
+  return {
+    x: baseX + col * spacing,
+    y: baseY + row * spacing,
+  };
+}
+
 interface GameState {
   // State (using arrays instead of Sets for better persist compatibility)
   currentCaseId: string | null;
@@ -81,16 +100,44 @@ export const useGameStore = create<GameState>()(
         set(state => {
           const exists = state.pinnedItems.some(p => p.id === item.id);
           if (exists) return state;
+
+          // Also add to board (documents and entities only, not chunks)
+          const boardType: 'entity' | 'document' = item.type === 'entity' ? 'entity' : 'document';
+          const boardId = item.type === 'entity' ? `entity-${item.id}` : `document-${item.id}`;
+          const boardExists = state.boardItems.some(b => b.id === boardId);
+
+          const position = calculateNextPosition(state.boardItems, boardType);
+
           return {
             pinnedItems: [...state.pinnedItems, item],
+            boardItems: boardExists
+              ? state.boardItems
+              : [
+                  ...state.boardItems,
+                  {
+                    id: boardId,
+                    type: boardType,
+                    caseId: item.caseId,
+                    label: item.label,
+                    position,
+                    data: item.data,
+                  },
+                ],
           };
         });
       },
 
       unpinItem: itemId => {
-        set(state => ({
-          pinnedItems: state.pinnedItems.filter(p => p.id !== itemId),
-        }));
+        set(state => {
+          // Also remove from board
+          const boardIdDoc = `document-${itemId}`;
+          const boardIdEntity = `entity-${itemId}`;
+
+          return {
+            pinnedItems: state.pinnedItems.filter(p => p.id !== itemId),
+            boardItems: state.boardItems.filter(b => b.id !== boardIdDoc && b.id !== boardIdEntity),
+          };
+        });
       },
 
       toggleSuspect: entityId => {

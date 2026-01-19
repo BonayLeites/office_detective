@@ -3,6 +3,7 @@
 from src.models.base import Base
 from src.models.case import Case, ScenarioType
 from src.models.document import DocChunk, DocType, Document, Entity, EntityType
+from src.models.user import User
 
 __all__ = [
     "Base",
@@ -13,4 +14,5 @@ __all__ = [
     "Entity",
     "EntityType",
     "ScenarioType",
+    "User",
 ]
