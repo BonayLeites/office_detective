@@ -1,5 +1,6 @@
 """Business logic services."""
 
+from src.services.auth_service import AuthService
 from src.services.case_service import CaseService
 from src.services.chunking_service import ChunkingService
 from src.services.document_service import DocumentService
@@ -10,6 +11,7 @@ from src.services.ingestion_service import IngestionService
 from src.services.search_service import SearchService
 
 __all__ = [
+    "AuthService",
     "CaseService",
     "ChunkingService",
     "DocumentService",

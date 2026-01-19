@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import (
 from src.config import settings
 from src.dependencies import get_db
 from src.main import app
-from src.models import Case, DocType, Document, Entity, EntityType, ScenarioType
+from src.models import Case, DocType, Document, Entity, EntityType, ScenarioType, User
 
 
 @pytest.fixture
@@ -154,4 +154,42 @@ async def clean_db(db_session: AsyncSession) -> None:
     await db_session.execute(text("DELETE FROM submissions"))
     await db_session.execute(text("DELETE FROM player_state"))
     await db_session.execute(text("DELETE FROM cases"))
+    await db_session.execute(text("DELETE FROM users"))
     await db_session.commit()
+
+
+@pytest.fixture
+async def sample_user(db_session: AsyncSession) -> AsyncGenerator[User, None]:
+    """Create a sample user for testing."""
+    from sqlalchemy import delete
+
+    from src.services.auth_service import AuthService
+
+    user = User(
+        user_id=uuid.uuid4(),
+        email="test@example.com",
+        password_hash=AuthService.hash_password("testpassword123"),
+        name="Test User",
+        preferred_language="en",
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    yield user
+
+    # Cleanup
+    try:
+        await db_session.execute(delete(User).where(User.user_id == user.user_id))
+        await db_session.commit()
+    except Exception:
+        await db_session.rollback()
+
+
+@pytest.fixture
+def auth_headers(sample_user: User) -> dict[str, str]:
+    """Create authorization headers for authenticated requests."""
+    from src.services.auth_service import AuthService
+
+    token = AuthService.create_access_token(sample_user.user_id)
+    return {"Authorization": f"Bearer {token}"}

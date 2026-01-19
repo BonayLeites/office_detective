@@ -21,6 +21,14 @@ class Settings(BaseSettings):
     app_debug: bool = Field(default=True)
     app_secret_key: str = Field(default="change-me-in-production")
 
+    # JWT Authentication
+    jwt_secret_key: str = Field(default="change-me-in-production-min-32-chars")
+    jwt_algorithm: str = Field(default="HS256")
+    jwt_access_token_expire_minutes: int = Field(default=1440)  # 24 hours
+
+    # Frontend URL (for CORS and redirects)
+    frontend_url: str = Field(default="http://localhost:3000")
+
     # PostgreSQL
     postgres_user: str = Field(default="detective")
     postgres_password: str = Field(default="detective_secret")

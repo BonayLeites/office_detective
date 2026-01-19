@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.routes import cases, chat, documents, entities, graph, health, search
+from src.api.routes import auth, cases, chat, documents, entities, graph, health, search
 from src.config import settings
 from src.db.neo4j import close_neo4j_driver, get_neo4j_driver
 
@@ -39,6 +39,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(health.router, tags=["health"])
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(cases.router, prefix="/api/cases", tags=["cases"])
 app.include_router(documents.router, prefix="/api/cases/{case_id}/documents", tags=["documents"])
 app.include_router(entities.router, prefix="/api/cases/{case_id}/entities", tags=["entities"])

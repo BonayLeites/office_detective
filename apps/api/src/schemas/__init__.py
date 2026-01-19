@@ -45,6 +45,13 @@ from src.schemas.search import (
     SearchResponse,
     SearchResultItem,
 )
+from src.schemas.user import (
+    TokenResponse,
+    UserLogin,
+    UserRegister,
+    UserResponse,
+    UserUpdate,
+)
 
 __all__ = [
     "CaseCreate",
@@ -80,4 +87,9 @@ __all__ = [
     "SearchResponse",
     "SearchResultItem",
     "SyncResponse",
+    "TokenResponse",
+    "UserLogin",
+    "UserRegister",
+    "UserResponse",
+    "UserUpdate",
 ]
