@@ -111,7 +111,7 @@ async def test_register_duplicate_email(auth_service: AuthService, sample_user: 
 @pytest.mark.asyncio
 async def test_authenticate_success(auth_service: AuthService, sample_user: User) -> None:
     """AuthService.authenticate returns user for valid credentials."""
-    user = await auth_service.authenticate("test@example.com", "testpassword123")
+    user = await auth_service.authenticate(sample_user.email, "testpassword123")
 
     assert user is not None
     assert user.user_id == sample_user.user_id
@@ -121,7 +121,7 @@ async def test_authenticate_success(auth_service: AuthService, sample_user: User
 @pytest.mark.asyncio
 async def test_authenticate_wrong_password(auth_service: AuthService, sample_user: User) -> None:
     """AuthService.authenticate returns None for wrong password."""
-    user = await auth_service.authenticate("test@example.com", "wrongpassword")
+    user = await auth_service.authenticate(sample_user.email, "wrongpassword")
     assert user is None
 
 
@@ -222,7 +222,7 @@ async def test_login_endpoint_success(client: AsyncClient, sample_user: User) ->
     response = await client.post(
         "/api/auth/login",
         json={
-            "email": "test@example.com",
+            "email": sample_user.email,
             "password": "testpassword123",
         },
     )
@@ -231,7 +231,7 @@ async def test_login_endpoint_success(client: AsyncClient, sample_user: User) ->
     data = response.json()
     assert "access_token" in data
     assert data["token_type"] == "bearer"
-    assert data["user"]["email"] == "test@example.com"
+    assert data["user"]["email"] == sample_user.email
 
 
 @pytest.mark.asyncio
@@ -240,7 +240,7 @@ async def test_login_endpoint_invalid_credentials(client: AsyncClient, sample_us
     response = await client.post(
         "/api/auth/login",
         json={
-            "email": "test@example.com",
+            "email": sample_user.email,
             "password": "wrongpassword",
         },
     )
@@ -258,7 +258,7 @@ async def test_get_me_endpoint_authenticated(
 
     assert response.status_code == 200
     data = response.json()
-    assert data["email"] == "test@example.com"
+    assert data["email"] == sample_user.email
     assert data["name"] == "Test User"
     assert data["user_id"] == str(sample_user.user_id)
 

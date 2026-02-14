@@ -167,6 +167,29 @@ export interface HintResponse {
   related_docs: string[];
 }
 
+export interface ScoreBreakdown {
+  culprit_score: number;
+  evidence_score: number;
+  explanation_score: number;
+  efficiency_score: number;
+}
+
+export interface SubmissionResponse {
+  submission_id: string | null;
+  score: number;
+  max_score: number;
+  correct_culprits: string[];
+  feedback: string;
+  breakdown: ScoreBreakdown;
+}
+
+export interface ProgressResponse {
+  hints_used: number;
+  hints_remaining: number;
+  has_submission: boolean;
+  last_score: number | null;
+}
+
 // Graph Types
 export interface GraphNode {
   entity_id: string;

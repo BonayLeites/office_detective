@@ -45,7 +45,7 @@ You are **the person companies call when things don't add up**. Not the police �
 ## 🛠 Tech Stack (Summary)
 
 ```
-Frontend:  Next.js 14 + TypeScript + Tailwind + React Flow
+Frontend:  Next.js 15 + TypeScript + Tailwind + React Flow
 Backend:   FastAPI + Python 3.12 + LangChain
 Database:  PostgreSQL 16 + pgvector
 Infra:     Docker + Docker Compose
@@ -56,24 +56,19 @@ LLM:       Provider-agnostic (Azure/OpenAI/Anthropic/Ollama)
 
 ```bash
 # Clone and setup
-git clone https://github.com/youruser/office-detective
+git clone https://github.com/bonay/office-detective
 cd office-detective
 
-# Start development environment
-docker-compose -f infra/docker/docker-compose.dev.yml up -d
+# Full local setup
+make setup
 
-# Install dependencies
-cd apps/web && npm install
-cd ../api && pip install -e .
-
-# Run
-npm run dev      # Frontend on :3000
-uvicorn main:app # Backend on :8000
+# Start frontend + backend
+make dev
 ```
 
 ## 📄 License
 
-TBD
+MIT
 
 ---
 

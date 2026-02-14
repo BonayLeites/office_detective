@@ -45,6 +45,12 @@ from src.schemas.search import (
     SearchResponse,
     SearchResultItem,
 )
+from src.schemas.submission import (
+    ProgressResponse,
+    ScoreBreakdown,
+    SubmissionRequest,
+    SubmissionResponse,
+)
 from src.schemas.user import (
     TokenResponse,
     UserLogin,
@@ -83,9 +89,13 @@ __all__ = [
     "NeighborsResponse",
     "PathRequest",
     "PathResponse",
+    "ProgressResponse",
+    "ScoreBreakdown",
     "SearchRequest",
     "SearchResponse",
     "SearchResultItem",
+    "SubmissionRequest",
+    "SubmissionResponse",
     "SyncResponse",
     "TokenResponse",
     "UserLogin",

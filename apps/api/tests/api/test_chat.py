@@ -9,6 +9,7 @@ from httpx import AsyncClient
 from langchain_core.messages import AIMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.api.routes.chat import _collect_case_hints, _pick_hint
 from src.models import Case, ScenarioType
 
 
@@ -288,3 +289,44 @@ async def test_chat_defaults_to_english(
     assert response.status_code == 200
     data = response.json()
     assert "message" in data
+
+
+def test_collect_case_hints_handles_invalid_shapes() -> None:
+    """Hint collection ignores malformed tiers and supports plain strings."""
+    hints = _collect_case_hints(
+        {
+            "hints": {
+                "tier_0": [{"text": "Valid dict hint"}, "Valid string hint", {"text": "   "}],
+                "tier_1": "invalid",
+            }
+        }
+    )
+    assert hints == ["Valid dict hint", "Valid string hint"]
+
+
+def test_collect_case_hints_returns_empty_when_hints_is_not_dict() -> None:
+    """Hint collection returns empty when hints payload is not a dict."""
+    assert _collect_case_hints({"hints": []}) == []
+
+
+def test_pick_hint_uses_context_match_when_available() -> None:
+    """Context match takes priority over positional hint selection."""
+    hint = _pick_hint(
+        hints=["Check approvals", "Look at invoice signatures"],
+        mechanism="Mechanism text",
+        context="invoice",
+        hints_used=0,
+    )
+    assert "Based on your focus on 'invoice'" in hint
+    assert "invoice signatures" in hint
+
+
+def test_pick_hint_falls_back_to_index_when_context_does_not_match() -> None:
+    """When context does not match any hint, use tier by hints_used."""
+    hint = _pick_hint(
+        hints=["First hint", "Second hint"],
+        mechanism="Mechanism text",
+        context="unmatched",
+        hints_used=1,
+    )
+    assert hint == "Second hint"

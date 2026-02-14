@@ -296,6 +296,143 @@ async def test_query_neighbors(
 
 
 @pytest.mark.asyncio
+async def test_query_neighbors_skips_nodes_without_entity_id(
+    db_session: AsyncSession,
+    graph_case: Case,
+    graph_entities: list[Entity],
+) -> None:
+    """Query neighbors skips non-entity nodes returned by Neo4j."""
+    mock_neo4j = AsyncMock()
+
+    # Simulate a Document node without entity_id.
+    mock_document_node = MagicMock()
+    mock_document_node.get = MagicMock(return_value=None)
+    mock_document_node.items = MagicMock(return_value=[])
+
+    mock_rel = MagicMock()
+    mock_rel.type = "SENT"
+    mock_rel.start_node = mock_document_node
+    mock_rel.end_node = mock_document_node
+    mock_rel.items = MagicMock(return_value=[])
+
+    async def mock_async_iter(self: object) -> AsyncIterator[MagicMock]:
+        record = MagicMock()
+        record.__getitem__ = MagicMock(
+            side_effect=lambda k: {"neighbor": mock_document_node, "r": [mock_rel]}[k]
+        )
+        yield record
+
+    mock_result = AsyncMock()
+    mock_result.__aiter__ = mock_async_iter
+    mock_neo4j.run = AsyncMock(return_value=mock_result)
+
+    service = GraphService(mock_neo4j, db_session)
+    nodes, edges = await service.query_neighbors(
+        graph_case.case_id, graph_entities[0].entity_id, depth=1
+    )
+
+    assert nodes == []
+    assert edges == []
+
+
+@pytest.mark.asyncio
+async def test_query_neighbors_processes_rels_for_seen_neighbor(
+    db_session: AsyncSession,
+    graph_case: Case,
+    graph_entities: list[Entity],
+) -> None:
+    """Query neighbors still processes relationships for duplicate neighbors."""
+    mock_neo4j = AsyncMock()
+
+    mock_neighbor = MagicMock()
+    mock_neighbor.get = MagicMock(
+        side_effect=lambda key, default=None: {
+            "entity_id": str(graph_entities[1].entity_id),
+            "name": graph_entities[1].name,
+            "entity_type": graph_entities[1].entity_type.value,
+        }.get(key, default)
+    )
+    mock_neighbor.items = MagicMock(return_value=[])
+
+    mock_rel = MagicMock()
+    mock_rel.type = "COLLABORATED_WITH"
+    mock_rel.start_node = MagicMock(get=MagicMock(return_value=str(graph_entities[0].entity_id)))
+    mock_rel.end_node = MagicMock(get=MagicMock(return_value=str(graph_entities[1].entity_id)))
+    mock_rel.items = MagicMock(return_value=[])
+
+    async def mock_async_iter(self: object) -> AsyncIterator[MagicMock]:
+        first = MagicMock()
+        first.__getitem__ = MagicMock(
+            side_effect=lambda k: {"neighbor": mock_neighbor, "r": None}[k]
+        )
+        yield first
+
+        second = MagicMock()
+        second.__getitem__ = MagicMock(
+            side_effect=lambda k: {"neighbor": mock_neighbor, "r": [mock_rel]}[k]
+        )
+        yield second
+
+    mock_result = AsyncMock()
+    mock_result.__aiter__ = mock_async_iter
+    mock_neo4j.run = AsyncMock(return_value=mock_result)
+
+    service = GraphService(mock_neo4j, db_session)
+    nodes, edges = await service.query_neighbors(
+        graph_case.case_id, graph_entities[0].entity_id, depth=1
+    )
+
+    assert len(nodes) == 1
+    assert len(edges) == 1
+    assert edges[0].relationship_type == "COLLABORATED_WITH"
+
+
+@pytest.mark.asyncio
+async def test_query_neighbors_skips_relationships_without_entity_ids(
+    db_session: AsyncSession,
+    graph_case: Case,
+    graph_entities: list[Entity],
+) -> None:
+    """Query neighbors skips relationships touching non-entity endpoints."""
+    mock_neo4j = AsyncMock()
+
+    mock_neighbor = MagicMock()
+    mock_neighbor.get = MagicMock(
+        side_effect=lambda key, default=None: {
+            "entity_id": str(graph_entities[1].entity_id),
+            "name": graph_entities[1].name,
+            "entity_type": graph_entities[1].entity_type.value,
+        }.get(key, default)
+    )
+    mock_neighbor.items = MagicMock(return_value=[])
+
+    broken_rel = MagicMock()
+    broken_rel.type = "SENT"
+    broken_rel.start_node = MagicMock(get=MagicMock(return_value=str(graph_entities[0].entity_id)))
+    broken_rel.end_node = MagicMock(get=MagicMock(return_value=None))
+    broken_rel.items = MagicMock(return_value=[])
+
+    async def mock_async_iter(self: object) -> AsyncIterator[MagicMock]:
+        record = MagicMock()
+        record.__getitem__ = MagicMock(
+            side_effect=lambda k: {"neighbor": mock_neighbor, "r": [broken_rel]}[k]
+        )
+        yield record
+
+    mock_result = AsyncMock()
+    mock_result.__aiter__ = mock_async_iter
+    mock_neo4j.run = AsyncMock(return_value=mock_result)
+
+    service = GraphService(mock_neo4j, db_session)
+    nodes, edges = await service.query_neighbors(
+        graph_case.case_id, graph_entities[0].entity_id, depth=1
+    )
+
+    assert len(nodes) == 1
+    assert edges == []
+
+
+@pytest.mark.asyncio
 async def test_get_graph_stats(
     db_session: AsyncSession,
     graph_case: Case,

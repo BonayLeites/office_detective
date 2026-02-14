@@ -3,6 +3,9 @@
 import pytest
 from httpx import AsyncClient
 
+from src.dependencies import get_db
+from src.main import app
+
 
 @pytest.mark.asyncio
 async def test_health_check(client: AsyncClient) -> None:
@@ -21,3 +24,24 @@ async def test_readiness_check(client: AsyncClient) -> None:
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "ready"
+
+
+@pytest.mark.asyncio
+async def test_readiness_check_db_unavailable(client: AsyncClient) -> None:
+    """Readiness endpoint returns 503 when DB query fails."""
+
+    class BrokenSession:
+        async def execute(self, _query: object) -> None:
+            raise RuntimeError("db down")
+
+    async def override_get_db() -> BrokenSession:
+        return BrokenSession()
+
+    app.dependency_overrides[get_db] = override_get_db
+    try:
+        response = await client.get("/ready")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "Database is not ready"

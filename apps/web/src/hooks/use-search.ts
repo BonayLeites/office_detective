@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import type { DocType, SearchResponse, SearchResult } from '@/types';
@@ -23,6 +24,7 @@ interface UseSearchReturn {
 }
 
 export function useSearch(caseId: string): UseSearchReturn {
+  const locale = useLocale();
   const [results, setResults] = useState<SearchResult[]>([]);
   const [query, setQuery] = useState('');
   const [total, setTotal] = useState(0);
@@ -45,6 +47,7 @@ export function useSearch(caseId: string): UseSearchReturn {
         const body: Record<string, unknown> = {
           query: searchQuery,
           k: options.k ?? 10,
+          language: locale,
         };
 
         if (options.docTypes && options.docTypes.length > 0) {
@@ -67,7 +70,7 @@ export function useSearch(caseId: string): UseSearchReturn {
         setIsSearching(false);
       }
     },
-    [caseId],
+    [caseId, locale],
   );
 
   const clearResults = useCallback(() => {

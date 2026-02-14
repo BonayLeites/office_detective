@@ -1,7 +1,10 @@
 """Health check endpoints."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
+from sqlalchemy import text
+
+from src.dependencies import DbSession
 
 router = APIRouter()
 
@@ -20,7 +23,14 @@ async def health_check() -> HealthResponse:
 
 
 @router.get("/ready")
-async def readiness_check() -> dict[str, str]:
+async def readiness_check(db: DbSession) -> dict[str, str]:
     """Check if API is ready to serve requests."""
-    # TODO: Add database connectivity check
+    try:
+        await db.execute(text("SELECT 1"))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database is not ready",
+        ) from e
+
     return {"status": "ready"}

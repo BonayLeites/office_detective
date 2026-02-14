@@ -237,7 +237,11 @@ class GraphService:
 
         for record in records:
             neighbor = record["neighbor"]
-            neighbor_id = neighbor["entity_id"]
+            neighbor_id_raw = neighbor.get("entity_id")
+            if neighbor_id_raw is None:
+                # Skip non-entity nodes (e.g. Document) that do not have entity_id.
+                continue
+            neighbor_id = str(neighbor_id_raw)
 
             if neighbor_id not in seen_nodes:
                 seen_nodes.add(neighbor_id)
@@ -254,10 +258,16 @@ class GraphService:
             rels = record["r"]
             if rels:
                 for rel in rels if isinstance(rels, list) else [rels]:
+                    source_id_raw = rel.start_node.get("entity_id")
+                    target_id_raw = rel.end_node.get("entity_id")
+                    if source_id_raw is None or target_id_raw is None:
+                        # Skip relationships touching non-entity nodes.
+                        continue
+
                     edges.append(
                         GraphEdge(
-                            source_id=UUID(rel.start_node["entity_id"]),
-                            target_id=UUID(rel.end_node["entity_id"]),
+                            source_id=UUID(str(source_id_raw)),
+                            target_id=UUID(str(target_id_raw)),
                             relationship_type=rel.type,
                             properties=dict(rel),
                         )

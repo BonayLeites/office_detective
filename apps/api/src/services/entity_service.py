@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models.document import Document, Entity, EntityType
+from src.models.document import Document, Entity, EntityType, Mention
 from src.schemas.entity import EntityCreate
 
 
@@ -56,6 +56,13 @@ class EntityService:
         """Get number of documents authored by this entity."""
         result = await self.db.execute(
             select(func.count(Document.doc_id)).where(Document.author_entity_id == entity_id)
+        )
+        return result.scalar() or 0
+
+    async def get_mention_count(self, entity_id: UUID) -> int:
+        """Get number of mentions for this entity."""
+        result = await self.db.execute(
+            select(func.count(Mention.mention_id)).where(Mention.entity_id == entity_id)
         )
         return result.scalar() or 0
 

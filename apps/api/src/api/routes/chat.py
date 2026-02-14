@@ -1,15 +1,56 @@
 """Chat API routes for ARIA agent."""
 
+from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, status
+from sqlalchemy import select
 
-from src.dependencies import DbSession
+from src.dependencies import DbSession, OptionalUser
+from src.models.player import PlayerState
 from src.schemas.chat import ChatRequest, ChatResponse, HintRequest, HintResponse
 from src.services.agent_service import AgentService
 from src.services.case_service import CaseService
 
 router = APIRouter(tags=["chat"])
+MAX_HINTS = 4
+
+
+def _collect_case_hints(ground_truth: dict[str, Any]) -> list[str]:
+    """Flatten case hints from ground truth into a simple ordered list."""
+    hints_block = ground_truth.get("hints", {})
+    if not isinstance(hints_block, dict):
+        return []
+
+    flattened: list[str] = []
+    for tier_key in sorted(hints_block.keys()):
+        tier_hints = hints_block.get(tier_key)
+        if not isinstance(tier_hints, list):
+            continue
+        for hint in tier_hints:
+            if isinstance(hint, dict):
+                text = hint.get("text")
+                if isinstance(text, str) and text.strip():
+                    flattened.append(text.strip())
+            elif isinstance(hint, str) and hint.strip():
+                flattened.append(hint.strip())
+    return flattened
+
+
+def _pick_hint(hints: list[str], mechanism: str, context: str | None, hints_used: int) -> str:
+    """Choose an appropriate hint for the user's current state."""
+    if hints:
+        if context:
+            context_lower = context.lower()
+            for hint in hints:
+                if context_lower in hint.lower():
+                    return f"Based on your focus on '{context}': {hint}"
+        return hints[min(hints_used, len(hints) - 1)]
+
+    context_prefix = f"Based on your focus on '{context}': " if context else ""
+    base_hint = mechanism[:90] + "..." if len(mechanism) > 90 else mechanism
+    return f"{context_prefix}Consider investigating: {base_hint}"
 
 
 @router.post(
@@ -62,6 +103,7 @@ async def request_hint(
     case_id: UUID,
     request: HintRequest,
     db: DbSession,
+    current_user: OptionalUser,
 ) -> HintResponse:
     """Request a hint for the investigation.
 
@@ -84,18 +126,44 @@ async def request_hint(
             detail=f"Case not found: {case_id}",
         )
 
-    # For now, return a placeholder hint
-    # In a full implementation, this would use ground_truth to generate hints
-    ground_truth = case.ground_truth_json or {}
-    mechanism = ground_truth.get("mechanism", "Look for patterns in the documents")
+    ground_truth = case.ground_truth_json if isinstance(case.ground_truth_json, dict) else {}
+    mechanism = str(ground_truth.get("mechanism", "Look for patterns in the documents"))
+    case_hints = _collect_case_hints(ground_truth)
 
-    # Generate a vague hint based on the mechanism and user context
-    context_prefix = f"Based on your focus on '{request.context}': " if request.context else ""
-    base_hint = mechanism[:50] + "..." if len(mechanism) > 50 else mechanism
-    hint = f"{context_prefix}Consider investigating: {base_hint}"
+    hints_used = 0
+    hints_remaining = MAX_HINTS
 
-    return HintResponse(
-        hint=hint,
-        hints_remaining=2,  # Placeholder - would come from player state
-        related_docs=[],
-    )
+    if current_user:
+        player_state_result = await db.execute(
+            select(PlayerState).where(
+                PlayerState.user_id == current_user.user_id,
+                PlayerState.case_id == case_id,
+            )
+        )
+        player_state = player_state_result.scalar_one_or_none()
+        if player_state is None:
+            player_state = PlayerState(
+                user_id=current_user.user_id,
+                case_id=case_id,
+                opened_docs=[],
+                pinned_items=[],
+                hypotheses_json={},
+                hints_used=0,
+            )
+            db.add(player_state)
+            await db.flush()
+            await db.refresh(player_state)
+
+        if player_state.hints_used >= MAX_HINTS:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No hints remaining for this case",
+            )
+
+        hints_used = player_state.hints_used
+        player_state.hints_used += 1
+        player_state.updated_at = datetime.now(UTC)
+        hints_remaining = max(0, MAX_HINTS - player_state.hints_used)
+
+    hint = _pick_hint(case_hints, mechanism, request.context, hints_used)
+    return HintResponse(hint=hint, hints_remaining=hints_remaining, related_docs=[])

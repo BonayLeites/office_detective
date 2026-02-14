@@ -8,7 +8,7 @@ from httpx import AsyncClient
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import Case, DocType, Document, Entity, EntityType, ScenarioType
+from src.models import Case, DocType, Document, Entity, EntityType, Mention, ScenarioType
 
 
 @pytest.fixture
@@ -182,14 +182,43 @@ async def test_get_entity_found(client: AsyncClient, test_case: Case, test_entit
 
 @pytest.mark.asyncio
 async def test_get_entity_with_document_count(
-    client: AsyncClient, test_case: Case, test_entity_with_documents: tuple[Entity, list[Document]]
+    client: AsyncClient,
+    test_case: Case,
+    test_entity_with_documents: tuple[Entity, list[Document]],
+    db_session: AsyncSession,
 ) -> None:
-    """GET /api/cases/{case_id}/entities/{entity_id} returns document count."""
-    entity, _documents = test_entity_with_documents
+    """GET /api/cases/{case_id}/entities/{entity_id} returns counts."""
+    entity, documents = test_entity_with_documents
+
+    db_session.add(
+        Mention(
+            mention_id=uuid.uuid4(),
+            case_id=test_case.case_id,
+            doc_id=documents[0].doc_id,
+            entity_id=entity.entity_id,
+            span_start=0,
+            span_end=5,
+            mention_text=entity.name,
+        )
+    )
+    db_session.add(
+        Mention(
+            mention_id=uuid.uuid4(),
+            case_id=test_case.case_id,
+            doc_id=documents[1].doc_id,
+            entity_id=entity.entity_id,
+            span_start=10,
+            span_end=15,
+            mention_text=entity.name,
+        )
+    )
+    await db_session.commit()
+
     response = await client.get(f"/api/cases/{test_case.case_id}/entities/{entity.entity_id}")
     assert response.status_code == 200
     data = response.json()
     assert data["document_count"] == 2
+    assert data["mention_count"] == 2
 
 
 @pytest.mark.asyncio

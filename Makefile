@@ -189,7 +189,7 @@ test: test-api test-web
 
 test-api:
 	@echo "$(CYAN)Running backend tests...$(RESET)"
-	cd apps/api && uv run pytest
+	cd apps/api && POSTGRES_DB=$${POSTGRES_TEST_DB:-office_detective_test} uv run pytest
 
 test-web:
 	@echo "$(CYAN)Running frontend tests...$(RESET)"

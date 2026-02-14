@@ -38,6 +38,7 @@ class CaseService:
             title=data.title,
             scenario_type=data.scenario_type,
             difficulty=data.difficulty,
+            language=data.language,
             seed=data.seed,
             ground_truth_json=data.ground_truth.model_dump(mode="json"),
         )

@@ -34,6 +34,7 @@ async def list_entities(
     entity_responses = []
     for entity in entities:
         doc_count = await service.get_document_count(entity.entity_id)
+        mention_count = await service.get_mention_count(entity.entity_id)
         entity_responses.append(
             EntityResponse(
                 entity_id=entity.entity_id,
@@ -44,7 +45,7 @@ async def list_entities(
                 created_at=entity.created_at,
                 updated_at=entity.updated_at,
                 document_count=doc_count,
-                mention_count=0,  # TODO: Implement mention counting
+                mention_count=mention_count,
             )
         )
 
@@ -75,6 +76,7 @@ async def get_entity(
         )
 
     doc_count = await service.get_document_count(entity_id)
+    mention_count = await service.get_mention_count(entity_id)
 
     return EntityResponse(
         entity_id=entity.entity_id,
@@ -85,7 +87,7 @@ async def get_entity(
         created_at=entity.created_at,
         updated_at=entity.updated_at,
         document_count=doc_count,
-        mention_count=0,  # TODO: Implement mention counting
+        mention_count=mention_count,
     )
 
 

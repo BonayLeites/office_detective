@@ -157,3 +157,37 @@ class DocChunk(Base):
     def __repr__(self) -> str:
         """String representation."""
         return f"<DocChunk {self.doc_id}[{self.chunk_index}]>"
+
+
+class Mention(Base):
+    """Entity mention occurrence inside a document."""
+
+    __tablename__ = "mentions"
+
+    mention_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        server_default="uuid_generate_v4()",
+    )
+    case_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("cases.case_id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    doc_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("documents.doc_id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    entity_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("entities.entity_id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    span_start: Mapped[int] = mapped_column(Integer, nullable=False)
+    span_end: Mapped[int] = mapped_column(Integer, nullable=False)
+    mention_text: Mapped[str] = mapped_column(Text, nullable=False)
+
+    def __repr__(self) -> str:
+        """String representation."""
+        return f"<Mention entity={self.entity_id} doc={self.doc_id}>"

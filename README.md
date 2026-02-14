@@ -220,13 +220,14 @@ docker compose -f infra/docker-compose.yml down -v  # Stop and reset
 
 Copy `.env.example` to `.env` and `apps/api/.env`:
 
-| Variable         | Description                      | Default                    |
-| ---------------- | -------------------------------- | -------------------------- |
-| `OPENAI_API_KEY` | OpenAI API key (required for AI) | -                          |
-| `OPENAI_MODEL`   | Chat model                       | `gpt-4o`                   |
-| `POSTGRES_*`     | PostgreSQL connection            | Works with Docker defaults |
-| `NEO4J_*`        | Neo4j connection                 | Works with Docker defaults |
-| `REDIS_URL`      | Redis connection                 | `redis://localhost:6379`   |
+| Variable           | Description                      | Default                    |
+| ------------------ | -------------------------------- | -------------------------- |
+| `OPENAI_API_KEY`   | OpenAI API key (required for AI) | -                          |
+| `OPENAI_MODEL`     | Chat model                       | `gpt-4o`                   |
+| `POSTGRES_*`       | PostgreSQL connection            | Works with Docker defaults |
+| `POSTGRES_TEST_DB` | Database name used by tests      | `office_detective_test`    |
+| `NEO4J_*`          | Neo4j connection                 | Works with Docker defaults |
+| `REDIS_URL`        | Redis connection                 | `redis://localhost:6379`   |
 
 ---
 
@@ -236,6 +237,7 @@ Copy `.env.example` to `.env` and `apps/api/.env`:
 
 ```bash
 cd apps/api
+POSTGRES_DB=office_detective_test uv run pytest  # Run against isolated test DB
 uv run pytest                    # Run all tests
 uv run pytest -v                 # Verbose output
 uv run pytest -k "test_search"   # Run specific tests

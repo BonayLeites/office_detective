@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useLocale } from 'next-intl';
+import { useCallback, useEffect, useState } from 'react';
 
-import type { ChatMessage, ChatResponse, HintResponse } from '@/types';
+import type { ChatMessage, ChatResponse, HintResponse, ProgressResponse } from '@/types';
 
 import { api } from '@/lib/api';
 
@@ -18,11 +19,32 @@ interface UseChatReturn {
 }
 
 export function useChat(caseId: string): UseChatReturn {
+  const locale = useLocale();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [hintsRemaining, setHintsRemaining] = useState(3);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProgress() {
+      try {
+        const progress = await api.get<ProgressResponse>(`/api/cases/${caseId}/progress`);
+        if (isMounted) {
+          setHintsRemaining(progress.hints_remaining);
+        }
+      } catch {
+        // Ignore progress errors and keep local default
+      }
+    }
+
+    void loadProgress();
+    return () => {
+      isMounted = false;
+    };
+  }, [caseId]);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -49,7 +71,10 @@ export function useChat(caseId: string): UseChatReturn {
           body['conversation_id'] = conversationId;
         }
 
-        const response = await api.post<ChatResponse>(`/api/cases/${caseId}/chat`, body);
+        const response = await api.post<ChatResponse>(
+          `/api/cases/${caseId}/chat?language=${encodeURIComponent(locale)}`,
+          body,
+        );
 
         const assistantMessage: ChatMessage = {
           id: crypto.randomUUID(),
@@ -69,7 +94,7 @@ export function useChat(caseId: string): UseChatReturn {
         setIsLoading(false);
       }
     },
-    [caseId, conversationId, isLoading],
+    [caseId, conversationId, isLoading, locale],
   );
 
   const requestHint = useCallback(
@@ -106,6 +131,10 @@ export function useChat(caseId: string): UseChatReturn {
         return response.hint;
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to get hint'));
+        const maybeApiError = err as { status?: number } | null;
+        if (maybeApiError?.status === 400) {
+          setHintsRemaining(0);
+        }
         return null;
       } finally {
         setIsLoading(false);
