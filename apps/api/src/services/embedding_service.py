@@ -10,11 +10,17 @@ class EmbeddingService:
     """Service for generating text embeddings using OpenAI."""
 
     def __init__(self) -> None:
-        """Initialize embedding service with OpenAI client."""
+        """Initialize embedding service with an OpenAI-compatible client."""
+        api_key = (
+            SecretStr(settings.resolved_embedding_api_key)
+            if settings.resolved_embedding_api_key
+            else None
+        )
         self.embedder = OpenAIEmbeddings(
             model=settings.embedding_model,
-            openai_api_key=SecretStr(settings.openai_api_key),
             dimensions=settings.embedding_dimension,
+            openai_api_key=api_key,
+            openai_api_base=settings.resolved_embedding_api_base,
         )
         self.dimension = settings.embedding_dimension
 

@@ -6,25 +6,34 @@ import { useCallback, useEffect, useState } from 'react';
 import type { ChatMessage, ChatResponse, HintResponse, ProgressResponse } from '@/types';
 
 import { api } from '@/lib/api';
+import { useGameStore } from '@/stores/game-store';
 
 interface UseChatReturn {
   messages: ChatMessage[];
   conversationId: string | null;
   isLoading: boolean;
   error: Error | null;
+  canRetryLastMessage: boolean;
   hintsRemaining: number;
+  suggestedActions: string[];
   sendMessage: (content: string) => Promise<void>;
+  retryLastMessage: () => Promise<void>;
   requestHint: (context?: string) => Promise<string | null>;
+  dismissError: () => void;
   clearChat: () => void;
 }
 
 export function useChat(caseId: string): UseChatReturn {
   const locale = useLocale();
+  const recordAriaQuestion = useGameStore(state => state.recordAriaQuestion);
+  const recordHintUsage = useGameStore(state => state.useHint);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const [hintsRemaining, setHintsRemaining] = useState(3);
+  const [suggestedActions, setSuggestedActions] = useState<string[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -49,11 +58,12 @@ export function useChat(caseId: string): UseChatReturn {
   const sendMessage = useCallback(
     async (content: string) => {
       if (!content.trim() || isLoading) return;
+      const trimmedContent = content.trim();
 
       const userMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'user',
-        content: content.trim(),
+        content: trimmedContent,
         citations: [],
         timestamp: new Date(),
       };
@@ -61,10 +71,13 @@ export function useChat(caseId: string): UseChatReturn {
       setMessages(prev => [...prev, userMessage]);
       setIsLoading(true);
       setError(null);
+      setLastFailedMessage(null);
+      setSuggestedActions([]);
+      recordAriaQuestion(caseId, trimmedContent);
 
       try {
         const body: Record<string, unknown> = {
-          message: content.trim(),
+          message: trimmedContent,
         };
 
         if (conversationId) {
@@ -86,16 +99,24 @@ export function useChat(caseId: string): UseChatReturn {
 
         setMessages(prev => [...prev, assistantMessage]);
         setConversationId(response.conversation_id);
+        setSuggestedActions(response.suggested_actions);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to send message'));
+        setLastFailedMessage(trimmedContent);
+        setSuggestedActions([]);
         // Remove the user message on error
         setMessages(prev => prev.filter(m => m.id !== userMessage.id));
       } finally {
         setIsLoading(false);
       }
     },
-    [caseId, conversationId, isLoading, locale],
+    [caseId, conversationId, isLoading, locale, recordAriaQuestion],
   );
+
+  const retryLastMessage = useCallback(async (): Promise<void> => {
+    if (!lastFailedMessage) return;
+    await sendMessage(lastFailedMessage);
+  }, [lastFailedMessage, sendMessage]);
 
   const requestHint = useCallback(
     async (context?: string): Promise<string | null> => {
@@ -116,6 +137,7 @@ export function useChat(caseId: string): UseChatReturn {
         const response = await api.post<HintResponse>(`/api/cases/${caseId}/chat/hint`, body);
 
         setHintsRemaining(response.hints_remaining);
+        recordHintUsage(caseId);
 
         // Add hint as a system-style message
         const hintMessage: ChatMessage = {
@@ -140,12 +162,18 @@ export function useChat(caseId: string): UseChatReturn {
         setIsLoading(false);
       }
     },
-    [caseId, hintsRemaining],
+    [caseId, hintsRemaining, recordHintUsage],
   );
 
   const clearChat = useCallback(() => {
     setMessages([]);
     setConversationId(null);
+    setError(null);
+    setLastFailedMessage(null);
+    setSuggestedActions([]);
+  }, []);
+
+  const dismissError = useCallback(() => {
     setError(null);
   }, []);
 
@@ -154,9 +182,13 @@ export function useChat(caseId: string): UseChatReturn {
     conversationId,
     isLoading,
     error,
+    canRetryLastMessage: Boolean(lastFailedMessage),
     hintsRemaining,
+    suggestedActions,
     sendMessage,
+    retryLastMessage,
     requestHint,
+    dismissError,
     clearChat,
   };
 }

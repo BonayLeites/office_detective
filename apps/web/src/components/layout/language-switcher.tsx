@@ -20,7 +20,7 @@ export function LanguageSwitcher() {
       onChange={e => {
         handleChange(e.target.value);
       }}
-      className="bg-background border-input text-foreground h-9 rounded-md border px-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+      className="border-input bg-card/80 text-foreground h-9 rounded-lg border px-3 text-sm shadow-[inset_0_1px_0_hsl(var(--background)/0.8)] focus:outline-none focus:ring-2 focus:ring-offset-1"
       aria-label="Select language"
     >
       {locales.map(l => (

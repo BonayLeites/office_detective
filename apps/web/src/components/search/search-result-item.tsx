@@ -12,17 +12,18 @@ import { useGameStore } from '@/stores/game-store';
 
 interface SearchResultItemProps {
   result: SearchResult;
+  style?: React.CSSProperties;
   caseId: string;
   query: string;
   onView: (docId: string) => void;
 }
 
-export function SearchResultItem({ result, caseId, query, onView }: SearchResultItemProps) {
+export function SearchResultItem({ result, style, caseId, query, onView }: SearchResultItemProps) {
   const pinnedItems = useGameStore(state => state.pinnedItems);
   const pinItem = useGameStore(state => state.pinItem);
   const unpinItem = useGameStore(state => state.unpinItem);
 
-  const isPinned = pinnedItems.some(p => p.id === result.chunk_id);
+  const isPinned = pinnedItems.some(p => p.caseId === caseId && p.id === result.chunk_id);
   const scorePercent = Math.round(result.score * 100);
   const formattedDate = format(new Date(result.ts), 'MMM d, yyyy');
 
@@ -31,7 +32,7 @@ export function SearchResultItem({ result, caseId, query, onView }: SearchResult
 
   const handlePin = () => {
     if (isPinned) {
-      unpinItem(result.chunk_id);
+      unpinItem(caseId, result.chunk_id);
     } else {
       pinItem({
         id: result.chunk_id,
@@ -48,7 +49,10 @@ export function SearchResultItem({ result, caseId, query, onView }: SearchResult
   };
 
   return (
-    <div className="border-border hover:bg-accent/50 rounded-lg border p-4 transition-colors">
+    <div
+      className="surface-lift border-border/80 bg-card/70 hover:bg-card rounded-xl border p-4 transition-all duration-200 hover:-translate-y-0.5"
+      style={style}
+    >
       {/* Header */}
       <div className="mb-2 flex items-start justify-between">
         <div className="flex items-center gap-2">
@@ -56,12 +60,12 @@ export function SearchResultItem({ result, caseId, query, onView }: SearchResult
           <span className="text-muted-foreground text-xs">{formattedDate}</span>
           <span
             className={cn(
-              'rounded-full px-2 py-0.5 text-xs font-medium',
+              'rounded-full border px-2 py-0.5 text-xs font-medium',
               scorePercent >= 80
-                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700'
                 : scorePercent >= 60
-                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                  : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+                  ? 'border-amber-500/30 bg-amber-500/10 text-amber-700'
+                  : 'border-slate-500/25 bg-slate-500/10 text-slate-700',
             )}
           >
             {scorePercent}% match
@@ -111,7 +115,7 @@ function highlightQuery(text: string, query: string): string {
 
   for (const word of words) {
     const regex = new RegExp(`(${escapeRegex(word)})`, 'gi');
-    result = result.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-800">$1</mark>');
+    result = result.replace(regex, '<mark class="rounded bg-amber-300/60 px-0.5">$1</mark>');
   }
 
   return result;

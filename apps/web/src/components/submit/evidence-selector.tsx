@@ -30,7 +30,7 @@ export function EvidenceSelector({
 
   if (pinnedItems.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-6 text-center">
+      <div className="border-border/80 rounded-xl border border-dashed p-6 text-center">
         <FileText className="text-muted-foreground mx-auto mb-2 h-8 w-8 opacity-50" />
         <p className="text-muted-foreground text-sm">
           No evidence pinned yet. Go to the Inbox or Search to pin relevant documents and chunks.
@@ -88,10 +88,10 @@ export function EvidenceSelector({
                   <label
                     key={item.id}
                     className={cn(
-                      'flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors',
+                      'flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-all duration-200',
                       isSelected
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50',
+                        ? 'border-primary/45 bg-primary/10 shadow-[0_14px_26px_-24px_hsl(var(--primary)/0.95)]'
+                        : 'border-border/80 bg-card/60 hover:border-primary/35',
                     )}
                   >
                     <div

@@ -44,7 +44,7 @@ export function HintButton({ hintsRemaining, onRequestHint, disabled = false }: 
       size="sm"
       onClick={handleClick}
       disabled={disabled || isLoading || noHints}
-      className={cn('gap-2', isConfirming && 'animate-pulse')}
+      className={cn('gap-2 rounded-lg', isConfirming && 'pulse-focus')}
     >
       <Lightbulb className="h-4 w-4" />
       {isLoading ? (

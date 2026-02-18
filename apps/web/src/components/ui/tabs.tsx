@@ -66,7 +66,7 @@ const TabsList = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
       <div
         ref={ref}
         className={cn(
-          'bg-muted text-muted-foreground inline-flex h-10 items-center justify-center rounded-md p-1',
+          'bg-muted/70 text-muted-foreground border-border/80 inline-flex h-11 items-center justify-center rounded-lg border p-1 shadow-[inset_0_1px_0_hsl(var(--background)/0.9)]',
           className,
         )}
         role="tablist"
@@ -93,10 +93,10 @@ const TabsTrigger = forwardRef<HTMLButtonElement, TabsTriggerProps>(
         role="tab"
         aria-selected={isSelected}
         className={cn(
-          'ring-offset-background focus-visible:ring-ring inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+          'ring-offset-background focus-visible:ring-ring inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50',
           isSelected
-            ? 'bg-background text-foreground shadow-sm'
-            : 'hover:bg-background/50 hover:text-foreground',
+            ? 'bg-card text-foreground border-border/60 border shadow-[0_6px_18px_-14px_rgba(10,23,38,0.8)]'
+            : 'hover:bg-card/50 hover:text-foreground',
           className,
         )}
         onClick={() => {
@@ -127,7 +127,7 @@ const TabsContent = forwardRef<HTMLDivElement, TabsContentProps>(
         ref={ref}
         role="tabpanel"
         className={cn(
-          'ring-offset-background focus-visible:ring-ring mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          'ring-offset-background focus-visible:ring-ring mt-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
           className,
         )}
         {...props}

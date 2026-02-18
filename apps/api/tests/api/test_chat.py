@@ -9,7 +9,9 @@ from httpx import AsyncClient
 from langchain_core.messages import AIMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.api.routes import chat as chat_routes
 from src.api.routes.chat import _collect_case_hints, _pick_hint
+from src.config import settings
 from src.models import Case, ScenarioType
 
 
@@ -64,6 +66,12 @@ def mock_embedding_service() -> Generator[MagicMock, None, None]:
         mock_service.embed_documents = AsyncMock(side_effect=lambda x: [[0.1] * 1536] * len(x))
         mock_class.return_value = mock_service
         yield mock_service
+
+
+@pytest.fixture(autouse=True)
+def reset_chat_rate_limiter() -> None:
+    """Reset in-memory chat limiter between tests."""
+    chat_routes.rate_limiter = chat_routes.SlidingWindowRateLimiter()
 
 
 @pytest.mark.asyncio
@@ -289,6 +297,56 @@ async def test_chat_defaults_to_english(
     assert response.status_code == 200
     data = response.json()
     assert "message" in data
+
+
+@pytest.mark.asyncio
+async def test_chat_rate_limit_returns_429(
+    client: AsyncClient,
+    chat_test_case: Case,
+    mock_agent_graph: MagicMock,
+    mock_embedding_service: MagicMock,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """POST /cases/{case_id}/chat enforces configured per-case request limits."""
+    monkeypatch.setattr(settings, "chat_rate_limit_requests", 1)
+    monkeypatch.setattr(settings, "chat_rate_limit_window_seconds", 60)
+
+    first = await client.post(
+        f"/api/cases/{chat_test_case.case_id}/chat",
+        json={"message": "First message"},
+    )
+    assert first.status_code == 200
+
+    second = await client.post(
+        f"/api/cases/{chat_test_case.case_id}/chat",
+        json={"message": "Second message"},
+    )
+    assert second.status_code == 429
+    assert "retry-after" in {key.lower() for key in second.headers.keys()}
+
+
+@pytest.mark.asyncio
+async def test_hint_rate_limit_returns_429(
+    client: AsyncClient,
+    chat_test_case: Case,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """POST /cases/{case_id}/chat/hint enforces configured per-case request limits."""
+    monkeypatch.setattr(settings, "hint_rate_limit_requests", 1)
+    monkeypatch.setattr(settings, "hint_rate_limit_window_seconds", 60)
+
+    first = await client.post(
+        f"/api/cases/{chat_test_case.case_id}/chat/hint",
+        json={},
+    )
+    assert first.status_code == 200
+
+    second = await client.post(
+        f"/api/cases/{chat_test_case.case_id}/chat/hint",
+        json={},
+    )
+    assert second.status_code == 429
+    assert "retry-after" in {key.lower() for key in second.headers.keys()}
 
 
 def test_collect_case_hints_handles_invalid_shapes() -> None:

@@ -23,15 +23,20 @@ export default function ChatPage({ params }: ChatPageProps) {
   };
 
   return (
-    <div className="flex h-full">
+    <div className="bg-card/35 flex h-full">
       {/* Chat Panel */}
-      <div className={cn('flex-1 transition-all duration-300', selectedDocId ? 'w-1/2' : 'w-full')}>
+      <div
+        className={cn(
+          'animate-reveal-up flex-1 transition-all duration-300',
+          selectedDocId ? 'hidden md:block md:w-1/2' : 'w-full',
+        )}
+      >
         <ChatContainer caseId={caseId} onCitationClick={handleCitationClick} />
       </div>
 
       {/* Document Viewer Panel */}
       {selectedDocId && (
-        <div className="border-border w-1/2 border-l">
+        <div className="border-border/80 paper-panel animate-reveal-scale w-full border-l md:w-1/2">
           <DocumentViewer
             document={document}
             caseId={caseId}

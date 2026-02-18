@@ -2,6 +2,7 @@
 
 import { FileText, MessageSquare, Search } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 
@@ -13,17 +14,20 @@ interface EmptyBoardStateProps {
 const SUGGESTIONS = ['Marcus', 'Sunshine', 'invoice', 'approval', 'vendor'];
 
 export function EmptyBoardState({ caseId, onSuggestionClick }: EmptyBoardStateProps) {
+  const t = useTranslations('board');
+  const tCommon = useTranslations('common');
+
   return (
-    <div className="bg-muted/30 flex h-full items-center justify-center">
+    <div className="bg-muted/30 flex h-full items-center justify-center px-4">
       <div className="max-w-md text-center">
-        <div className="mb-4 text-4xl">🔍</div>
-        <h2 className="mb-2 text-xl font-semibold">Tu tablero de investigación</h2>
-        <p className="text-muted-foreground mb-6">
-          Busca personas o documentos para comenzar. Marca sospechosos y recopila evidencia.
-        </p>
+        <div className="border-border/80 bg-card/80 mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full border">
+          <Search className="text-primary h-6 w-6" />
+        </div>
+        <h2 className="mb-2 text-xl font-semibold">{t('emptyTitle')}</h2>
+        <p className="text-muted-foreground mb-6">{t('emptyDescription')}</p>
 
         <div className="mb-6">
-          <p className="mb-2 text-sm font-medium">Prueba buscar:</p>
+          <p className="mb-2 text-sm font-medium">{t('trySearching')}</p>
           <div className="flex flex-wrap justify-center gap-2">
             {SUGGESTIONS.map(s => (
               <Button
@@ -44,19 +48,19 @@ export function EmptyBoardState({ caseId, onSuggestionClick }: EmptyBoardStatePr
           <Link href={`/cases/${caseId}/inbox`}>
             <Button variant="ghost" size="sm" className="gap-2">
               <FileText className="h-4 w-4" />
-              Ver Inbox
+              {t('viewInbox')}
             </Button>
           </Link>
           <Link href={`/cases/${caseId}/chat`}>
             <Button variant="ghost" size="sm" className="gap-2">
               <MessageSquare className="h-4 w-4" />
-              Preguntar a ARIA
+              {t('askAria')}
             </Button>
           </Link>
           <Link href={`/cases/${caseId}/search`}>
             <Button variant="ghost" size="sm" className="gap-2">
               <Search className="h-4 w-4" />
-              Buscar
+              {tCommon('search')}
             </Button>
           </Link>
         </div>

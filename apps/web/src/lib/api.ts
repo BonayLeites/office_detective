@@ -1,4 +1,13 @@
-const API_BASE_URL = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://127.0.0.1:8000';
+const clientApiBaseUrl = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://127.0.0.1:8000';
+const serverApiBaseUrl = process.env['API_URL_INTERNAL'] ?? clientApiBaseUrl;
+const defaultApiTimeoutMs = Number.parseInt(
+  process.env['NEXT_PUBLIC_API_TIMEOUT_MS'] ?? '20000',
+  10,
+);
+
+function getApiBaseUrl(): string {
+  return typeof window === 'undefined' ? serverApiBaseUrl : clientApiBaseUrl;
+}
 
 interface ApiError extends Error {
   status: number;
@@ -22,6 +31,42 @@ async function handleResponse<T>(response: Response): Promise<T> {
     throw createApiError(data.detail ?? response.statusText, response.status, data);
   }
   return response.json() as Promise<T>;
+}
+
+async function fetchWithTimeout(url: string, options: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutMs = Number.isFinite(defaultApiTimeoutMs) ? Math.max(defaultApiTimeoutMs, 0) : 20000;
+  const timeoutId =
+    timeoutMs > 0
+      ? setTimeout(() => {
+          controller.abort();
+        }, timeoutMs)
+      : null;
+
+  const externalSignal = options.signal;
+  let onExternalAbort: (() => void) | null = null;
+  if (externalSignal) {
+    onExternalAbort = () => {
+      controller.abort();
+    };
+    externalSignal.addEventListener('abort', onExternalAbort, { once: true });
+  }
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw createApiError(`Request timed out after ${timeoutMs.toString()}ms`, 504);
+    }
+    throw error;
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    if (externalSignal && onExternalAbort) {
+      externalSignal.removeEventListener('abort', onExternalAbort);
+    }
+  }
 }
 
 function mergeHeaders(base: HeadersInit, additional?: HeadersInit): HeadersInit {
@@ -86,7 +131,7 @@ function getAuthHeaders(): Record<string, string> {
 
 export const api = {
   async get<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetchWithTimeout(`${getApiBaseUrl()}${endpoint}`, {
       ...options,
       method: 'GET',
       headers: mergeHeaders(
@@ -99,7 +144,7 @@ export const api = {
 
   async post<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
     const body = data !== undefined ? JSON.stringify(data) : null;
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetchWithTimeout(`${getApiBaseUrl()}${endpoint}`, {
       ...options,
       method: 'POST',
       headers: mergeHeaders(
@@ -113,7 +158,7 @@ export const api = {
 
   async put<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
     const body = data !== undefined ? JSON.stringify(data) : null;
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetchWithTimeout(`${getApiBaseUrl()}${endpoint}`, {
       ...options,
       method: 'PUT',
       headers: mergeHeaders(
@@ -127,7 +172,7 @@ export const api = {
 
   async patch<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
     const body = data !== undefined ? JSON.stringify(data) : null;
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetchWithTimeout(`${getApiBaseUrl()}${endpoint}`, {
       ...options,
       method: 'PATCH',
       headers: mergeHeaders(
@@ -140,7 +185,7 @@ export const api = {
   },
 
   async delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetchWithTimeout(`${getApiBaseUrl()}${endpoint}`, {
       ...options,
       method: 'DELETE',
       headers: mergeHeaders(

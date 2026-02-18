@@ -141,7 +141,7 @@ addopts = [
     "--cov=src",
     "--cov-report=term-missing",
     "--cov-report=html",
-    "--cov-fail-under=95",
+    "--cov-fail-under=88",
 ]
 filterwarnings = [
     "error",

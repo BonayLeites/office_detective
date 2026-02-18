@@ -10,6 +10,7 @@ import {
   Server,
   Star,
   Ticket,
+  Trash2,
   User,
 } from 'lucide-react';
 
@@ -104,14 +105,19 @@ export function EntityNode({ data, selected }: EntityNodeProps) {
   const pinItem = useGameStore(state => state.pinItem);
   const unpinItem = useGameStore(state => state.unpinItem);
   const toggleSuspect = useGameStore(state => state.toggleSuspect);
-  const pinned = useGameStore(state => state.pinnedItems.some(p => p.id === entity.entity_id));
-  const suspected = useGameStore(state => state.suspectedEntities.includes(entity.entity_id));
+  const removeFromBoard = useGameStore(state => state.removeFromBoard);
+  const pinned = useGameStore(state =>
+    state.pinnedItems.some(p => p.caseId === caseId && p.id === entity.entity_id),
+  );
+  const suspected = useGameStore(state =>
+    state.getSuspectedEntities(caseId).includes(entity.entity_id),
+  );
   const isPerson = entityType === 'person';
 
   const handlePin = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (pinned) {
-      unpinItem(entity.entity_id);
+      unpinItem(caseId, entity.entity_id);
     } else {
       pinItem({
         id: entity.entity_id,
@@ -125,7 +131,12 @@ export function EntityNode({ data, selected }: EntityNodeProps) {
 
   const handleSuspect = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleSuspect(entity.entity_id);
+    toggleSuspect(caseId, entity.entity_id);
+  };
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    removeFromBoard(caseId, `entity-${entity.entity_id}`);
   };
 
   return (
@@ -172,6 +183,13 @@ export function EntityNode({ data, selected }: EntityNodeProps) {
             title={pinned ? 'Quitar de evidencia' : 'Agregar a evidencia'}
           >
             <Pin className={cn('h-3.5 w-3.5', pinned && 'fill-current')} />
+          </button>
+          <button
+            onClick={handleRemove}
+            className="hover:border-destructive hover:text-destructive flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-500 shadow-sm transition-colors dark:border-gray-600 dark:bg-gray-800"
+            title="Quitar del tablero"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
 

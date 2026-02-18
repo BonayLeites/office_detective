@@ -1,10 +1,13 @@
 """Agent service for orchestrating ARIA agent."""
 
+import asyncio
 from typing import TYPE_CHECKING, Any, cast
 from uuid import UUID, uuid4
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from neo4j import AsyncSession as Neo4jAsyncSession
+from openai import APIError as OpenAIAPIError
+from openai import AuthenticationError as OpenAIAuthenticationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.agent.graph import create_aria_graph, get_system_message
@@ -14,6 +17,7 @@ from src.agent.tools import (
     create_graph_query_tool,
     create_search_docs_tool,
 )
+from src.config import settings
 from src.schemas.chat import ChatRequest, ChatResponse, Citation
 from src.services.document_service import DocumentService
 from src.services.embedding_service import EmbeddingService
@@ -80,27 +84,53 @@ class AgentService:
         if self.graph_service:
             tools.append(create_graph_query_tool(self.graph_service, case_id))
 
-        # Create agent graph
-        agent = create_aria_graph(tools)
+        def build_initial_state() -> "ARIAState":
+            return cast(
+                "ARIAState",
+                {
+                    "case_id": case_id,
+                    "language": language,
+                    "messages": [
+                        SystemMessage(content=get_system_message(language)),
+                        HumanMessage(content=request.message),
+                    ],
+                    "retrieved_chunks": [],
+                    "citations": [],
+                    "hint_budget": hint_budget,
+                },
+            )
 
-        # Build initial state
-        initial_state: ARIAState = cast(
-            "ARIAState",
-            {
-                "case_id": case_id,
-                "language": language,
-                "messages": [
-                    SystemMessage(content=get_system_message(language)),
-                    HumanMessage(content=request.message),
-                ],
-                "retrieved_chunks": [],
-                "citations": [],
-                "hint_budget": hint_budget,
-            },
-        )
+        primary_provider = settings.normalized_provider()
+        provider_order = [primary_provider]
+        fallback_provider = settings.llm_fallback_provider.strip().lower()
+        if (
+            fallback_provider
+            and fallback_provider != primary_provider
+            and settings.provider_is_configured(fallback_provider)
+        ):
+            provider_order.append(fallback_provider)
 
-        # Run agent
-        result = await agent.ainvoke(initial_state)
+        result: dict[str, Any] | None = None
+        last_error: Exception | None = None
+        timeout_seconds = max(settings.llm_request_timeout_seconds, 0.0)
+
+        for provider in provider_order:
+            try:
+                agent = create_aria_graph(tools, provider=provider)
+                initial_state = build_initial_state()
+                if timeout_seconds > 0:
+                    result = await asyncio.wait_for(agent.ainvoke(initial_state), timeout_seconds)
+                else:
+                    result = await agent.ainvoke(initial_state)
+                break
+            except (OpenAIAuthenticationError, OpenAIAPIError, asyncio.TimeoutError) as exc:
+                last_error = exc
+                continue
+
+        if result is None:
+            if last_error:
+                raise last_error
+            raise RuntimeError("ARIA agent failed without an explicit provider error")
 
         # Extract response and citations
         last_message = self._get_last_ai_message(result["messages"])

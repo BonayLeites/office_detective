@@ -3,7 +3,7 @@
 # =============================================================================
 # Run `make help` to see available commands.
 
-.PHONY: help install env docker-up docker-down migrate seed ingest setup start dev \
+.PHONY: help install env docker-up docker-down demo-up demo-down migrate seed ingest setup start dev \
         test test-api test-web lint format typecheck clean stop
 
 # Colors for terminal output
@@ -11,6 +11,10 @@ CYAN := \033[36m
 GREEN := \033[32m
 YELLOW := \033[33m
 RESET := \033[0m
+
+# Ports used by Docker demo profile
+API_PORT ?= 8000
+WEB_PORT ?= 3000
 
 # Default target
 help:
@@ -28,7 +32,9 @@ help:
 	@echo "$(GREEN)Development:$(RESET)"
 	@echo "  make dev         Start frontend and backend (foreground)"
 	@echo "  make docker-up   Start Docker services"
+	@echo "  make demo-up     Start full stack in Docker (db + api + web)"
 	@echo "  make docker-down Stop Docker services"
+	@echo "  make demo-down   Stop full Docker demo stack"
 	@echo ""
 	@echo "$(GREEN)Testing:$(RESET)"
 	@echo "  make test        Run all tests"
@@ -72,6 +78,18 @@ docker-up:
 docker-down:
 	@echo "$(CYAN)Stopping Docker services...$(RESET)"
 	docker compose -f infra/docker-compose.yml down
+
+demo-up:
+	@echo "$(CYAN)Starting full stack with Docker (db + api + web)...$(RESET)"
+	docker compose -f infra/docker-compose.yml --profile app up -d --build
+	@echo "$(GREEN)Demo stack running!$(RESET)"
+	@echo "  Frontend: $(CYAN)http://localhost:$(WEB_PORT)$(RESET)"
+	@echo "  Backend:  $(CYAN)http://localhost:$(API_PORT)$(RESET)"
+	@echo "  API Docs: $(CYAN)http://localhost:$(API_PORT)/docs$(RESET)"
+
+demo-down:
+	@echo "$(CYAN)Stopping full Docker demo stack...$(RESET)"
+	docker compose -f infra/docker-compose.yml --profile app down
 
 migrate:
 	@echo "$(CYAN)Running database migrations...$(RESET)"

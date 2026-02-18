@@ -55,7 +55,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const displayError = localError ?? error;
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="border-border/80 w-full max-w-md overflow-hidden rounded-2xl">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl">{t('register')}</CardTitle>
         <CardDescription>{t('registerDescription')}</CardDescription>
@@ -63,7 +63,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {displayError && (
-            <div className="bg-destructive/10 text-destructive rounded-md p-3 text-sm">
+            <div className="bg-destructive/10 text-destructive border-destructive/25 rounded-lg border p-3 text-sm">
               {displayError}
             </div>
           )}
@@ -132,13 +132,13 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full rounded-lg" disabled={isLoading}>
             {isLoading ? t('registering') : t('createAccount')}
           </Button>
 
           <p className="text-muted-foreground text-center text-sm">
             {t('alreadyHaveAccount')}{' '}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="text-primary font-medium hover:underline">
               {t('login')}
             </Link>
           </p>

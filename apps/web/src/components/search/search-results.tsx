@@ -49,7 +49,7 @@ export function SearchResults({
   return (
     <div className="flex h-full flex-col">
       {/* Results count */}
-      <div className="border-border border-b px-4 py-2">
+      <div className="ink-divider border-border/80 border-b px-4 py-2">
         <p className="text-muted-foreground text-sm">
           <span className="text-foreground font-medium">{total}</span> &quot;{query}&quot;
         </p>
@@ -57,11 +57,12 @@ export function SearchResults({
 
       {/* Results list */}
       <ScrollArea className="flex-1 p-4">
-        <div className="space-y-3">
-          {results.map(result => (
+        <div className="stagger-list space-y-3">
+          {results.map((result, index) => (
             <SearchResultItem
               key={result.chunk_id}
               result={result}
+              style={{ '--stagger-index': index } as React.CSSProperties}
               caseId={caseId}
               query={query}
               onView={onViewDocument}

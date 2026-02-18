@@ -6,6 +6,7 @@ import { useCallback, useState } from 'react';
 import type { DocType, SearchResponse, SearchResult } from '@/types';
 
 import { api } from '@/lib/api';
+import { useGameStore } from '@/stores/game-store';
 
 interface SearchOptions {
   k?: number;
@@ -25,6 +26,7 @@ interface UseSearchReturn {
 
 export function useSearch(caseId: string): UseSearchReturn {
   const locale = useLocale();
+  const recordSearch = useGameStore(state => state.recordSearch);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [query, setQuery] = useState('');
   const [total, setTotal] = useState(0);
@@ -63,6 +65,7 @@ export function useSearch(caseId: string): UseSearchReturn {
         setResults(data.results);
         setQuery(data.query);
         setTotal(data.total);
+        recordSearch(caseId, searchQuery, data.total);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Search failed'));
         setResults([]);
@@ -70,7 +73,7 @@ export function useSearch(caseId: string): UseSearchReturn {
         setIsSearching(false);
       }
     },
-    [caseId, locale],
+    [caseId, locale, recordSearch],
   );
 
   const clearResults = useCallback(() => {

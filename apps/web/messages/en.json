@@ -41,9 +41,136 @@
     "title": "Investigation Cases",
     "subtitle": "Select a case to begin your investigation",
     "noCases": "No cases available yet. Start the backend server and create your first case.",
+    "createCase": "Create Custom Case",
+    "guidedDemo": "Play Guided Demo",
+    "guidedDemoDescription": "New here? Generate a playable tutorial case in one click.",
+    "launchingDemo": "Preparing demo...",
+    "guidedDemoError": "Could not create the guided demo case right now.",
     "difficulty": "Difficulty",
     "documents": "{count} documents",
-    "entities": "{count} entities"
+    "entities": "{count} entities",
+    "streak": {
+      "title": "Operations board",
+      "current": "{count} case streak",
+      "best": "Best streak: {count}",
+      "metaBonus": "{xp} XP unlocked",
+      "metaClaimed": "{xp} XP claimed",
+      "metaPending": "{xp} XP claimable",
+      "shieldActive": "{count} streak shield active",
+      "history": "Recent case runs",
+      "emptyHistory": "No resolved runs yet. Close your first case to start a streak."
+    },
+    "metaMissions": {
+      "period": {
+        "daily": "Daily mission",
+        "weekly": "Weekly mission",
+        "monthly": "Monthly mission"
+      },
+      "items": {
+        "daily_closer": {
+          "label": "Daily closer",
+          "hint": "Resolve 2 different cases with 80+ score today."
+        },
+        "daily_elite": {
+          "label": "Daily elite hit",
+          "hint": "Score 92+ in any case today."
+        },
+        "weekly_sprint": {
+          "label": "Weekly sprint",
+          "hint": "Finish 6 submissions with 75+ score this week."
+        },
+        "weekly_variety": {
+          "label": "Weekly variety",
+          "hint": "Solve 4 different cases with 80+ score this week."
+        },
+        "weekly_clean_chain": {
+          "label": "Clean chain",
+          "hint": "Complete 3 consecutive 80+ runs without hints this week."
+        },
+        "monthly_master": {
+          "label": "Monthly mastermind",
+          "hint": "Finish 12 runs with 85+ score this month."
+        }
+      },
+      "actions": {
+        "claim": "Claim reward",
+        "claimed": "Reward claimed",
+        "progress": "In progress"
+      }
+    }
+  },
+  "caseCreator": {
+    "eyebrow": "Hitl Case Studio",
+    "title": "Create Your Own Case",
+    "subtitle": "Describe your scenario and answer guided questions. The system generates entities, evidence docs, and a playable investigation flow.",
+    "backToCases": "Back to cases",
+    "steps": {
+      "idea": "Step 1: Case idea",
+      "setup": "Step 2: Setup",
+      "people": "Step 3: People",
+      "review": "Step 4: Review"
+    },
+    "questions": {
+      "ideaTitle": "What happened in the office?",
+      "ideaDescription": "Write the story context you want to investigate. Mention what feels suspicious.",
+      "setupTitle": "Set the scenario frame",
+      "setupDescription": "Pick company, scenario type, and overall complexity.",
+      "peopleTitle": "Who is involved?",
+      "peopleDescription": "Name the suspected person and add collaborators, witnesses, or reviewers.",
+      "reviewTitle": "Final review",
+      "reviewDescription": "Confirm your setup and generate the case."
+    },
+    "fields": {
+      "ideaPlaceholder": "Example: Procurement approved a new supplier too quickly and payments started before onboarding was complete...",
+      "company": "Company name",
+      "companyPlaceholder": "Northline Office Group",
+      "scenario": "Scenario type",
+      "difficulty": "Difficulty",
+      "difficultyValue": "Current level: {value}/5",
+      "culprit": "Main suspect name",
+      "culpritPlaceholder": "Name of the person you want as likely culprit",
+      "people": "Additional people (comma or newline separated)",
+      "peoplePlaceholder": "Ava Kim, Ethan Cole, Finance Lead..."
+    },
+    "helpers": {
+      "ideaMin": "Minimum 12 characters",
+      "peopleFormat": "Add at least two extra names so the investigation has enough context."
+    },
+    "summary": {
+      "company": "Company",
+      "scenario": "Scenario",
+      "difficulty": "Difficulty",
+      "culprit": "Main suspect",
+      "peopleCount": "People added"
+    },
+    "scenarios": {
+      "vendor_fraud": "Vendor fraud",
+      "data_leak": "Data leak",
+      "inventory_manipulation": "Inventory manipulation",
+      "internal_sabotage": "Internal sabotage",
+      "expense_fraud": "Expense fraud"
+    },
+    "actions": {
+      "back": "Back",
+      "next": "Next",
+      "create": "Generate case",
+      "creating": "Generating case..."
+    },
+    "hitl": {
+      "title": "System prompts",
+      "subtitle": "Human-in-the-loop checks",
+      "prompts": {
+        "ideaLabel": "Prompt 1",
+        "ideaText": "What is the suspicious office story you want to simulate?",
+        "peopleLabel": "Prompt 2",
+        "peopleText": "Which real or fictional names should appear in evidence and conversations?",
+        "evidenceLabel": "Prompt 3",
+        "evidenceText": "How hard should this be and what kind of fraud pattern do you want?"
+      }
+    },
+    "errors": {
+      "generic": "Could not create custom case. Please try again."
+    }
   },
   "caseDetail": {
     "notFound": "Case Not Found",
@@ -59,11 +186,41 @@
       "askAria": "Ask ARIA for help analyzing documents and finding connections",
       "buildBoard": "Build your evidence board by pinning key documents and entities",
       "submit": "Submit your findings when you've identified the culprit(s)"
+    },
+    "tutorial": {
+      "title": "Guided sprint",
+      "subtitle": "Follow these 4 steps to complete your first case in minutes.",
+      "steps": {
+        "inbox": {
+          "title": "Open the inbox",
+          "description": "Read 2-3 documents and identify suspicious names, approvals, or payments.",
+          "cta": "Review evidence"
+        },
+        "chat": {
+          "title": "Ask ARIA",
+          "description": "Ask who approved unusual transactions and request cited answers.",
+          "cta": "Open chat"
+        },
+        "board": {
+          "title": "Map the board",
+          "description": "Pin evidence and mark at least one suspect to build your theory.",
+          "cta": "Open board"
+        },
+        "submit": {
+          "title": "Submit your report",
+          "description": "Choose culprits, attach evidence, and explain your reasoning.",
+          "cta": "Submit case"
+        }
+      }
     }
   },
   "chat": {
     "title": "ARIA Assistant",
     "thinking": "ARIA is thinking...",
+    "errorTitle": "Message could not be sent",
+    "retry": "Retry",
+    "dismiss": "Dismiss",
+    "quickActionsTitle": "Suggested next move",
     "emptyTitle": "Start a conversation",
     "emptyDescription": "Ask ARIA about the case. You can inquire about documents, entities, relationships, or request help finding evidence.",
     "citationNote": "ARIA will cite relevant documents in responses.",
@@ -87,16 +244,96 @@
     "searchPlaceholder": "Search entities to add...",
     "syncGraph": "Sync Graph",
     "loadHubs": "Load Hubs",
+    "tracePath": "Trace Suspects",
+    "needTwoSuspects": "Mark at least 2 suspects to trace a path",
     "autoLayout": "Auto Layout",
     "evidence": "evidence",
     "suspects": "suspects",
     "goToSubmit": "Go to Submit",
     "nodes": "{count} nodes",
+    "links": "{count} links",
+    "manualLinks": "{count} manual",
     "emptyTitle": "Your investigation board",
     "emptyDescription": "Search for people or documents to begin. Mark suspects and collect evidence.",
     "trySearching": "Try searching:",
     "viewInbox": "View Inbox",
     "askAria": "Ask ARIA",
+    "onboarding": {
+      "title": "First five minutes",
+      "description": "Complete these quick actions to build your first workable case theory.",
+      "dismiss": "Hide onboarding",
+      "progress": "{done}/{total} steps completed",
+      "steps": {
+        "inbox": {
+          "title": "Scan evidence",
+          "description": "Open at least one document and identify key names, dates, or anomalies.",
+          "cta": "Open inbox"
+        },
+        "chat": {
+          "title": "Interrogate ARIA",
+          "description": "Ask ARIA one targeted question to uncover hidden links or suspicious patterns.",
+          "cta": "Open chat"
+        },
+        "board": {
+          "title": "Seed the board",
+          "description": "Load high-signal hubs so your board starts with useful investigative anchors.",
+          "cta": "Load hubs now"
+        }
+      }
+    },
+    "feedback": {
+      "graphFailed": "Graph request failed. Try again.",
+      "syncFailed": "Could not sync graph right now.",
+      "hubsFailed": "Could not load hubs right now.",
+      "traceFailed": "Could not trace suspects right now.",
+      "syncSuccess": "Graph synced: {nodes} nodes and {links} links ready.",
+      "hubsLoaded": "Loaded {count} high-signal hubs on the board.",
+      "hubsEmpty": "No hubs found yet. Sync graph or add entities first.",
+      "traceNoPath": "No clear path found between your top suspects yet.",
+      "traceFound": "Suspect path loaded with {count} entities.",
+      "searchNoMatches": "No board matches found for \"{query}\".",
+      "searchAdded": "Added {entities} entities and {documents} documents to the board.",
+      "focusedNode": "Focused on selected node.",
+      "expandingNode": "Expanding node connections...",
+      "persistenceUnavailable": "Board autosave is unavailable in this session.",
+      "retry": "Retry action",
+      "dismiss": "Dismiss notice"
+    },
+    "quickActions": {
+      "entityDetails": "Entity details",
+      "documentDetails": "Document details",
+      "focusNode": "Focus",
+      "expandConnections": "Expand",
+      "openInInbox": "Inbox",
+      "viewInInbox": "View in inbox",
+      "markSuspect": "Mark suspect",
+      "unmarkSuspect": "Suspect",
+      "pinEvidence": "Pin evidence",
+      "unpinEvidence": "Pinned",
+      "removeFromBoard": "Remove from board",
+      "confidence": "Confidence",
+      "currentLevel": "Current level",
+      "levelVeryHigh": "Very high",
+      "levelHigh": "High",
+      "levelMedium": "Medium",
+      "levelLow": "Low",
+      "attributes": "Attributes",
+      "timestamp": "Timestamp",
+      "content": "Content"
+    },
+    "mobileLayers": {
+      "map": "Map",
+      "details": "Details",
+      "evidence": "Evidence",
+      "selectNodePrompt": "Select a node on the map to open details.",
+      "noSelectionTitle": "No node selected",
+      "noSelectionDescription": "Tap a person or document on the map to inspect it.",
+      "backToMap": "Back to map",
+      "snapshotTitle": "Investigation snapshot",
+      "snapshotDescription": "Review suspects and pinned evidence before submitting.",
+      "emptyTitle": "No evidence collected yet",
+      "emptyDescription": "Pin documents or entities and mark suspects from the board."
+    },
     "relationships": {
       "SENT": "Sent",
       "MENTIONS": "Mentions",
@@ -127,6 +364,7 @@
     "culprit": {
       "title": "1. Identify the Culprit(s)",
       "description": "Select the person(s) responsible for the fraudulent activity.",
+      "prioritizedByConfidence": "Suspects are sorted by your confidence level from the board.",
       "empty": "No person entities found. Make sure the case has been loaded properly."
     },
     "evidence": {
@@ -144,6 +382,61 @@
       "needCulprit": "Select at least one culprit.",
       "needEvidence": "Select at least one piece of evidence.",
       "needExplanation": "Explanation must be at least 20 characters."
+    },
+    "readiness": {
+      "label": "Case readiness",
+      "hint": "Strengthen culprit choice, evidence, and explanation before final submission."
+    },
+    "twist": {
+      "title": "Live challenge modifier",
+      "modifierPositive": "+{value} challenge points",
+      "modifierNegative": "-{value} challenge points",
+      "status": "{current}/{target} progress · ~{minutes}m window",
+      "items": {
+        "timeline_gap": {
+          "label": "Timeline gap detected",
+          "hint": "Open new docs to close missing sequence clues."
+        },
+        "crossfire": {
+          "label": "Conflicting statements",
+          "hint": "Run more checks through search and ARIA."
+        },
+        "suspect_heat": {
+          "label": "Suspect changed behavior",
+          "hint": "Re-evaluate and mark another suspect quickly."
+        },
+        "board_shock": {
+          "label": "Network anomaly",
+          "hint": "Expand the board to surface hidden links."
+        },
+        "evidence_rush": {
+          "label": "Evidence leak",
+          "hint": "Pin fresh evidence before leads cool down."
+        },
+        "score_recovery": {
+          "label": "Case reopened",
+          "hint": "Push your score to elite range with a tighter theory."
+        }
+      }
+    },
+    "combo": {
+      "title": "Speed combo",
+      "modifierPositive": "+{value} speed points",
+      "modifierZero": "No combo bonus",
+      "tiers": {
+        "blitz": {
+          "label": "Blitz run",
+          "hint": "Fast execution with no hints used."
+        },
+        "rapid": {
+          "label": "Rapid run",
+          "hint": "Good pace and controlled hint usage."
+        },
+        "steady": {
+          "label": "Steady run",
+          "hint": "Solid investigation. Push for cleaner and faster closures."
+        }
+      }
     }
   },
   "results": {
@@ -152,12 +445,57 @@
     "notQuite": "Not Quite...",
     "score": "You scored {score} / {maxScore} points ({percentage}%)",
     "breakdown": "Results Breakdown",
+    "scoreComponents": {
+      "culprit": "Culprit accuracy",
+      "evidence": "Evidence support",
+      "explanation": "Explanation quality",
+      "efficiency": "Efficiency",
+      "board": "Board reasoning"
+    },
     "correctlyIdentified": "Correctly Identified",
     "correctlyIdentifiedDesc": "You correctly identified {count} culprit(s).",
     "incorrectAccusations": "Incorrect Accusations",
     "incorrectAccusationsDesc": "You accused {count} innocent person(s).",
     "missedCulprits": "Missed Culprits",
     "missedCulpritsDesc": "You missed {count} actual culprit(s).",
+    "challenge": {
+      "title": "Challenge modifier",
+      "officialScore": "Official score",
+      "challengeScore": "Challenge score",
+      "twistScore": "Twist-adjusted score",
+      "comboScore": "Final combo score",
+      "comboPositive": "+{value} speed bonus",
+      "comboZero": "No speed bonus",
+      "modifierPositive": "+{value} challenge points",
+      "modifierNegative": "-{value} challenge points",
+      "comboTier": {
+        "blitz": "Blitz combo",
+        "rapid": "Rapid combo",
+        "steady": "Steady pace"
+      },
+      "tiers": {
+        "perfect": "Twist completed. Maximum bonus awarded.",
+        "good": "Strong twist progress. Bonus awarded.",
+        "partial": "Partial twist progress. Minor impact.",
+        "missed": "Twist ignored. Penalty applied."
+      }
+    },
+    "progress": {
+      "title": "Campaign progress",
+      "streakCurrent": "Current streak",
+      "streakBest": "Best streak",
+      "metaUnlocked": "Meta missions completed in this run",
+      "metaPending": "No new meta mission unlocked in this run.",
+      "metaClaimedNow": "Auto-claimed in this run: +{xp} XP",
+      "shieldUsed": "Streak shield absorbed a failed run in this submission.",
+      "rankPulse": "Rank pulse",
+      "xpBefore": "XP before run",
+      "xpAfter": "XP after run",
+      "xpGain": "XP gained",
+      "rankUpBadge": "Rank promoted to {to}",
+      "rankUp": "Rank up: {from} -> {to}",
+      "rankHold": "Rank unchanged: {rank}"
+    },
     "feedback": "Feedback",
     "tryAgain": "Try This Case Again",
     "browseOther": "Browse Other Cases"
@@ -167,6 +505,130 @@
     "searching": "Searching",
     "noResults": "No results found for \"{query}\"",
     "tryDifferent": "Try a different search query or adjust filters."
+  },
+  "investigation": {
+    "title": "Investigation Pulse",
+    "activity": "Recent activity",
+    "lastSubmission": "Last score:",
+    "readyToSubmit": "You are ready to submit your report.",
+    "keepInvestigating": "Keep investigating to increase your confidence.",
+    "phases": {
+      "phase1": "Map the context",
+      "phase2": "Build suspect theory",
+      "phase3": "Validate and close"
+    },
+    "goals": {
+      "docs": "Documents reviewed",
+      "searches": "Searches run",
+      "aria": "Questions to ARIA",
+      "evidence": "Evidence pinned",
+      "suspects": "Suspects marked",
+      "board": "Nodes on board"
+    },
+    "missions": {
+      "title": "Active missions",
+      "items": {
+        "first_clue": {
+          "label": "Find first clues",
+          "hint": "Open at least two documents."
+        },
+        "cross_check": {
+          "label": "Cross-check leads",
+          "hint": "Mix search and ARIA questions."
+        },
+        "evidence_chain": {
+          "label": "Build evidence chain",
+          "hint": "Pin four relevant evidence pieces."
+        },
+        "suspect_pressure": {
+          "label": "Pressure suspects",
+          "hint": "Mark at least two suspects."
+        },
+        "board_mastery": {
+          "label": "Master the board",
+          "hint": "Grow your board to six nodes."
+        },
+        "final_report": {
+          "label": "Close the case",
+          "hint": "Submit your first final report."
+        },
+        "score_hunt": {
+          "label": "Sharpen your score",
+          "hint": "Push your submission score to 90+."
+        },
+        "victory_lap": {
+          "label": "Victory lap",
+          "hint": "All missions complete. Try a bolder strategy."
+        }
+      }
+    },
+    "twist": {
+      "title": "Surprise event",
+      "window": "~{minutes}m bonus window",
+      "urgency": {
+        "low": "Low pressure",
+        "medium": "Rising pressure",
+        "high": "High pressure"
+      },
+      "items": {
+        "timeline_gap": {
+          "label": "Timeline gap detected",
+          "hint": "Open new docs to close missing sequence clues."
+        },
+        "crossfire": {
+          "label": "Conflicting statements",
+          "hint": "Run more checks through search and ARIA."
+        },
+        "suspect_heat": {
+          "label": "Suspect changed behavior",
+          "hint": "Re-evaluate and mark another suspect quickly."
+        },
+        "board_shock": {
+          "label": "Network anomaly",
+          "hint": "Expand the board to surface hidden links."
+        },
+        "evidence_rush": {
+          "label": "Evidence leak",
+          "hint": "Pin fresh evidence before leads cool down."
+        },
+        "score_recovery": {
+          "label": "Case reopened",
+          "hint": "Push your score to elite range with a tighter theory."
+        }
+      }
+    },
+    "rewards": {
+      "title": "Unlocked rewards",
+      "unlocked": "{count}/{total} unlocked",
+      "items": {
+        "breakthrough": "Breakthrough",
+        "connector": "Connector",
+        "profiler": "Profiler",
+        "closer": "Closer",
+        "elite": "Elite"
+      }
+    },
+    "ranks": {
+      "title": "Investigator rank",
+      "xpValue": "{xp} XP",
+      "next": "{xp} XP to {rank}",
+      "maxed": "Top rank reached",
+      "recruit": "Recruit",
+      "investigator": "Investigator",
+      "analyst": "Analyst",
+      "detective": "Detective",
+      "mastermind": "Mastermind"
+    },
+    "streak": {
+      "title": "Case streak",
+      "current": "{count} active wins",
+      "best": "Best: {count}",
+      "bonus": "+{xp} XP streak bonus",
+      "metaBonus": "+{xp} XP meta mission bonus",
+      "metaPending": "+{xp} XP pending to claim",
+      "shieldActive": "Streak shield active: {count}",
+      "hint": "Close different cases with 85+ score. Scores below 70 reset the streak."
+    }
   },
   "documents": {
     "types": {
@@ -186,10 +648,16 @@
     },
     "noDocuments": "No documents found",
     "loadError": "Failed to load documents",
+    "retryLoad": "Retry loading",
+    "refreshList": "Refresh list",
     "addToBoard": "Add to board",
     "alreadyOnBoard": "Already on board",
     "addToEvidence": "Add to evidence",
-    "removeFromEvidence": "Remove from evidence"
+    "removeFromEvidence": "Remove from evidence",
+    "selectPromptTitle": "Open a document to inspect evidence",
+    "selectPromptDescription": "Choose a document from the inbox or jump to search/chat to gather new leads.",
+    "openChat": "Open chat",
+    "openSearch": "Open search"
   },
   "entities": {
     "markSuspect": "Mark as suspect",

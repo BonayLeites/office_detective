@@ -43,6 +43,35 @@ export interface Case {
   entity_count: number;
 }
 
+export type ScenarioType =
+  | 'vendor_fraud'
+  | 'data_leak'
+  | 'inventory_manipulation'
+  | 'internal_sabotage'
+  | 'expense_fraud';
+
+export interface CustomCaseCreateRequest {
+  idea: string;
+  scenario_type: ScenarioType;
+  difficulty: number;
+  language: 'en' | 'es';
+  company_name?: string;
+  culprit_name?: string;
+  people_names: string[];
+  generate_embeddings?: boolean;
+  sync_graph?: boolean;
+}
+
+export interface CustomCaseCreateResponse {
+  case: Case;
+  entities_created: number;
+  documents_created: number;
+  chunks_created: number;
+  embeddings_created: number;
+  graph_relationships_created: number;
+  warnings: string[];
+}
+
 export interface Document {
   doc_id: string;
   case_id: string;
@@ -172,6 +201,7 @@ export interface ScoreBreakdown {
   evidence_score: number;
   explanation_score: number;
   efficiency_score: number;
+  board_reasoning_score: number;
 }
 
 export interface SubmissionResponse {
@@ -188,6 +218,25 @@ export interface ProgressResponse {
   hints_remaining: number;
   has_submission: boolean;
   last_score: number | null;
+}
+
+export interface BoardStatePayload {
+  board_items: {
+    id: string;
+    type: 'entity' | 'document';
+    caseId: string;
+    label: string;
+    position: { x: number; y: number };
+    data: Record<string, unknown>;
+  }[];
+  board_edges: {
+    id: string;
+    source: string;
+    target: string;
+    label: string;
+    relationship_type: string;
+  }[];
+  updated_at: string | null;
 }
 
 // Graph Types

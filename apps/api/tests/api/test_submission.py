@@ -122,6 +122,134 @@ async def test_submit_case_report_success(
 
 
 @pytest.mark.asyncio
+async def test_board_state_roundtrip(
+    client: AsyncClient,
+    submission_case: tuple[Case, Entity, Document],
+    auth_headers: dict[str, str],
+) -> None:
+    """Board state can be saved and fetched for an authenticated player."""
+    case, culprit, document = submission_case
+    board_payload = {
+        "board_items": [
+            {
+                "id": f"entity-{culprit.entity_id}",
+                "type": "entity",
+                "caseId": str(case.case_id),
+                "label": culprit.name,
+                "position": {"x": 120, "y": 160},
+                "data": {"entity_id": str(culprit.entity_id)},
+            },
+            {
+                "id": f"document-{document.doc_id}",
+                "type": "document",
+                "caseId": str(case.case_id),
+                "label": document.subject,
+                "position": {"x": 420, "y": 180},
+                "data": {"doc_id": str(document.doc_id)},
+            },
+        ],
+        "board_edges": [
+            {
+                "id": f"manual-entity-{culprit.entity_id}-document-{document.doc_id}-LINKED",
+                "source": f"entity-{culprit.entity_id}",
+                "target": f"document-{document.doc_id}",
+                "label": "LINKED",
+                "relationship_type": "LINKED",
+            }
+        ],
+    }
+
+    put_response = await client.put(
+        f"/api/cases/{case.case_id}/board-state",
+        headers=auth_headers,
+        json=board_payload,
+    )
+    assert put_response.status_code == 200
+    put_data = put_response.json()
+    assert len(put_data["board_items"]) == 2
+    assert len(put_data["board_edges"]) == 1
+
+    get_response = await client.get(
+        f"/api/cases/{case.case_id}/board-state",
+        headers=auth_headers,
+    )
+    assert get_response.status_code == 200
+    get_data = get_response.json()
+    assert len(get_data["board_items"]) == 2
+    assert len(get_data["board_edges"]) == 1
+    assert get_data["board_edges"][0]["id"].startswith("manual-")
+
+
+@pytest.mark.asyncio
+async def test_submit_uses_board_reasoning_score_and_preserves_board_state(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    submission_case: tuple[Case, Entity, Document],
+    auth_headers: dict[str, str],
+) -> None:
+    """Submit response includes board score and keeps board state in player hypotheses."""
+    case, culprit, document = submission_case
+    board_state_response = await client.put(
+        f"/api/cases/{case.case_id}/board-state",
+        headers=auth_headers,
+        json={
+            "board_items": [
+                {
+                    "id": f"entity-{culprit.entity_id}",
+                    "type": "entity",
+                    "caseId": str(case.case_id),
+                    "label": culprit.name,
+                    "position": {"x": 100, "y": 120},
+                    "data": {},
+                },
+                {
+                    "id": f"document-{document.doc_id}",
+                    "type": "document",
+                    "caseId": str(case.case_id),
+                    "label": document.subject,
+                    "position": {"x": 340, "y": 180},
+                    "data": {},
+                },
+            ],
+            "board_edges": [
+                {
+                    "source": f"entity-{culprit.entity_id}",
+                    "target": f"document-{document.doc_id}",
+                    "label": "LINKED",
+                    "relationship_type": "LINKED",
+                }
+            ],
+        },
+    )
+    assert board_state_response.status_code == 200
+
+    submit_response = await client.post(
+        f"/api/cases/{case.case_id}/submit",
+        headers=auth_headers,
+        json={
+            "culprit_ids": [str(culprit.entity_id)],
+            "evidence_ids": [str(document.doc_id)],
+            "explanation": (
+                "The shell company submitted fake invoices and the same person "
+                "self approved those payments."
+            ),
+        },
+    )
+    assert submit_response.status_code == 200
+    submit_data = submit_response.json()
+    assert submit_data["breakdown"]["board_reasoning_score"] > 0
+
+    state_result = await db_session.execute(
+        select(PlayerState).where(PlayerState.case_id == case.case_id)
+    )
+    player_state = state_result.scalar_one()
+    assert isinstance(player_state.hypotheses_json, dict)
+    board_state = player_state.hypotheses_json.get("board_state")
+    assert isinstance(board_state, dict)
+    assert len(board_state.get("board_items", [])) == 2
+
+
+@pytest.mark.asyncio
 async def test_progress_and_hints_persist(
     client: AsyncClient,
     submission_case: tuple[Case, Entity, Document],

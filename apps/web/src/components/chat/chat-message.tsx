@@ -19,12 +19,16 @@ export function ChatMessage({ message, onCitationClick }: ChatMessageProps) {
   const formattedTime = format(new Date(message.timestamp), 'HH:mm');
 
   return (
-    <div className={cn('flex gap-3', isUser ? 'flex-row-reverse' : 'flex-row')}>
+    <div
+      className={cn('animate-reveal-scale flex gap-3', isUser ? 'flex-row-reverse' : 'flex-row')}
+    >
       {/* Avatar */}
       <div
         className={cn(
-          'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full',
-          isUser ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+          'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ring-1',
+          isUser
+            ? 'bg-primary text-primary-foreground ring-primary/40'
+            : 'bg-muted text-muted-foreground ring-border/70',
         )}
       >
         {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
@@ -34,8 +38,10 @@ export function ChatMessage({ message, onCitationClick }: ChatMessageProps) {
       <div className={cn('max-w-[80%] space-y-2', isUser ? 'items-end' : 'items-start')}>
         <div
           className={cn(
-            'rounded-lg px-4 py-2',
-            isUser ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground',
+            'surface-lift rounded-2xl px-4 py-2 shadow-[0_12px_24px_-20px_rgba(10,23,38,0.8)]',
+            isUser
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-card text-foreground border-border/80 border',
           )}
         >
           <p className="whitespace-pre-wrap text-sm">{message.content}</p>

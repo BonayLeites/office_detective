@@ -1,7 +1,7 @@
 'use client';
 
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { FileText, Pin } from 'lucide-react';
+import { FileText, Pin, Trash2 } from 'lucide-react';
 
 import type { Document } from '@/types';
 
@@ -24,12 +24,15 @@ export function DocumentNode({ data, selected }: DocumentNodeProps) {
 
   const pinItem = useGameStore(state => state.pinItem);
   const unpinItem = useGameStore(state => state.unpinItem);
-  const pinned = useGameStore(state => state.pinnedItems.some(p => p.id === document.doc_id));
+  const removeFromBoard = useGameStore(state => state.removeFromBoard);
+  const pinned = useGameStore(state =>
+    state.pinnedItems.some(p => p.caseId === caseId && p.id === document.doc_id),
+  );
 
   const handlePin = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (pinned) {
-      unpinItem(document.doc_id);
+      unpinItem(caseId, document.doc_id);
     } else {
       pinItem({
         id: document.doc_id,
@@ -39,6 +42,11 @@ export function DocumentNode({ data, selected }: DocumentNodeProps) {
         data: document as unknown as Record<string, unknown>,
       });
     }
+  };
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    removeFromBoard(caseId, `document-${document.doc_id}`);
   };
 
   return (
@@ -63,6 +71,13 @@ export function DocumentNode({ data, selected }: DocumentNodeProps) {
           title={pinned ? 'Quitar de evidencia' : 'Agregar a evidencia'}
         >
           <Pin className={cn('h-3 w-3', pinned && 'fill-current')} />
+        </button>
+        <button
+          onClick={handleRemove}
+          className="hover:border-destructive hover:text-destructive absolute -left-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-400 opacity-0 shadow-sm transition-all group-hover:opacity-100 dark:border-gray-600 dark:bg-gray-800"
+          title="Quitar del tablero"
+        >
+          <Trash2 className="h-3 w-3" />
         </button>
 
         <div className="mb-1 flex items-center gap-1">

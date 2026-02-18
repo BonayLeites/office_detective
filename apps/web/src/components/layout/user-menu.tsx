@@ -44,12 +44,14 @@ export function UserMenu() {
     return (
       <div className="flex items-center gap-2">
         <Link href="/login">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="rounded-lg">
             {t('login')}
           </Button>
         </Link>
         <Link href="/register">
-          <Button size="sm">{t('register')}</Button>
+          <Button size="sm" className="rounded-lg">
+            {t('register')}
+          </Button>
         </Link>
       </div>
     );
@@ -62,7 +64,7 @@ export function UserMenu() {
         onClick={() => {
           setIsOpen(!isOpen);
         }}
-        className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium"
+        className="bg-primary text-primary-foreground ring-primary/25 flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold shadow-[0_12px_25px_-20px_hsl(var(--primary)/0.95)] ring-1 transition-transform duration-200 hover:-translate-y-0.5"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
@@ -70,8 +72,8 @@ export function UserMenu() {
       </button>
 
       {isOpen && (
-        <div className="bg-background absolute right-0 mt-2 w-56 rounded-md border shadow-lg">
-          <div className="border-b p-3">
+        <div className="bg-card/95 border-border/80 absolute right-0 mt-2 w-60 rounded-xl border shadow-[0_20px_40px_-28px_rgba(10,23,38,0.95)] backdrop-blur">
+          <div className="border-border/70 border-b p-3">
             <p className="truncate text-sm font-medium">{user.name}</p>
             <p className="text-muted-foreground truncate text-xs">{user.email}</p>
           </div>
@@ -82,14 +84,14 @@ export function UserMenu() {
                 setIsOpen(false);
               }}
               className={cn(
-                'hover:bg-accent block w-full rounded-sm px-3 py-2 text-left text-sm transition-colors',
+                'hover:bg-accent/35 block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors',
               )}
             >
               {t('myCases')}
             </Link>
             <button
               onClick={handleLogout}
-              className="hover:bg-accent text-destructive block w-full rounded-sm px-3 py-2 text-left text-sm transition-colors"
+              className="hover:bg-accent/35 text-destructive block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors"
             >
               {t('logout')}
             </button>

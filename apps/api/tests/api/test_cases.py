@@ -4,10 +4,10 @@ import uuid
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import Case, Entity, EntityType, ScenarioType
+from src.models import Case, Document, Entity, EntityType, ScenarioType
 
 
 @pytest.fixture
@@ -210,6 +210,58 @@ async def test_create_case(client: AsyncClient, db_session: AsyncSession) -> Non
     created_case = result.scalar_one_or_none()
     assert created_case is not None
     assert created_case.title == "New Created Case"
+
+
+@pytest.mark.asyncio
+async def test_create_custom_case(client: AsyncClient, db_session: AsyncSession) -> None:
+    """POST /api/cases/custom builds a playable case from guided user inputs."""
+    response = await client.post(
+        "/api/cases/custom",
+        json={
+            "idea": (
+                "Finance approved a supplier very quickly and invoice payments started "
+                "before normal onboarding checks."
+            ),
+            "scenario_type": "vendor_fraud",
+            "difficulty": 3,
+            "language": "en",
+            "company_name": "Northline Ops",
+            "culprit_name": "Maya Reed",
+            "people_names": ["Ethan Cole", "Sofia Turner", "Liam Brooks"],
+            "generate_embeddings": False,
+            "sync_graph": False,
+        },
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert "case" in data
+    assert data["case"]["scenario_type"] == "vendor_fraud"
+    assert data["entities_created"] >= 6
+    assert data["documents_created"] >= 5
+
+    case_id = uuid.UUID(data["case"]["case_id"])
+    case_result = await db_session.execute(select(Case).where(Case.case_id == case_id))
+    created_case = case_result.scalar_one_or_none()
+    assert created_case is not None
+    assert isinstance(created_case.ground_truth_json, dict)
+
+    culprits = created_case.ground_truth_json.get("culprits", [])
+    assert isinstance(culprits, list)
+    assert len(culprits) == 1
+    culprit_id = uuid.UUID(culprits[0]["entity_id"])
+
+    culprit_entity_result = await db_session.execute(
+        select(Entity).where(Entity.case_id == case_id, Entity.entity_id == culprit_id)
+    )
+    culprit_entity = culprit_entity_result.scalar_one_or_none()
+    assert culprit_entity is not None
+    assert culprit_entity.name == "Maya Reed"
+
+    doc_count_result = await db_session.execute(
+        select(func.count(Document.doc_id)).where(Document.case_id == case_id)
+    )
+    assert doc_count_result.scalar() == data["documents_created"]
 
 
 @pytest.mark.asyncio

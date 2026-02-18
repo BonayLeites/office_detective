@@ -1,5 +1,6 @@
 """Schemas for player progress and case submissions."""
 
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -20,6 +21,7 @@ class ScoreBreakdown(BaseModel):
     evidence_score: int
     explanation_score: int
     efficiency_score: int
+    board_reasoning_score: int = 0
 
 
 class SubmissionResponse(BaseModel):
@@ -40,3 +42,18 @@ class ProgressResponse(BaseModel):
     hints_remaining: int
     has_submission: bool
     last_score: int | None = None
+
+
+class BoardStateRequest(BaseModel):
+    """Request payload for persisting board state."""
+
+    board_items: list[dict[str, Any]] = Field(default_factory=list)
+    board_edges: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class BoardStateResponse(BaseModel):
+    """Persisted board state for a player in a case."""
+
+    board_items: list[dict[str, Any]] = Field(default_factory=list)
+    board_edges: list[dict[str, Any]] = Field(default_factory=list)
+    updated_at: str | None = None

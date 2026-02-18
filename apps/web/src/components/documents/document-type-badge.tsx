@@ -10,31 +10,31 @@ interface DocumentTypeBadgeProps {
 const typeConfig: Record<DocType, { label: string; className: string }> = {
   email: {
     label: 'Email',
-    className: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    className: 'bg-blue-500/15 text-blue-800 border-blue-500/30',
   },
   chat: {
     label: 'Chat',
-    className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    className: 'bg-emerald-500/15 text-emerald-800 border-emerald-500/30',
   },
   ticket: {
     label: 'Ticket',
-    className: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+    className: 'bg-cyan-500/15 text-cyan-800 border-cyan-500/30',
   },
   invoice: {
     label: 'Invoice',
-    className: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+    className: 'bg-amber-500/15 text-amber-800 border-amber-500/30',
   },
   csv: {
     label: 'CSV',
-    className: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+    className: 'bg-slate-500/15 text-slate-800 border-slate-500/30',
   },
   note: {
     label: 'Note',
-    className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+    className: 'bg-yellow-500/15 text-yellow-800 border-yellow-500/30',
   },
   report: {
     label: 'Report',
-    className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+    className: 'bg-rose-500/15 text-rose-800 border-rose-500/30',
   },
 };
 
@@ -44,7 +44,7 @@ export function DocumentTypeBadge({ docType, className }: DocumentTypeBadgeProps
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+        'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium',
         config.className,
         className,
       )}

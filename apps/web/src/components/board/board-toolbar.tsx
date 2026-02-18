@@ -6,6 +6,7 @@ import {
   Network,
   Pin,
   Plus,
+  Route,
   RotateCcw,
   Sparkles,
   Star,
@@ -23,33 +24,44 @@ interface BoardToolbarProps {
   caseId: string;
   onLoadHubs: () => Promise<void>;
   onSyncGraph: () => Promise<void>;
+  onTraceSuspects: () => Promise<void>;
   onClearBoard: () => void;
   onAutoLayout: () => void;
   onSearch: (query: string) => void;
+  connectionType: string;
+  onConnectionTypeChange: (type: string) => void;
   isLoading: boolean;
+  suspectCount: number;
   nodeCount: number;
+  edgeCount: number;
+  manualEdgeCount: number;
 }
 
 export function BoardToolbar({
   caseId,
   onLoadHubs,
   onSyncGraph,
+  onTraceSuspects,
   onClearBoard,
   onAutoLayout,
   onSearch,
+  connectionType,
+  onConnectionTypeChange,
   isLoading,
+  suspectCount,
   nodeCount,
+  edgeCount,
+  manualEdgeCount,
 }: BoardToolbarProps) {
   const t = useTranslations('board');
   const tCommon = useTranslations('common');
   const [searchQuery, setSearchQuery] = useState('');
   const pinnedItems = useGameStore(state => state.pinnedItems);
-  const suspectedEntities = useGameStore(state => state.suspectedEntities);
-  const currentCaseId = useGameStore(state => state.currentCaseId);
+  const suspectedEntities = useGameStore(state => state.getSuspectedEntities(caseId));
 
   // Filter items for current case
   const casePinnedCount = pinnedItems.filter(p => p.caseId === caseId).length;
-  const caseSuspectedCount = currentCaseId === caseId ? suspectedEntities.length : 0;
+  const caseSuspectedCount = suspectedEntities.length;
 
   const canSubmit = casePinnedCount > 0 && caseSuspectedCount > 0;
 
@@ -61,9 +73,9 @@ export function BoardToolbar({
   };
 
   return (
-    <div className="border-border bg-background/95 flex items-center gap-2 border-b px-4 py-2 backdrop-blur">
+    <div className="ink-divider paper-panel border-border/80 flex flex-col gap-2 border-b px-3 py-2 backdrop-blur md:flex-row md:items-center md:px-4">
       {/* Search to add */}
-      <div className="flex flex-1 gap-2">
+      <div className="flex w-full gap-2 md:flex-1">
         <Input
           placeholder={t('searchPlaceholder')}
           value={searchQuery}
@@ -73,21 +85,27 @@ export function BoardToolbar({
           onKeyDown={e => {
             if (e.key === 'Enter') handleSearch();
           }}
-          className="max-w-xs"
+          className="w-full rounded-lg md:max-w-xs"
         />
-        <Button variant="outline" size="icon" onClick={handleSearch} disabled={!searchQuery.trim()}>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleSearch}
+          disabled={!searchQuery.trim()}
+          className="rounded-lg"
+        >
           <Plus className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1">
+      <div className="no-scrollbar flex w-full items-center gap-1 overflow-x-auto pb-1 md:w-auto md:overflow-visible md:pb-0">
         <Button
           variant="outline"
           size="sm"
           onClick={onSyncGraph}
           disabled={isLoading}
-          className="gap-2"
+          className="gap-2 whitespace-nowrap"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -102,7 +120,7 @@ export function BoardToolbar({
           size="sm"
           onClick={onLoadHubs}
           disabled={isLoading}
-          className="gap-2"
+          className="gap-2 whitespace-nowrap"
         >
           <Sparkles className="h-4 w-4" />
           {t('loadHubs')}
@@ -111,9 +129,21 @@ export function BoardToolbar({
         <Button
           variant="outline"
           size="sm"
+          onClick={onTraceSuspects}
+          disabled={isLoading || suspectCount < 2}
+          className="gap-2 whitespace-nowrap"
+          title={suspectCount < 2 ? t('needTwoSuspects') : t('tracePath')}
+        >
+          <Route className="h-4 w-4" />
+          {t('tracePath')}
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
           onClick={onAutoLayout}
           disabled={nodeCount === 0}
-          className="gap-2"
+          className="gap-2 whitespace-nowrap"
         >
           <RotateCcw className="h-4 w-4" />
           {t('autoLayout')}
@@ -124,45 +154,67 @@ export function BoardToolbar({
           size="sm"
           onClick={onClearBoard}
           disabled={nodeCount === 0}
-          className="text-destructive hover:text-destructive gap-2"
+          className="text-destructive hover:text-destructive gap-2 whitespace-nowrap"
         >
           <Trash2 className="h-4 w-4" />
           {tCommon('clear')}
         </Button>
-      </div>
 
-      {/* Divider */}
-      <div className="bg-border mx-2 h-6 w-px" />
-
-      {/* Case status counters */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1.5 text-sm">
-          <Pin className="h-4 w-4 text-blue-500" />
-          <span className="font-medium">{casePinnedCount}</span>
-          <span className="text-muted-foreground">{t('evidence')}</span>
-        </div>
-        <div className="flex items-center gap-1.5 text-sm">
-          <Star className="h-4 w-4 text-yellow-500" />
-          <span className="font-medium">{caseSuspectedCount}</span>
-          <span className="text-muted-foreground">{t('suspects')}</span>
-        </div>
-      </div>
-
-      {/* Submit button */}
-      {canSubmit && (
-        <Link
-          href={`/cases/${caseId}/submit`}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium"
+        <select
+          value={connectionType}
+          onChange={event => {
+            onConnectionTypeChange(event.target.value);
+          }}
+          className="bg-background border-border/80 h-9 rounded-md border px-2 text-xs md:text-sm"
+          title="Connection type"
         >
-          {t('goToSubmit')}
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      )}
+          <option value="LINKED">Link</option>
+          <option value="SENT">Sent</option>
+          <option value="MENTIONS">Mentions</option>
+          <option value="APPROVED">Approved</option>
+          <option value="PAID_TO">Paid To</option>
+          <option value="WORKS_AT">Works At</option>
+        </select>
+      </div>
 
-      {/* Node count */}
-      <span className="text-muted-foreground ml-auto text-sm">
-        {t('nodes', { count: nodeCount })}
-      </span>
+      <div className="flex w-full items-center gap-3 md:ml-auto md:w-auto">
+        <div className="bg-border/80 hidden h-6 w-px md:block" />
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-xs md:text-sm">
+            <Pin className="h-4 w-4 text-blue-500" />
+            <span className="font-medium">{casePinnedCount}</span>
+            <span className="text-muted-foreground">{t('evidence')}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs md:text-sm">
+            <Star className="h-4 w-4 text-yellow-500" />
+            <span className="font-medium">{caseSuspectedCount}</span>
+            <span className="text-muted-foreground">{t('suspects')}</span>
+          </div>
+        </div>
+
+        {canSubmit && (
+          <Link
+            href={`/cases/${caseId}/submit`}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 ml-auto inline-flex h-8 items-center justify-center gap-2 rounded-md px-3 text-xs font-medium md:ml-0 md:h-9 md:text-sm"
+          >
+            {t('goToSubmit')}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        )}
+
+        <span className="text-muted-foreground ml-auto whitespace-nowrap text-xs md:text-sm">
+          {t('nodes', { count: nodeCount })}
+        </span>
+        <span className="text-muted-foreground whitespace-nowrap text-xs md:text-sm">
+          {t('links', { count: edgeCount })}
+        </span>
+        {manualEdgeCount > 0 && (
+          <span className="text-muted-foreground whitespace-nowrap text-xs md:text-sm">
+            {t('manualLinks', { count: manualEdgeCount })}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

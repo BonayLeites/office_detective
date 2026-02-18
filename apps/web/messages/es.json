@@ -41,9 +41,136 @@
     "title": "Casos de Investigacion",
     "subtitle": "Selecciona un caso para comenzar tu investigacion",
     "noCases": "No hay casos disponibles. Inicia el servidor backend y crea tu primer caso.",
+    "createCase": "Crear Caso Personalizado",
+    "guidedDemo": "Jugar Demo Guiada",
+    "guidedDemoDescription": "Si es tu primera vez, genera un caso tutorial jugable en un clic.",
+    "launchingDemo": "Preparando demo...",
+    "guidedDemoError": "No se pudo crear la demo guiada en este momento.",
     "difficulty": "Dificultad",
     "documents": "{count} documentos",
-    "entities": "{count} entidades"
+    "entities": "{count} entidades",
+    "streak": {
+      "title": "Tablero de operaciones",
+      "current": "Racha de {count} casos",
+      "best": "Mejor racha: {count}",
+      "metaBonus": "{xp} XP desbloqueados",
+      "metaClaimed": "{xp} XP reclamados",
+      "metaPending": "{xp} XP por reclamar",
+      "shieldActive": "{count} escudo de racha activo",
+      "history": "Corridas recientes",
+      "emptyHistory": "Aun no hay corridas resueltas. Cierra tu primer caso para iniciar racha."
+    },
+    "metaMissions": {
+      "period": {
+        "daily": "Mision diaria",
+        "weekly": "Mision semanal",
+        "monthly": "Mision mensual"
+      },
+      "items": {
+        "daily_closer": {
+          "label": "Cierre diario",
+          "hint": "Resuelve 2 casos diferentes con 80+ puntos hoy."
+        },
+        "daily_elite": {
+          "label": "Golpe elite diario",
+          "hint": "Consigue 92+ puntos en cualquier caso hoy."
+        },
+        "weekly_sprint": {
+          "label": "Sprint semanal",
+          "hint": "Completa 6 envios con 75+ puntos esta semana."
+        },
+        "weekly_variety": {
+          "label": "Variedad semanal",
+          "hint": "Resuelve 4 casos diferentes con 80+ puntos esta semana."
+        },
+        "weekly_clean_chain": {
+          "label": "Cadena limpia",
+          "hint": "Completa 3 corridas consecutivas con 80+ sin usar pistas esta semana."
+        },
+        "monthly_master": {
+          "label": "Mente maestra mensual",
+          "hint": "Completa 12 corridas con 85+ puntos este mes."
+        }
+      },
+      "actions": {
+        "claim": "Reclamar recompensa",
+        "claimed": "Recompensa reclamada",
+        "progress": "En progreso"
+      }
+    }
+  },
+  "caseCreator": {
+    "eyebrow": "Studio HITL",
+    "title": "Crea Tu Propio Caso",
+    "subtitle": "Describe tu escenario y responde preguntas guiadas. El sistema genera entidades, documentos y un flujo jugable de investigacion.",
+    "backToCases": "Volver a casos",
+    "steps": {
+      "idea": "Paso 1: Idea del caso",
+      "setup": "Paso 2: Configuracion",
+      "people": "Paso 3: Personas",
+      "review": "Paso 4: Revision"
+    },
+    "questions": {
+      "ideaTitle": "Que paso en la oficina?",
+      "ideaDescription": "Escribe el contexto de la historia que quieres investigar. Indica que te parece sospechoso.",
+      "setupTitle": "Define el marco del escenario",
+      "setupDescription": "Elige empresa, tipo de caso y complejidad general.",
+      "peopleTitle": "Quienes participan?",
+      "peopleDescription": "Indica a la persona sospechosa y agrega colaboradores, testigos o revisores.",
+      "reviewTitle": "Revision final",
+      "reviewDescription": "Confirma la configuracion y genera el caso."
+    },
+    "fields": {
+      "ideaPlaceholder": "Ejemplo: Compras aprobo un proveedor demasiado rapido y empezaron pagos antes de completar el alta...",
+      "company": "Nombre de la empresa",
+      "companyPlaceholder": "Grupo Oficina Norte",
+      "scenario": "Tipo de escenario",
+      "difficulty": "Dificultad",
+      "difficultyValue": "Nivel actual: {value}/5",
+      "culprit": "Nombre del sospechoso principal",
+      "culpritPlaceholder": "Persona que quieres como posible culpable",
+      "people": "Personas adicionales (separadas por coma o linea)",
+      "peoplePlaceholder": "Ana Lopez, Diego Ramos, Lider de Finanzas..."
+    },
+    "helpers": {
+      "ideaMin": "Minimo 12 caracteres",
+      "peopleFormat": "Agrega al menos dos nombres extra para dar contexto a la investigacion."
+    },
+    "summary": {
+      "company": "Empresa",
+      "scenario": "Escenario",
+      "difficulty": "Dificultad",
+      "culprit": "Sospechoso principal",
+      "peopleCount": "Personas agregadas"
+    },
+    "scenarios": {
+      "vendor_fraud": "Fraude de proveedor",
+      "data_leak": "Fuga de datos",
+      "inventory_manipulation": "Manipulacion de inventario",
+      "internal_sabotage": "Sabotaje interno",
+      "expense_fraud": "Fraude de gastos"
+    },
+    "actions": {
+      "back": "Atras",
+      "next": "Siguiente",
+      "create": "Generar caso",
+      "creating": "Generando caso..."
+    },
+    "hitl": {
+      "title": "Prompts del sistema",
+      "subtitle": "Validaciones human-in-the-loop",
+      "prompts": {
+        "ideaLabel": "Prompt 1",
+        "ideaText": "Cual es la historia sospechosa de oficina que quieres simular?",
+        "peopleLabel": "Prompt 2",
+        "peopleText": "Que nombres reales o ficticios deben aparecer en evidencia y conversaciones?",
+        "evidenceLabel": "Prompt 3",
+        "evidenceText": "Que tan dificil debe ser y que patron de fraude quieres?"
+      }
+    },
+    "errors": {
+      "generic": "No se pudo crear el caso personalizado. Intenta de nuevo."
+    }
   },
   "caseDetail": {
     "notFound": "Caso No Encontrado",
@@ -59,11 +186,41 @@
       "askAria": "Pide ayuda a ARIA para analizar documentos y encontrar conexiones",
       "buildBoard": "Construye tu tablero de evidencia marcando documentos y entidades clave",
       "submit": "Presenta tus hallazgos cuando hayas identificado al culpable"
+    },
+    "tutorial": {
+      "title": "Sprint guiado",
+      "subtitle": "Sigue estos 4 pasos para completar tu primer caso en minutos.",
+      "steps": {
+        "inbox": {
+          "title": "Abre la bandeja",
+          "description": "Lee 2-3 documentos e identifica nombres, aprobaciones o pagos sospechosos.",
+          "cta": "Revisar evidencia"
+        },
+        "chat": {
+          "title": "Pregunta a ARIA",
+          "description": "Pregunta quién aprobó transacciones inusuales y pide respuestas con citas.",
+          "cta": "Abrir chat"
+        },
+        "board": {
+          "title": "Mapa del tablero",
+          "description": "Fija evidencia y marca al menos un sospechoso para construir tu hipótesis.",
+          "cta": "Abrir tablero"
+        },
+        "submit": {
+          "title": "Envía tu informe",
+          "description": "Elige culpables, adjunta evidencia y explica tu razonamiento.",
+          "cta": "Enviar caso"
+        }
+      }
     }
   },
   "chat": {
     "title": "Asistente ARIA",
     "thinking": "ARIA esta pensando...",
+    "errorTitle": "No se pudo enviar el mensaje",
+    "retry": "Reintentar",
+    "dismiss": "Cerrar",
+    "quickActionsTitle": "Siguiente jugada sugerida",
     "emptyTitle": "Inicia una conversacion",
     "emptyDescription": "Pregunta a ARIA sobre el caso. Puedes consultar sobre documentos, entidades, relaciones o pedir ayuda para encontrar evidencia.",
     "citationNote": "ARIA citara documentos relevantes en sus respuestas.",
@@ -87,16 +244,96 @@
     "searchPlaceholder": "Buscar entidades para agregar...",
     "syncGraph": "Sincronizar Grafo",
     "loadHubs": "Cargar Nodos Clave",
+    "tracePath": "Trazar Sospechosos",
+    "needTwoSuspects": "Marca al menos 2 sospechosos para trazar una ruta",
     "autoLayout": "Auto Ordenar",
     "evidence": "evidencia",
     "suspects": "sospechosos",
     "goToSubmit": "Ir a Enviar",
     "nodes": "{count} nodos",
+    "links": "{count} enlaces",
+    "manualLinks": "{count} manuales",
     "emptyTitle": "Tu tablero de investigacion",
     "emptyDescription": "Busca personas o documentos para comenzar. Marca sospechosos y recolecta evidencia.",
     "trySearching": "Intenta buscar:",
     "viewInbox": "Ver Bandeja",
     "askAria": "Pregunta a ARIA",
+    "onboarding": {
+      "title": "Primeros cinco minutos",
+      "description": "Completa estas acciones rapidas para construir una teoria inicial util del caso.",
+      "dismiss": "Ocultar onboarding",
+      "progress": "{done}/{total} pasos completados",
+      "steps": {
+        "inbox": {
+          "title": "Escanea evidencia",
+          "description": "Abre al menos un documento e identifica nombres, fechas o anomalias clave.",
+          "cta": "Abrir bandeja"
+        },
+        "chat": {
+          "title": "Interroga a ARIA",
+          "description": "Haz una pregunta puntual a ARIA para descubrir conexiones o patrones sospechosos.",
+          "cta": "Abrir chat"
+        },
+        "board": {
+          "title": "Sembrar tablero",
+          "description": "Carga nodos clave para iniciar el tablero con anclas de investigacion utiles.",
+          "cta": "Cargar nodos ahora"
+        }
+      }
+    },
+    "feedback": {
+      "graphFailed": "Fallo la solicitud del grafo. Intenta de nuevo.",
+      "syncFailed": "No se pudo sincronizar el grafo ahora.",
+      "hubsFailed": "No se pudieron cargar nodos clave ahora.",
+      "traceFailed": "No se pudo trazar sospechosos ahora.",
+      "syncSuccess": "Grafo sincronizado: {nodes} nodos y {links} enlaces listos.",
+      "hubsLoaded": "Se cargaron {count} nodos clave en el tablero.",
+      "hubsEmpty": "Aun no hay nodos clave. Sincroniza el grafo o agrega entidades primero.",
+      "traceNoPath": "Aun no hay una ruta clara entre tus principales sospechosos.",
+      "traceFound": "Ruta de sospechosos cargada con {count} entidades.",
+      "searchNoMatches": "No se encontraron coincidencias en el tablero para \"{query}\".",
+      "searchAdded": "Se agregaron {entities} entidades y {documents} documentos al tablero.",
+      "focusedNode": "Foco aplicado al nodo seleccionado.",
+      "expandingNode": "Expandiendo conexiones del nodo...",
+      "persistenceUnavailable": "El guardado automatico del tablero no esta disponible en esta sesion.",
+      "retry": "Reintentar accion",
+      "dismiss": "Cerrar aviso"
+    },
+    "quickActions": {
+      "entityDetails": "Detalle de entidad",
+      "documentDetails": "Detalle de documento",
+      "focusNode": "Foco",
+      "expandConnections": "Expandir",
+      "openInInbox": "Bandeja",
+      "viewInInbox": "Ver en bandeja",
+      "markSuspect": "Marcar sospechoso",
+      "unmarkSuspect": "Sospechoso",
+      "pinEvidence": "Fijar evidencia",
+      "unpinEvidence": "Fijado",
+      "removeFromBoard": "Quitar del tablero",
+      "confidence": "Confianza",
+      "currentLevel": "Nivel actual",
+      "levelVeryHigh": "Muy alta",
+      "levelHigh": "Alta",
+      "levelMedium": "Media",
+      "levelLow": "Baja",
+      "attributes": "Atributos",
+      "timestamp": "Marca temporal",
+      "content": "Contenido"
+    },
+    "mobileLayers": {
+      "map": "Mapa",
+      "details": "Detalle",
+      "evidence": "Evidencia",
+      "selectNodePrompt": "Selecciona un nodo del mapa para abrir su detalle.",
+      "noSelectionTitle": "No hay nodo seleccionado",
+      "noSelectionDescription": "Toca una persona o documento del mapa para inspeccionarlo.",
+      "backToMap": "Volver al mapa",
+      "snapshotTitle": "Resumen de investigacion",
+      "snapshotDescription": "Revisa sospechosos y evidencia fijada antes de enviar.",
+      "emptyTitle": "Aun no has reunido evidencia",
+      "emptyDescription": "Fija documentos o entidades y marca sospechosos desde el tablero."
+    },
     "relationships": {
       "SENT": "Envio",
       "MENTIONS": "Menciona",
@@ -127,6 +364,7 @@
     "culprit": {
       "title": "1. Identifica al Culpable",
       "description": "Selecciona la(s) persona(s) responsable(s) de la actividad fraudulenta.",
+      "prioritizedByConfidence": "Los sospechosos se ordenan segun el nivel de confianza marcado en el tablero.",
       "empty": "No se encontraron entidades de personas. Asegurate de que el caso se haya cargado correctamente."
     },
     "evidence": {
@@ -144,6 +382,61 @@
       "needCulprit": "Selecciona al menos un culpable.",
       "needEvidence": "Selecciona al menos una evidencia.",
       "needExplanation": "La explicacion debe tener al menos 20 caracteres."
+    },
+    "readiness": {
+      "label": "Preparacion del caso",
+      "hint": "Refuerza culpables, evidencia y explicacion antes del envio final."
+    },
+    "twist": {
+      "title": "Modificador de desafio en vivo",
+      "modifierPositive": "+{value} puntos de desafio",
+      "modifierNegative": "-{value} puntos de desafio",
+      "status": "{current}/{target} progreso · ventana ~{minutes}m",
+      "items": {
+        "timeline_gap": {
+          "label": "Hueco en la linea temporal",
+          "hint": "Abre nuevos documentos para cerrar secuencias faltantes."
+        },
+        "crossfire": {
+          "label": "Declaraciones en conflicto",
+          "hint": "Haz mas verificaciones con busqueda y ARIA."
+        },
+        "suspect_heat": {
+          "label": "Sospechoso cambia patron",
+          "hint": "Reevalua y marca otro sospechoso rapido."
+        },
+        "board_shock": {
+          "label": "Anomalia de red",
+          "hint": "Expande el tablero para revelar enlaces ocultos."
+        },
+        "evidence_rush": {
+          "label": "Fuga de evidencia",
+          "hint": "Fija evidencia fresca antes de que se enfrien las pistas."
+        },
+        "score_recovery": {
+          "label": "Caso reabierto",
+          "hint": "Lleva tu puntuacion a nivel elite con una teoria mas solida."
+        }
+      }
+    },
+    "combo": {
+      "title": "Combo de velocidad",
+      "modifierPositive": "+{value} puntos de velocidad",
+      "modifierZero": "Sin bonus de combo",
+      "tiers": {
+        "blitz": {
+          "label": "Corrida relampago",
+          "hint": "Ejecucion muy rapida sin usar pistas."
+        },
+        "rapid": {
+          "label": "Corrida rapida",
+          "hint": "Buen ritmo y uso controlado de pistas."
+        },
+        "steady": {
+          "label": "Corrida estable",
+          "hint": "Investigacion solida. Acelera y usa menos pistas para mejorar."
+        }
+      }
     }
   },
   "results": {
@@ -152,12 +445,57 @@
     "notQuite": "No del todo...",
     "score": "Puntuaste {score} / {maxScore} puntos ({percentage}%)",
     "breakdown": "Desglose de Resultados",
+    "scoreComponents": {
+      "culprit": "Precision de culpables",
+      "evidence": "Solidez de evidencia",
+      "explanation": "Calidad de explicacion",
+      "efficiency": "Eficiencia",
+      "board": "Razonamiento en tablero"
+    },
     "correctlyIdentified": "Identificados Correctamente",
     "correctlyIdentifiedDesc": "Identificaste correctamente {count} culpable(s).",
     "incorrectAccusations": "Acusaciones Incorrectas",
     "incorrectAccusationsDesc": "Acusaste a {count} persona(s) inocente(s).",
     "missedCulprits": "Culpables No Identificados",
     "missedCulpritsDesc": "No identificaste a {count} culpable(s) real(es).",
+    "challenge": {
+      "title": "Modificador de desafio",
+      "officialScore": "Puntuacion oficial",
+      "challengeScore": "Puntuacion de desafio",
+      "twistScore": "Puntuacion ajustada por twist",
+      "comboScore": "Puntuacion final con combo",
+      "comboPositive": "+{value} bonus de velocidad",
+      "comboZero": "Sin bonus de velocidad",
+      "modifierPositive": "+{value} puntos de desafio",
+      "modifierNegative": "-{value} puntos de desafio",
+      "comboTier": {
+        "blitz": "Combo relampago",
+        "rapid": "Combo rapido",
+        "steady": "Ritmo estable"
+      },
+      "tiers": {
+        "perfect": "Twist completado. Bonus maximo otorgado.",
+        "good": "Buen progreso del twist. Bonus otorgado.",
+        "partial": "Progreso parcial del twist. Impacto menor.",
+        "missed": "Twist ignorado. Penalizacion aplicada."
+      }
+    },
+    "progress": {
+      "title": "Progreso de campana",
+      "streakCurrent": "Racha actual",
+      "streakBest": "Mejor racha",
+      "metaUnlocked": "Misiones meta completadas en esta corrida",
+      "metaPending": "No desbloqueaste nuevas misiones meta en esta corrida.",
+      "metaClaimedNow": "Reclamado automaticamente en esta corrida: +{xp} XP",
+      "shieldUsed": "El escudo de racha absorbio una corrida fallida en este envio.",
+      "rankPulse": "Pulso de rango",
+      "xpBefore": "XP antes de la corrida",
+      "xpAfter": "XP despues de la corrida",
+      "xpGain": "XP ganada",
+      "rankUpBadge": "Rango promovido a {to}",
+      "rankUp": "Subida de rango: {from} -> {to}",
+      "rankHold": "Rango sin cambios: {rank}"
+    },
     "feedback": "Retroalimentacion",
     "tryAgain": "Intentar Este Caso de Nuevo",
     "browseOther": "Ver Otros Casos"
@@ -167,6 +505,130 @@
     "searching": "Buscando",
     "noResults": "No se encontraron resultados para \"{query}\"",
     "tryDifferent": "Intenta una consulta diferente o ajusta los filtros."
+  },
+  "investigation": {
+    "title": "Pulso de la Investigacion",
+    "activity": "Actividad reciente",
+    "lastSubmission": "Ultima puntuacion:",
+    "readyToSubmit": "Ya puedes enviar tu informe final.",
+    "keepInvestigating": "Sigue investigando para aumentar tu confianza.",
+    "phases": {
+      "phase1": "Mapear el contexto",
+      "phase2": "Construir teoria de sospechosos",
+      "phase3": "Validar y cerrar"
+    },
+    "goals": {
+      "docs": "Documentos revisados",
+      "searches": "Busquedas realizadas",
+      "aria": "Preguntas a ARIA",
+      "evidence": "Evidencias fijadas",
+      "suspects": "Sospechosos marcados",
+      "board": "Nodos en tablero"
+    },
+    "missions": {
+      "title": "Misiones activas",
+      "items": {
+        "first_clue": {
+          "label": "Encontrar primeras pistas",
+          "hint": "Abre al menos dos documentos."
+        },
+        "cross_check": {
+          "label": "Cruzar indicios",
+          "hint": "Combina busqueda y preguntas a ARIA."
+        },
+        "evidence_chain": {
+          "label": "Construir cadena de evidencia",
+          "hint": "Fija cuatro piezas de evidencia relevantes."
+        },
+        "suspect_pressure": {
+          "label": "Presionar sospechosos",
+          "hint": "Marca al menos dos sospechosos."
+        },
+        "board_mastery": {
+          "label": "Dominar el tablero",
+          "hint": "Lleva tu tablero a seis nodos."
+        },
+        "final_report": {
+          "label": "Cerrar el caso",
+          "hint": "Envia tu primer informe final."
+        },
+        "score_hunt": {
+          "label": "Mejorar puntuacion",
+          "hint": "Sube tu puntuacion de envio a 90+."
+        },
+        "victory_lap": {
+          "label": "Vuelta de campeon",
+          "hint": "Todas las misiones completas. Prueba una estrategia mas arriesgada."
+        }
+      }
+    },
+    "twist": {
+      "title": "Evento sorpresa",
+      "window": "ventana bonus ~{minutes}m",
+      "urgency": {
+        "low": "Presion baja",
+        "medium": "Presion media",
+        "high": "Presion alta"
+      },
+      "items": {
+        "timeline_gap": {
+          "label": "Hueco en la linea temporal",
+          "hint": "Abre nuevos documentos para cerrar secuencias faltantes."
+        },
+        "crossfire": {
+          "label": "Declaraciones en conflicto",
+          "hint": "Haz mas verificaciones con busqueda y ARIA."
+        },
+        "suspect_heat": {
+          "label": "Sospechoso cambia patron",
+          "hint": "Reevalua y marca otro sospechoso rapido."
+        },
+        "board_shock": {
+          "label": "Anomalia de red",
+          "hint": "Expande el tablero para revelar enlaces ocultos."
+        },
+        "evidence_rush": {
+          "label": "Fuga de evidencia",
+          "hint": "Fija evidencia fresca antes de que se enfrien las pistas."
+        },
+        "score_recovery": {
+          "label": "Caso reabierto",
+          "hint": "Lleva tu puntuacion a nivel elite con una teoria mas solida."
+        }
+      }
+    },
+    "rewards": {
+      "title": "Recompensas desbloqueadas",
+      "unlocked": "{count}/{total} desbloqueadas",
+      "items": {
+        "breakthrough": "Hallazgo clave",
+        "connector": "Conector",
+        "profiler": "Perfilador",
+        "closer": "Resolutor",
+        "elite": "Elite"
+      }
+    },
+    "ranks": {
+      "title": "Rango investigador",
+      "xpValue": "{xp} XP",
+      "next": "{xp} XP para {rank}",
+      "maxed": "Rango maximo alcanzado",
+      "recruit": "Recluta",
+      "investigator": "Investigador",
+      "analyst": "Analista",
+      "detective": "Detective",
+      "mastermind": "Mente maestra"
+    },
+    "streak": {
+      "title": "Racha de casos",
+      "current": "{count} victorias activas",
+      "best": "Mejor: {count}",
+      "bonus": "+{xp} XP de racha",
+      "metaBonus": "+{xp} XP de misiones meta",
+      "metaPending": "+{xp} XP pendientes por reclamar",
+      "shieldActive": "Escudo de racha activo: {count}",
+      "hint": "Cierra casos distintos con 85+ puntos. Puntuaciones menores a 70 reinician la racha."
+    }
   },
   "documents": {
     "types": {
@@ -186,10 +648,16 @@
     },
     "noDocuments": "No se encontraron documentos",
     "loadError": "Error al cargar documentos",
+    "retryLoad": "Reintentar carga",
+    "refreshList": "Actualizar lista",
     "addToBoard": "Agregar al tablero",
     "alreadyOnBoard": "Ya esta en el tablero",
     "addToEvidence": "Agregar a evidencia",
-    "removeFromEvidence": "Quitar de evidencia"
+    "removeFromEvidence": "Quitar de evidencia",
+    "selectPromptTitle": "Abre un documento para revisar evidencia",
+    "selectPromptDescription": "Elige un documento de la bandeja o ve a busqueda/chat para encontrar nuevas pistas.",
+    "openChat": "Abrir chat",
+    "openSearch": "Abrir busqueda"
   },
   "entities": {
     "markSuspect": "Marcar como sospechoso",

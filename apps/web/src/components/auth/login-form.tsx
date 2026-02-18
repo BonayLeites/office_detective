@@ -38,7 +38,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="border-border/80 w-full max-w-md overflow-hidden rounded-2xl">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl">{t('login')}</CardTitle>
         <CardDescription>{t('loginDescription')}</CardDescription>
@@ -46,7 +46,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-destructive/10 text-destructive rounded-md p-3 text-sm">{error}</div>
+            <div className="bg-destructive/10 text-destructive border-destructive/25 rounded-lg border p-3 text-sm">
+              {error}
+            </div>
           )}
 
           <div className="space-y-2">
@@ -80,13 +82,13 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full rounded-lg" disabled={isLoading}>
             {isLoading ? t('loggingIn') : t('login')}
           </Button>
 
           <p className="text-muted-foreground text-center text-sm">
             {t('noAccount')}{' '}
-            <Link href="/register" className="text-primary hover:underline">
+            <Link href="/register" className="text-primary font-medium hover:underline">
               {t('register')}
             </Link>
           </p>

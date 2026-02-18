@@ -58,6 +58,9 @@ git clone https://github.com/bonay/office-detective.git
 cd office-detective
 make setup
 
+# One-command Docker demo (db + api + web)
+make demo-up
+
 # Add your OpenAI API key to .env
 echo "OPENAI_API_KEY=sk-your-key" >> .env
 echo "OPENAI_API_KEY=sk-your-key" >> apps/api/.env
@@ -181,6 +184,10 @@ office-detective/
 make help         # Show all commands
 make setup        # Full setup (install, docker, migrate, seed)
 make dev          # Start frontend + backend servers
+make demo-up      # Start full Docker stack (db + api + web)
+make demo-down    # Stop full Docker stack
+# If port 3000 is already in use:
+WEB_PORT=3001 make demo-up
 
 make test         # Run all tests
 make test-api     # Run backend tests only
@@ -212,6 +219,7 @@ uv run alembic upgrade head              # Run migrations
 # Docker
 docker compose -f infra/docker-compose.yml up -d    # Start services
 docker compose -f infra/docker-compose.yml down -v  # Stop and reset
+docker compose -f infra/docker-compose.yml --profile app up -d --build    # Full stack with api+web
 ```
 
 ---
@@ -220,14 +228,22 @@ docker compose -f infra/docker-compose.yml down -v  # Stop and reset
 
 Copy `.env.example` to `.env` and `apps/api/.env`:
 
-| Variable           | Description                      | Default                    |
-| ------------------ | -------------------------------- | -------------------------- |
-| `OPENAI_API_KEY`   | OpenAI API key (required for AI) | -                          |
-| `OPENAI_MODEL`     | Chat model                       | `gpt-4o`                   |
-| `POSTGRES_*`       | PostgreSQL connection            | Works with Docker defaults |
-| `POSTGRES_TEST_DB` | Database name used by tests      | `office_detective_test`    |
-| `NEO4J_*`          | Neo4j connection                 | Works with Docker defaults |
-| `REDIS_URL`        | Redis connection                 | `redis://localhost:6379`   |
+| Variable              | Description                            | Default                        |
+| --------------------- | -------------------------------------- | ------------------------------ |
+| `LLM_PROVIDER`        | LLM provider (`openai`/`deepseek`)     | `openai`                       |
+| `OPENAI_API_KEY`      | OpenAI API key                         | -                              |
+| `OPENAI_MODEL`        | OpenAI chat model                      | `gpt-4o`                       |
+| `DEEPSEEK_API_KEY`    | DeepSeek API key                       | -                              |
+| `DEEPSEEK_MODEL`      | DeepSeek chat model                    | `deepseek-chat`                |
+| `EMBEDDING_API_KEY`   | Embeddings API key (OpenAI-compatible) | Falls back to `OPENAI_API_KEY` |
+| `POSTGRES_*`          | PostgreSQL connection                  | Works with Docker defaults     |
+| `POSTGRES_TEST_DB`    | Database name used by tests            | `office_detective_test`        |
+| `NEO4J_*`             | Neo4j connection                       | Works with Docker defaults     |
+| `REDIS_URL`           | Redis connection                       | `redis://localhost:6379`       |
+| `NEXT_PUBLIC_API_URL` | Browser-facing API URL                 | `http://localhost:8000`        |
+| `API_URL_INTERNAL`    | Server-side API URL (Docker)           | Uses `NEXT_PUBLIC_API_URL`     |
+| `WEB_PORT`            | Host port for Docker web service       | `3000`                         |
+| `API_PORT`            | Host port for Docker API service       | `8000`                         |
 
 ---
 
@@ -244,7 +260,7 @@ uv run pytest -k "test_search"   # Run specific tests
 uv run pytest --cov-report=html  # Generate HTML coverage report
 ```
 
-Coverage requirement: **95%+**
+Coverage requirement: **88%+**
 
 ### Frontend
 

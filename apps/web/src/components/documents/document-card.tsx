@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 
 interface DocumentCardProps {
   document: Document;
+  style?: React.CSSProperties;
   isSelected?: boolean;
   isRead?: boolean;
   isPinned?: boolean;
@@ -21,6 +22,7 @@ interface DocumentCardProps {
 
 export function DocumentCard({
   document,
+  style,
   isSelected = false,
   isRead = true,
   isPinned = false,
@@ -34,12 +36,13 @@ export function DocumentCard({
   return (
     <div
       className={cn(
-        'group relative cursor-pointer rounded-lg border p-3 transition-colors',
+        'surface-lift group relative cursor-pointer rounded-xl border p-3 transition-all duration-200',
         isSelected
-          ? 'border-primary bg-primary/5'
-          : 'border-border hover:border-primary/50 hover:bg-accent/50',
-        !isRead && 'border-l-4 border-l-blue-500',
+          ? 'border-primary/60 bg-primary/10 shadow-[0_16px_28px_-24px_hsl(var(--primary)/0.95)]'
+          : 'border-border/80 bg-card/70 hover:border-primary/40 hover:bg-card hover:-translate-y-0.5',
+        !isRead && 'border-l-primary border-l-4',
       )}
+      style={style}
       onClick={() => {
         onSelect(document.doc_id);
       }}
@@ -55,7 +58,7 @@ export function DocumentCard({
       {/* Unread indicator */}
       {!isRead && (
         <span
-          className="absolute right-2 top-2 h-2 w-2 rounded-full bg-blue-500"
+          className="bg-primary absolute right-2 top-2 h-2 w-2 rounded-full"
           data-testid="unread-indicator"
         />
       )}
@@ -66,7 +69,7 @@ export function DocumentCard({
           'absolute right-2 top-2 rounded p-1 transition-opacity',
           isPinned
             ? 'text-primary opacity-100'
-            : 'text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100',
+            : 'text-muted-foreground hover:text-foreground opacity-0 group-hover:scale-105 group-hover:opacity-100',
           !isRead && 'right-6',
         )}
         onClick={e => {

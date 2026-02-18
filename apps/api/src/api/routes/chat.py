@@ -1,20 +1,69 @@
 """Chat API routes for ARIA agent."""
 
+import logging
+from asyncio import TimeoutError as AsyncTimeoutError
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Request, Response, status
+from openai import APIError as OpenAIAPIError
+from openai import AuthenticationError as OpenAIAuthenticationError
+from openai import RateLimitError as OpenAIRateLimitError
 from sqlalchemy import select
 
+from src.config import settings
 from src.dependencies import DbSession, OptionalUser
 from src.models.player import PlayerState
+from src.models.user import User
 from src.schemas.chat import ChatRequest, ChatResponse, HintRequest, HintResponse
 from src.services.agent_service import AgentService
 from src.services.case_service import CaseService
+from src.services.rate_limiter import SlidingWindowRateLimiter
 
 router = APIRouter(tags=["chat"])
 MAX_HINTS = 4
+logger = logging.getLogger(__name__)
+rate_limiter = SlidingWindowRateLimiter()
+
+
+def _rate_limit_key(
+    scope: str, request: Request, current_user: User | None, case_id: UUID | None = None
+) -> str:
+    """Build a deterministic per-scope key for throttling."""
+    forwarded_for = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+    client_host = forwarded_for or (request.client.host if request.client else "unknown")
+    subject = f"user:{current_user.user_id}" if current_user else f"ip:{client_host}"
+    case_segment = f":case:{case_id}" if case_id else ""
+    return f"{scope}:{subject}{case_segment}"
+
+
+def _enforce_rate_limit(
+    *,
+    key: str,
+    limit: int,
+    window_seconds: int,
+    response: Response,
+    detail: str,
+) -> None:
+    """Enforce configured rate limits and attach standard limit headers."""
+    if limit <= 0 or window_seconds <= 0:
+        return
+
+    if not rate_limiter.allow(key, limit, window_seconds):
+        retry_after = rate_limiter.retry_after_seconds(key, window_seconds)
+        response.headers["Retry-After"] = str(retry_after)
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=detail,
+            headers={"Retry-After": str(retry_after)},
+        )
+
+    response.headers["X-RateLimit-Limit"] = str(limit)
+    response.headers["X-RateLimit-Remaining"] = str(
+        rate_limiter.remaining(key, limit, window_seconds)
+    )
+    response.headers["X-RateLimit-Window"] = str(window_seconds)
 
 
 def _collect_case_hints(ground_truth: dict[str, Any]) -> list[str]:
@@ -62,6 +111,9 @@ async def chat_with_aria(
     case_id: UUID,
     request: ChatRequest,
     db: DbSession,
+    request_context: Request,
+    response: Response,
+    current_user: OptionalUser,
     language: str = Query(default="en", pattern=r"^[a-z]{2}$"),
 ) -> ChatResponse:
     """Send a message to ARIA agent.
@@ -87,11 +139,48 @@ async def chat_with_aria(
             detail=f"Case not found: {case_id}",
         )
 
+    chat_rate_key = _rate_limit_key("chat", request_context, current_user, case_id)
+    _enforce_rate_limit(
+        key=chat_rate_key,
+        limit=settings.chat_rate_limit_requests,
+        window_seconds=settings.chat_rate_limit_window_seconds,
+        response=response,
+        detail="Too many chat requests. Please wait a moment and try again.",
+    )
+
     # Initialize agent service (without Neo4j for now - optional)
     agent_service = AgentService(db=db, neo4j=None)
 
-    # Process chat message with language
-    return await agent_service.chat(case_id, request, language=language)
+    try:
+        # Process chat message with language
+        return await agent_service.chat(case_id, request, language=language)
+    except OpenAIAuthenticationError as exc:
+        logger.warning("AI provider authentication failed: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "AI provider authentication failed. "
+                "Check provider API key settings in apps/api/.env and restart the backend."
+            ),
+        ) from exc
+    except OpenAIRateLimitError as exc:
+        logger.warning("AI provider rate-limited chat request: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI provider is temporarily rate-limited. Please retry in a moment.",
+        ) from exc
+    except AsyncTimeoutError as exc:
+        logger.warning("AI provider request timed out")
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="AI provider timed out. Please retry in a moment.",
+        ) from exc
+    except OpenAIAPIError as exc:
+        logger.exception("AI provider request failed")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="AI provider request failed. Please retry in a moment.",
+        ) from exc
 
 
 @router.post(
@@ -103,6 +192,8 @@ async def request_hint(
     case_id: UUID,
     request: HintRequest,
     db: DbSession,
+    request_context: Request,
+    response: Response,
     current_user: OptionalUser,
 ) -> HintResponse:
     """Request a hint for the investigation.
@@ -125,6 +216,15 @@ async def request_hint(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Case not found: {case_id}",
         )
+
+    hint_rate_key = _rate_limit_key("hint", request_context, current_user, case_id)
+    _enforce_rate_limit(
+        key=hint_rate_key,
+        limit=settings.hint_rate_limit_requests,
+        window_seconds=settings.hint_rate_limit_window_seconds,
+        response=response,
+        detail="Too many hint requests. Please wait before requesting another hint.",
+    )
 
     ground_truth = case.ground_truth_json if isinstance(case.ground_truth_json, dict) else {}
     mechanism = str(ground_truth.get("mechanism", "Look for patterns in the documents"))

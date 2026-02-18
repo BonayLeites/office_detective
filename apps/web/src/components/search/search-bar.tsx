@@ -36,7 +36,7 @@ export function SearchBar({ onSearch, isSearching = false, initialQuery = '' }: 
 
   return (
     <div className="flex gap-2">
-      <div className="relative flex-1">
+      <div className="group relative flex-1">
         <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
         <Input
           value={query}
@@ -45,20 +45,20 @@ export function SearchBar({ onSearch, isSearching = false, initialQuery = '' }: 
           }}
           onKeyDown={handleKeyDown}
           placeholder={t('placeholder')}
-          className="pl-9 pr-9"
+          className="group-focus-within:border-primary/50 rounded-lg pl-9 pr-9 transition-all duration-200 group-focus-within:shadow-[0_0_0_4px_hsl(var(--primary)/0.1)]"
           disabled={isSearching}
         />
         {query && (
           <button
             type="button"
             onClick={handleClear}
-            className="text-muted-foreground hover:text-foreground absolute right-3 top-1/2 -translate-y-1/2"
+            className="text-muted-foreground hover:text-foreground absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
         )}
       </div>
-      <Button onClick={handleSubmit} disabled={!query.trim() || isSearching}>
+      <Button onClick={handleSubmit} disabled={!query.trim() || isSearching} className="rounded-lg">
         {isSearching ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

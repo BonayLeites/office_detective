@@ -19,7 +19,7 @@ export function CitationBadge({ citation, index, onClick, className }: CitationB
         onClick(citation);
       }}
       className={cn(
-        'inline-flex items-center rounded bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-800',
+        'border-primary/25 bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center rounded-md border px-1.5 py-0.5 text-xs font-medium transition-colors',
         className,
       )}
       title={citation.quote.slice(0, 100)}

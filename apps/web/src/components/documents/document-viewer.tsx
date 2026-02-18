@@ -1,7 +1,8 @@
 'use client';
 
 import { format } from 'date-fns';
-import { FileText, LayoutGrid, Pin, X } from 'lucide-react';
+import { FileText, LayoutGrid, MessageSquare, Pin, Search, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { DocumentTypeBadge } from './document-type-badge';
 import { ChatRenderer } from './renderers/chat-renderer';
@@ -16,6 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEntity } from '@/hooks/use-entities';
+import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useGameStore } from '@/stores/game-store';
 
@@ -32,6 +34,7 @@ export function DocumentViewer({
   isLoading = false,
   onClose,
 }: DocumentViewerProps) {
+  const t = useTranslations('documents');
   const pinnedItems = useGameStore(state => state.pinnedItems);
   const boardItems = useGameStore(state => state.boardItems);
   const pinItem = useGameStore(state => state.pinItem);
@@ -52,19 +55,38 @@ export function DocumentViewer({
 
   if (!document) {
     return (
-      <div className="text-muted-foreground flex h-full flex-col items-center justify-center p-8">
+      <div className="text-muted-foreground flex h-full flex-col items-center justify-center p-8 text-center">
         <FileText className="mb-4 h-12 w-12 opacity-50" />
-        <p className="text-center">Select a document to view its contents</p>
+        <h3 className="font-display text-foreground mb-1 text-lg font-semibold">
+          {t('selectPromptTitle')}
+        </h3>
+        <p className="max-w-md text-sm">{t('selectPromptDescription')}</p>
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          <Link href={`/cases/${caseId}/chat`}>
+            <Button variant="outline" size="sm" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              {t('openChat')}
+            </Button>
+          </Link>
+          <Link href={`/cases/${caseId}/search`}>
+            <Button variant="outline" size="sm" className="gap-2">
+              <Search className="h-4 w-4" />
+              {t('openSearch')}
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }
 
-  const isPinned = pinnedItems.some(p => p.id === document.doc_id);
-  const isOnBoard = boardItems.some(b => b.id === `document-${document.doc_id}`);
+  const isPinned = pinnedItems.some(p => p.caseId === caseId && p.id === document.doc_id);
+  const isOnBoard = boardItems.some(
+    b => b.caseId === caseId && b.id === `document-${document.doc_id}`,
+  );
 
   const handlePin = () => {
     if (isPinned) {
-      unpinItem(document.doc_id);
+      unpinItem(caseId, document.doc_id);
     } else {
       pinItem({
         id: document.doc_id,
@@ -110,7 +132,7 @@ export function DocumentViewer({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-border flex items-start justify-between border-b p-4">
+      <div className="ink-divider border-border/80 paper-panel flex items-start justify-between border-b p-4">
         <div className="min-w-0 flex-1">
           <div className="mb-2 flex items-center gap-2">
             <DocumentTypeBadge docType={document.doc_type} />
@@ -119,7 +141,7 @@ export function DocumentViewer({
             </span>
           </div>
           {document.subject && (
-            <h2 className="truncate text-lg font-semibold">{document.subject}</h2>
+            <h2 className="font-display truncate text-lg font-semibold">{document.subject}</h2>
           )}
         </div>
         <div className="ml-2 flex items-center gap-1">
@@ -127,7 +149,7 @@ export function DocumentViewer({
             variant="ghost"
             size="icon"
             onClick={handleAddToBoard}
-            title={isOnBoard ? 'Ya en el tablero' : 'Añadir al tablero'}
+            title={isOnBoard ? t('alreadyOnBoard') : t('addToBoard')}
             disabled={isOnBoard}
           >
             <LayoutGrid className={cn('h-4 w-4', isOnBoard && 'fill-current text-purple-500')} />
@@ -136,7 +158,7 @@ export function DocumentViewer({
             variant="ghost"
             size="icon"
             onClick={handlePin}
-            title={isPinned ? 'Quitar de evidencia' : 'Añadir a evidencia'}
+            title={isPinned ? t('removeFromEvidence') : t('addToEvidence')}
           >
             <Pin className={cn('h-4 w-4', isPinned && 'text-primary fill-current')} />
           </Button>
@@ -169,7 +191,7 @@ export function DocumentViewer({
                 <h3 className="text-muted-foreground mb-1 text-xs font-semibold uppercase">
                   Document ID
                 </h3>
-                <code className="bg-muted rounded px-2 py-1 text-xs">{document.doc_id}</code>
+                <code className="bg-muted/80 rounded px-2 py-1 text-xs">{document.doc_id}</code>
               </div>
 
               {author && (
@@ -188,7 +210,7 @@ export function DocumentViewer({
                 <h3 className="text-muted-foreground mb-1 text-xs font-semibold uppercase">
                   Metadata
                 </h3>
-                <pre className="bg-muted overflow-auto rounded p-2 text-xs">
+                <pre className="bg-muted/80 overflow-auto rounded-lg p-3 text-xs">
                   {JSON.stringify(document.metadata_json, null, 2)}
                 </pre>
               </div>
@@ -200,10 +222,13 @@ export function DocumentViewer({
           <ScrollArea className="h-full p-4">
             <div className="space-y-3">
               {document.chunks.map((chunk, index) => (
-                <div key={chunk.chunk_id} className="border-border rounded-lg border p-3">
+                <div
+                  key={chunk.chunk_id}
+                  className="border-border/80 bg-card/65 rounded-xl border p-3"
+                >
                   <div className="text-muted-foreground mb-2 flex items-center justify-between text-xs">
                     <span>Chunk {index + 1}</span>
-                    <code className="bg-muted rounded px-1">{chunk.chunk_id.slice(0, 8)}</code>
+                    <code className="bg-muted/80 rounded px-1">{chunk.chunk_id.slice(0, 8)}</code>
                   </div>
                   <p className="text-sm">{chunk.text}</p>
                 </div>

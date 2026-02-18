@@ -36,7 +36,7 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
   const isOverLimit = charCount > maxChars;
 
   return (
-    <div className="border-border border-t p-4">
+    <div className="ink-divider border-border/80 paper-panel border-t p-4">
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Textarea
@@ -48,7 +48,7 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
             placeholder={t('inputPlaceholder')}
             disabled={disabled}
             autoResize
-            className="min-h-[44px] resize-none pr-12"
+            className="min-h-[44px] resize-none rounded-xl pr-12"
             rows={1}
           />
           <span

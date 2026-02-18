@@ -1,5 +1,6 @@
 """Tests for AgentService internal methods."""
 
+import asyncio
 import json
 import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -7,6 +8,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
+from src.config import settings
+from src.schemas.chat import ChatRequest
 from src.schemas.chat import Citation  # noqa: TC001
 from src.services.agent_service import AgentService
 
@@ -312,3 +315,40 @@ def test_add_citation_from_result_no_doc_id(
     agent_service._add_citation_from_result(item, citations, seen_ids)
 
     assert len(citations) == 0
+
+
+@pytest.mark.asyncio
+async def test_chat_falls_back_to_secondary_provider(
+    agent_service_no_neo4j: AgentService,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """chat retries with fallback provider when primary provider times out."""
+    primary_graph = MagicMock()
+    primary_graph.ainvoke = AsyncMock(side_effect=asyncio.TimeoutError())
+    fallback_graph = MagicMock()
+    fallback_graph.ainvoke = AsyncMock(
+        return_value={
+            "messages": [AIMessage(content="Fallback response", tool_calls=[])],
+            "retrieved_chunks": [],
+            "citations": [],
+        }
+    )
+
+    monkeypatch.setattr(settings, "llm_provider", "deepseek")
+    monkeypatch.setattr(settings, "llm_fallback_provider", "openai")
+    monkeypatch.setattr(settings, "deepseek_api_key", "deepseek-test-key")
+    monkeypatch.setattr(settings, "openai_api_key", "openai-test-key")
+    monkeypatch.setattr(settings, "llm_request_timeout_seconds", 15.0)
+
+    with patch("src.services.agent_service.create_aria_graph") as mock_create_graph:
+        mock_create_graph.side_effect = [primary_graph, fallback_graph]
+        response = await agent_service_no_neo4j.chat(
+            case_id=uuid.uuid4(),
+            request=ChatRequest(message="Who is suspicious?"),
+            language="en",
+        )
+
+    assert response.message == "Fallback response"
+    assert mock_create_graph.call_count == 2
+    assert mock_create_graph.call_args_list[0].kwargs["provider"] == "deepseek"
+    assert mock_create_graph.call_args_list[1].kwargs["provider"] == "openai"

@@ -54,6 +54,20 @@ class CaseCreate(CaseBase):
     ground_truth: GroundTruth
 
 
+class CustomCaseCreateRequest(BaseModel):
+    """Schema for creating a user-customized case via guided inputs."""
+
+    idea: str = Field(..., min_length=12, max_length=3000)
+    scenario_type: ScenarioType = ScenarioType.vendor_fraud
+    difficulty: int = Field(default=2, ge=1, le=5)
+    language: str = Field(default="en", pattern=r"^[a-z]{2}$")
+    company_name: str | None = Field(default=None, min_length=2, max_length=120)
+    culprit_name: str | None = Field(default=None, min_length=2, max_length=120)
+    people_names: list[str] = Field(default_factory=list)
+    generate_embeddings: bool = True
+    sync_graph: bool = True
+
+
 class CaseResponse(CaseBase):
     """Schema for case response."""
 
@@ -72,3 +86,15 @@ class CaseListResponse(BaseModel):
 
     cases: list[CaseResponse]
     total: int
+
+
+class CustomCaseCreateResponse(BaseModel):
+    """Response for custom case creation."""
+
+    case: CaseResponse
+    entities_created: int
+    documents_created: int
+    chunks_created: int = 0
+    embeddings_created: int = 0
+    graph_relationships_created: int = 0
+    warnings: list[str] = Field(default_factory=list)
