@@ -1,6 +1,6 @@
 """Schemas for player progress and case submissions."""
 
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -44,6 +44,21 @@ class ProgressResponse(BaseModel):
     last_score: int | None = None
 
 
+EvidenceReliability = Literal["reliable", "uncertain", "false"]
+
+
+class BoardItemResponse(BaseModel):
+    """Sanitized board item returned by the API."""
+
+    id: str
+    type: Literal["entity", "document", "hypothesis"]
+    caseId: str
+    label: str
+    position: dict[str, float]
+    data: dict[str, Any] = Field(default_factory=dict)
+    reliability: EvidenceReliability = "uncertain"
+
+
 class BoardStateRequest(BaseModel):
     """Request payload for persisting board state."""
 
@@ -54,6 +69,6 @@ class BoardStateRequest(BaseModel):
 class BoardStateResponse(BaseModel):
     """Persisted board state for a player in a case."""
 
-    board_items: list[dict[str, Any]] = Field(default_factory=list)
+    board_items: list[BoardItemResponse] = Field(default_factory=list)
     board_edges: list[dict[str, Any]] = Field(default_factory=list)
     updated_at: str | None = None

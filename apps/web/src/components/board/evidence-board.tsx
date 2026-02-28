@@ -39,9 +39,10 @@ import { BoardToolbar } from './board-toolbar';
 import { DocumentNode, type DocumentNodeData } from './document-node';
 import { EmptyBoardState } from './empty-board-state';
 import { EntityNode, type EntityNodeData } from './entity-node';
+import { HypothesisNode, type HypothesisNodeData } from './hypothesis-node';
 import { NodeDetailsPanel } from './node-details-panel';
 
-import type { BoardStatePayload, Document, Entity, GraphEdge } from '@/types';
+import type { BoardStatePayload, Document, Entity, EvidenceReliability, GraphEdge } from '@/types';
 
 import { Button } from '@/components/ui/button';
 import { useDocuments } from '@/hooks/use-documents';
@@ -63,6 +64,8 @@ function getEdgeColor(type: string): string {
     RECEIVED: '#06b6d4', // cyan - received
     BELONGS_TO: '#ec4899', // pink - membership
     CO_OCCURS: '#7c3aed', // violet - co-occurrence
+    SUPPORTS: '#16a34a', // green - supports
+    CONTRADICTS: '#dc2626', // red - contradicts
     LINKED: '#475569', // slate - manual links
   };
   return colors[type] ?? '#94a3b8';
@@ -84,13 +87,18 @@ function graphEdgeToReactFlowEdge(edge: GraphEdge): Edge {
   };
 }
 
-function boardStateEdgeToReactFlowEdge(edge: BoardStatePayload['board_edges'][number]): Edge {
-  const relationshipType = edge.relationship_type || edge.label || 'LINKED';
+function createManualBoardEdge(params: {
+  source: string;
+  target: string;
+  relationshipType: string;
+  id?: string;
+}): Edge {
+  const relationshipType = params.relationshipType.trim().toUpperCase() || 'LINKED';
   return {
-    id: edge.id,
-    source: edge.source,
-    target: edge.target,
-    label: edge.label || relationshipType,
+    id: params.id ?? `manual-${params.source}-${params.target}-${relationshipType}`,
+    source: params.source,
+    target: params.target,
+    label: relationshipType,
     type: 'smoothstep',
     animated: false,
     style: {
@@ -104,29 +112,83 @@ function boardStateEdgeToReactFlowEdge(edge: BoardStatePayload['board_edges'][nu
   };
 }
 
+function boardStateEdgeToReactFlowEdge(edge: BoardStatePayload['board_edges'][number]): Edge {
+  const relationshipType = edge.relationship_type || edge.label || 'LINKED';
+  return createManualBoardEdge({
+    id: edge.id,
+    source: edge.source,
+    target: edge.target,
+    relationshipType,
+  });
+}
+
 const nodeTypes = {
   entity: EntityNode,
   document: DocumentNode,
+  hypothesis: HypothesisNode,
 };
 
 interface EvidenceBoardProps {
   caseId: string;
 }
 
-type BoardNode = Node<EntityNodeData | DocumentNodeData>;
+type BoardNode = Node<EntityNodeData | DocumentNodeData | HypothesisNodeData>;
 type BoardEdge = Edge;
 type GraphAction = 'sync' | 'hubs' | 'trace';
 type MobileLayer = 'map' | 'details' | 'evidence';
+type NodeTypeFilter = 'all' | 'entity' | 'document' | 'hypothesis';
+type ReliabilityFilter = 'all' | EvidenceReliability;
+type HypothesisStatusFilter = 'all' | HypothesisStatus;
+type HypothesisStatus = 'supported' | 'contradicted' | 'missing';
+interface HypothesisInsight {
+  status: HypothesisStatus;
+  supportScore: number;
+  contradictionScore: number;
+  linkedEvidence: number;
+  contradictionEvidence: string[];
+}
+type SelectedNode =
+  | { type: 'entity'; data: Entity; boardId: string }
+  | { type: 'document'; data: Document; boardId: string }
+  | {
+      type: 'hypothesis';
+      data: {
+        hypothesis: string;
+        status: HypothesisStatus;
+        supportScore: number;
+        contradictionScore: number;
+        linkedEvidence: number;
+        contradictionEvidence: string[];
+      };
+      boardId: string;
+    };
 interface BoardFeedback {
   kind: 'info' | 'success' | 'error';
   message: string;
   retryAction?: GraphAction;
 }
+interface SelectedManualEdge {
+  id: string;
+  source: string;
+  target: string;
+  relationshipType: string;
+  sourceLabel: string;
+  targetLabel: string;
+}
+interface HypothesisTrackerRow {
+  boardId: string;
+  label: string;
+  status: HypothesisStatus;
+  supportScore: number;
+  contradictionScore: number;
+  linkedEvidence: number;
+  isVisible: boolean;
+}
 
 interface MobileEvidenceLayerProps {
   caseId: string;
-  pinnedDocs: { id: string; label: string }[];
-  pinnedEntities: { id: string; label: string }[];
+  pinnedDocs: { id: string; label: string; reliability: EvidenceReliability }[];
+  pinnedEntities: { id: string; label: string; reliability: EvidenceReliability }[];
   suspects: { id: string; name: string }[];
   suspectConfidence: Record<string, number>;
   onRemovePin: (id: string) => void;
@@ -170,14 +232,140 @@ function normalizeEntityType(type: string): Entity['entity_type'] {
   return 'org';
 }
 
+function normalizeReliability(value: unknown): EvidenceReliability {
+  if (value === 'reliable' || value === 'uncertain' || value === 'false') {
+    return value;
+  }
+  return 'uncertain';
+}
+
+function normalizeEdgeRelationshipType(edge: BoardEdge): string {
+  const raw = typeof edge.label === 'string' ? edge.label : '';
+  return raw.trim() ? raw.trim().toUpperCase() : 'LINKED';
+}
+
+function buildHypothesisInsights(
+  boardItems: Array<{
+    id: string;
+    type: 'entity' | 'document' | 'hypothesis';
+    label: string;
+    reliability: EvidenceReliability;
+  }>,
+  edges: BoardEdge[],
+): Map<string, HypothesisInsight> {
+  const byId = new Map(boardItems.map(item => [item.id, item]));
+  const hypothesisIds = boardItems.filter(item => item.type === 'hypothesis').map(item => item.id);
+  const insightById = new Map<string, HypothesisInsight>();
+
+  for (const hypothesisId of hypothesisIds) {
+    let supportScore = 0;
+    let contradictionScore = 0;
+    const linkedEvidenceIds = new Set<string>();
+    const contradictionEvidence = new Set<string>();
+
+    for (const edge of edges) {
+      if (!edge.id.startsWith('manual-')) continue;
+      const source = edge.source;
+      const target = edge.target;
+      const evidenceId =
+        source === hypothesisId ? target : target === hypothesisId ? source : undefined;
+      if (!evidenceId) continue;
+
+      const evidenceItem = byId.get(evidenceId);
+      if (!evidenceItem || (evidenceItem.type !== 'entity' && evidenceItem.type !== 'document')) {
+        continue;
+      }
+      linkedEvidenceIds.add(evidenceId);
+
+      const relationshipType = normalizeEdgeRelationshipType(edge);
+      const reliability = normalizeReliability(evidenceItem.reliability);
+
+      if (relationshipType === 'CONTRADICTS') {
+        if (reliability === 'reliable') {
+          contradictionScore += 2;
+          contradictionEvidence.add(evidenceItem.label);
+        } else if (reliability === 'uncertain') {
+          contradictionScore += 1;
+          contradictionEvidence.add(evidenceItem.label);
+        }
+        continue;
+      }
+
+      if (relationshipType === 'SUPPORTS' || relationshipType === 'LINKED') {
+        if (reliability === 'reliable') {
+          supportScore += 2;
+        } else if (reliability === 'uncertain') {
+          supportScore += 1;
+        } else {
+          contradictionScore += 1;
+          contradictionEvidence.add(evidenceItem.label);
+        }
+        continue;
+      }
+
+      if (reliability === 'reliable') {
+        supportScore += 1;
+      }
+    }
+
+    let status: HypothesisStatus = 'missing';
+    if (linkedEvidenceIds.size === 0) {
+      status = 'missing';
+    } else if (contradictionScore > supportScore) {
+      status = 'contradicted';
+    } else if (supportScore >= 2) {
+      status = 'supported';
+    } else {
+      status = 'missing';
+    }
+
+    insightById.set(hypothesisId, {
+      status,
+      supportScore,
+      contradictionScore,
+      linkedEvidence: linkedEvidenceIds.size,
+      contradictionEvidence: Array.from(contradictionEvidence),
+    });
+  }
+
+  return insightById;
+}
+
+function getNodeSearchText(node: BoardNode): string {
+  const baseLabel = typeof node.data.label === 'string' ? node.data.label : '';
+
+  if (node.type === 'entity') {
+    const data = node.data as EntityNodeData;
+    return [baseLabel, data.entity.name, data.entity.entity_type].join(' ').toLowerCase();
+  }
+
+  if (node.type === 'document') {
+    const data = node.data as DocumentNodeData;
+    return [baseLabel, data.document.subject ?? '', data.document.doc_type, data.document.body]
+      .join(' ')
+      .toLowerCase();
+  }
+
+  if (node.type === 'hypothesis') {
+    const data = node.data as HypothesisNodeData;
+    return [baseLabel, data.status, data.contradictionEvidence.join(' ')].join(' ').toLowerCase();
+  }
+
+  return baseLabel.toLowerCase();
+}
+
 export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
   const t = useTranslations('board');
   const [nodes, setNodes, onNodesChange] = useNodesState<BoardNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<BoardEdge>([]);
   const [connectionType, setConnectionType] = useState('LINKED');
-  const [selectedNode, setSelectedNode] = useState<
-    { type: 'entity'; data: Entity } | { type: 'document'; data: Document } | null
-  >(null);
+  const [boardQuery, setBoardQuery] = useState('');
+  const [nodeTypeFilter, setNodeTypeFilter] = useState<NodeTypeFilter>('all');
+  const [reliabilityFilter, setReliabilityFilter] = useState<ReliabilityFilter>('all');
+  const [hypothesisStatusFilter, setHypothesisStatusFilter] =
+    useState<HypothesisStatusFilter>('all');
+  const [selectedNode, setSelectedNode] = useState<SelectedNode | null>(null);
+  const [selectedManualEdgeId, setSelectedManualEdgeId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileLayer, setMobileLayer] = useState<MobileLayer>('map');
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -213,6 +401,8 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
   const updateBoardPosition = useGameStore(state => state.updateBoardPosition);
   const clearBoard = useGameStore(state => state.clearBoard);
   const setBoardItems = useGameStore(state => state.setBoardItems);
+  const setBoardItemReliability = useGameStore(state => state.setBoardItemReliability);
+  const setBoardItemLabel = useGameStore(state => state.setBoardItemLabel);
 
   // Track which entities have been expanded to avoid loops
   const [expandedEntities, setExpandedEntities] = useState<Set<string>>(new Set());
@@ -220,11 +410,170 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
     () => pinnedItems.filter(item => item.caseId === caseId),
     [caseId, pinnedItems],
   );
-  const pinnedDocs = useMemo(
-    () => casePins.filter(item => item.type === 'document' || item.type === 'chunk'),
-    [casePins],
+  const reliabilityByNodeId = useMemo(() => {
+    return new Map(caseBoardItems.map(item => [item.id, item.reliability]));
+  }, [caseBoardItems]);
+  const hypothesisInsights = useMemo(
+    () =>
+      buildHypothesisInsights(
+        caseBoardItems.map(item => ({
+          id: item.id,
+          type: item.type,
+          label: item.label,
+          reliability: item.reliability,
+        })),
+        edges,
+      ),
+    [caseBoardItems, edges],
   );
-  const pinnedEntities = useMemo(() => casePins.filter(item => item.type === 'entity'), [casePins]);
+  const normalizedBoardQuery = boardQuery.trim().toLowerCase();
+  const visibleNodes = useMemo(
+    () =>
+      nodes.filter(node => {
+        if (nodeTypeFilter !== 'all' && node.type !== nodeTypeFilter) {
+          return false;
+        }
+
+        if (reliabilityFilter !== 'all') {
+          if (node.type === 'entity') {
+            const reliability = normalizeReliability((node.data as EntityNodeData).reliability);
+            if (reliability !== reliabilityFilter) {
+              return false;
+            }
+          } else if (node.type === 'document') {
+            const reliability = normalizeReliability((node.data as DocumentNodeData).reliability);
+            if (reliability !== reliabilityFilter) {
+              return false;
+            }
+          } else {
+            return false;
+          }
+        }
+
+        if (hypothesisStatusFilter !== 'all') {
+          if (node.type !== 'hypothesis') {
+            return false;
+          }
+          if ((node.data as HypothesisNodeData).status !== hypothesisStatusFilter) {
+            return false;
+          }
+        }
+
+        if (normalizedBoardQuery.length > 0) {
+          return getNodeSearchText(node).includes(normalizedBoardQuery);
+        }
+
+        return true;
+      }),
+    [hypothesisStatusFilter, nodeTypeFilter, nodes, normalizedBoardQuery, reliabilityFilter],
+  );
+  const visibleNodeIds = useMemo(() => new Set(visibleNodes.map(node => node.id)), [visibleNodes]);
+  const visibleEdges = useMemo(
+    () => edges.filter(edge => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target)),
+    [edges, visibleNodeIds],
+  );
+  const visibleEdgeIds = useMemo(() => new Set(visibleEdges.map(edge => edge.id)), [visibleEdges]);
+  const visibleManualEdgeCount = useMemo(
+    () => visibleEdges.filter(edge => edge.id.startsWith('manual-')).length,
+    [visibleEdges],
+  );
+  const nodeLabelsById = useMemo(() => {
+    return new Map(
+      nodes.map(node => [
+        node.id,
+        typeof node.data.label === 'string' && node.data.label.trim() ? node.data.label : node.id,
+      ]),
+    );
+  }, [nodes]);
+  const selectedManualEdge = useMemo<SelectedManualEdge | null>(() => {
+    if (!selectedManualEdgeId) return null;
+    const edge = edges.find(candidate => candidate.id === selectedManualEdgeId);
+    if (!edge || !edge.id.startsWith('manual-')) return null;
+    return {
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      relationshipType: normalizeEdgeRelationshipType(edge),
+      sourceLabel: nodeLabelsById.get(edge.source) ?? edge.source,
+      targetLabel: nodeLabelsById.get(edge.target) ?? edge.target,
+    };
+  }, [edges, nodeLabelsById, selectedManualEdgeId]);
+  const hypothesisTrackerRows = useMemo<HypothesisTrackerRow[]>(() => {
+    const statusRank: Record<HypothesisStatus, number> = {
+      contradicted: 0,
+      missing: 1,
+      supported: 2,
+    };
+
+    return caseBoardItems
+      .filter(item => item.type === 'hypothesis')
+      .map(item => {
+        const hypothesisValue = item.data['hypothesis'];
+        const label =
+          typeof hypothesisValue === 'string' && hypothesisValue.trim()
+            ? hypothesisValue
+            : item.label;
+        const insight = hypothesisInsights.get(item.id) ?? {
+          status: 'missing' as const,
+          supportScore: 0,
+          contradictionScore: 0,
+          linkedEvidence: 0,
+          contradictionEvidence: [],
+        };
+
+        return {
+          boardId: item.id,
+          label,
+          status: insight.status,
+          supportScore: insight.supportScore,
+          contradictionScore: insight.contradictionScore,
+          linkedEvidence: insight.linkedEvidence,
+          isVisible: visibleNodeIds.has(item.id),
+        };
+      })
+      .sort((a, b) => {
+        const statusDelta = statusRank[a.status] - statusRank[b.status];
+        if (statusDelta !== 0) return statusDelta;
+        const contradictionDelta = b.contradictionScore - a.contradictionScore;
+        if (contradictionDelta !== 0) return contradictionDelta;
+        return b.supportScore - a.supportScore;
+      });
+  }, [caseBoardItems, hypothesisInsights, visibleNodeIds]);
+  const hypothesisTrackerCounts = useMemo(
+    () =>
+      hypothesisTrackerRows.reduce(
+        (acc, row) => {
+          acc[row.status] += 1;
+          return acc;
+        },
+        { supported: 0, contradicted: 0, missing: 0 } as Record<HypothesisStatus, number>,
+      ),
+    [hypothesisTrackerRows],
+  );
+  const hiddenHypothesisCount = useMemo(
+    () => hypothesisTrackerRows.filter(row => !row.isVisible).length,
+    [hypothesisTrackerRows],
+  );
+  const pinnedDocs = useMemo(
+    () =>
+      casePins
+        .filter(item => item.type === 'document' || item.type === 'chunk')
+        .map(item => ({
+          ...item,
+          reliability: reliabilityByNodeId.get(`document-${item.id}`) ?? 'uncertain',
+        })),
+    [casePins, reliabilityByNodeId],
+  );
+  const pinnedEntities = useMemo(
+    () =>
+      casePins
+        .filter(item => item.type === 'entity')
+        .map(item => ({
+          ...item,
+          reliability: reliabilityByNodeId.get(`entity-${item.id}`) ?? 'uncertain',
+        })),
+    [casePins, reliabilityByNodeId],
+  );
   const suspectEntities = useMemo(
     () => entities.filter(entity => suspectedEntities.includes(entity.entity_id)),
     [entities, suspectedEntities],
@@ -330,6 +679,73 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
   }, [isMobile, mobileLayer, selectedNode]);
 
   useEffect(() => {
+    if (selectedNode?.type !== 'hypothesis') return;
+    const selectedId = selectedNode.boardId;
+    const insight = hypothesisInsights.get(selectedId) ?? {
+      status: 'missing' as const,
+      supportScore: 0,
+      contradictionScore: 0,
+      linkedEvidence: 0,
+      contradictionEvidence: [],
+    };
+    const item = caseBoardItems.find(boardItem => boardItem.id === selectedId);
+    const rawHypothesis = item?.data['hypothesis'];
+    const hypothesisText =
+      typeof rawHypothesis === 'string' && rawHypothesis.trim()
+        ? rawHypothesis
+        : selectedNode.data.hypothesis;
+
+    const changed =
+      selectedNode.data.hypothesis !== hypothesisText ||
+      selectedNode.data.status !== insight.status ||
+      selectedNode.data.supportScore !== insight.supportScore ||
+      selectedNode.data.contradictionScore !== insight.contradictionScore ||
+      selectedNode.data.linkedEvidence !== insight.linkedEvidence ||
+      selectedNode.data.contradictionEvidence.join('|') !== insight.contradictionEvidence.join('|');
+
+    if (!changed) return;
+
+    setSelectedNode({
+      type: 'hypothesis',
+      boardId: selectedId,
+      data: {
+        hypothesis: hypothesisText,
+        status: insight.status,
+        supportScore: insight.supportScore,
+        contradictionScore: insight.contradictionScore,
+        linkedEvidence: insight.linkedEvidence,
+        contradictionEvidence: insight.contradictionEvidence,
+      },
+    });
+  }, [caseBoardItems, hypothesisInsights, selectedNode]);
+
+  useEffect(() => {
+    if (!selectedNode) return;
+    if (visibleNodeIds.has(selectedNode.boardId)) return;
+    setSelectedNode(null);
+    if (isMobile && mobileLayer === 'details') {
+      setMobileLayer('map');
+    }
+  }, [isMobile, mobileLayer, selectedNode, visibleNodeIds]);
+
+  useEffect(() => {
+    if (!selectedManualEdgeId) return;
+    const edgeStillExists = edges.some(
+      edge => edge.id === selectedManualEdgeId && edge.id.startsWith('manual-'),
+    );
+    if (!edgeStillExists) {
+      setSelectedManualEdgeId(null);
+    }
+  }, [edges, selectedManualEdgeId]);
+
+  useEffect(() => {
+    if (!selectedManualEdgeId) return;
+    if (!visibleEdgeIds.has(selectedManualEdgeId)) {
+      setSelectedManualEdgeId(null);
+    }
+  }, [selectedManualEdgeId, visibleEdgeIds]);
+
+  useEffect(() => {
     let cancelled = false;
 
     const loadBoardState = async () => {
@@ -410,6 +826,39 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
             entity,
             label: item.label,
             caseId,
+            boardId: item.id,
+            reliability: item.reliability,
+          },
+        } as BoardNode);
+        continue;
+      }
+
+      if (item.type === 'hypothesis') {
+        const hypothesisValue = item.data['hypothesis'];
+        const hypothesisText =
+          typeof hypothesisValue === 'string' && hypothesisValue.trim()
+            ? hypothesisValue
+            : item.label;
+        const insight = hypothesisInsights.get(item.id) ?? {
+          status: 'missing',
+          supportScore: 0,
+          contradictionScore: 0,
+          linkedEvidence: 0,
+          contradictionEvidence: [],
+        };
+        nextNodes.push({
+          id: item.id,
+          type: 'hypothesis',
+          position: item.position,
+          data: {
+            boardId: item.id,
+            caseId,
+            label: hypothesisText,
+            status: insight.status,
+            supportScore: insight.supportScore,
+            contradictionScore: insight.contradictionScore,
+            linkedEvidence: insight.linkedEvidence,
+            contradictionEvidence: insight.contradictionEvidence,
           },
         } as BoardNode);
         continue;
@@ -428,6 +877,8 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
           document,
           label: item.label,
           caseId,
+          boardId: item.id,
+          reliability: item.reliability,
         },
       } as BoardNode);
     }
@@ -439,7 +890,7 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
         edge => currentNodeIds.has(edge.source) && currentNodeIds.has(edge.target),
       );
     });
-  }, [caseBoardItems, caseId, documentsById, entitiesById, setEdges, setNodes]);
+  }, [caseBoardItems, caseId, documentsById, entitiesById, hypothesisInsights, setEdges, setNodes]);
 
   const persistBoardState = useCallback(async () => {
     const boardEdges = edges
@@ -487,7 +938,9 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
           change.type === 'position' &&
           change.position &&
           change.dragging === false &&
-          (change.id.startsWith('entity-') || change.id.startsWith('document-'))
+          (change.id.startsWith('entity-') ||
+            change.id.startsWith('document-') ||
+            change.id.startsWith('hypothesis-'))
         ) {
           updateBoardPosition(caseId, change.id, change.position);
         }
@@ -504,13 +957,31 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
   );
 
   const handleNodeClick = useCallback(
-    (_event: React.MouseEvent, node: Node<EntityNodeData | DocumentNodeData>) => {
+    (
+      _event: React.MouseEvent,
+      node: Node<EntityNodeData | DocumentNodeData | HypothesisNodeData>,
+    ) => {
+      setSelectedManualEdgeId(null);
       if (node.type === 'entity') {
         const entityData = node.data as EntityNodeData;
-        setSelectedNode({ type: 'entity', data: entityData.entity });
+        setSelectedNode({ type: 'entity', data: entityData.entity, boardId: entityData.boardId });
       } else if (node.type === 'document') {
         const docData = node.data as DocumentNodeData;
-        setSelectedNode({ type: 'document', data: docData.document });
+        setSelectedNode({ type: 'document', data: docData.document, boardId: docData.boardId });
+      } else if (node.type === 'hypothesis') {
+        const hypothesisData = node.data as HypothesisNodeData;
+        setSelectedNode({
+          type: 'hypothesis',
+          data: {
+            hypothesis: hypothesisData.label,
+            status: hypothesisData.status,
+            supportScore: hypothesisData.supportScore,
+            contradictionScore: hypothesisData.contradictionScore,
+            linkedEvidence: hypothesisData.linkedEvidence,
+            contradictionEvidence: hypothesisData.contradictionEvidence,
+          },
+          boardId: hypothesisData.boardId,
+        });
       }
       if (isMobile) {
         setMobileLayer('details');
@@ -518,6 +989,25 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
     },
     [isMobile],
   );
+
+  const handleEdgeClick = useCallback(
+    (_event: React.MouseEvent, edge: BoardEdge) => {
+      if (!edge.id.startsWith('manual-')) {
+        setSelectedManualEdgeId(null);
+        return;
+      }
+      setSelectedNode(null);
+      setSelectedManualEdgeId(edge.id);
+      if (isMobile) {
+        setMobileLayer('map');
+      }
+    },
+    [isMobile],
+  );
+
+  const handlePaneClick = useCallback(() => {
+    setSelectedManualEdgeId(null);
+  }, []);
 
   // Add entity node to board (without expanding)
   const addEntityNodeOnly = useCallback(
@@ -567,6 +1057,37 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
     },
     [addToBoard, caseId],
   );
+
+  const addHypothesisNode = useCallback(() => {
+    const hypothesisId = `hypothesis-${Date.now().toString()}-${Math.random().toString(36).slice(2, 7)}`;
+    const label = t('hypothesis.defaultText');
+    addToBoard({
+      id: hypothesisId,
+      type: 'hypothesis',
+      caseId,
+      label,
+      data: { hypothesis: label },
+      position: {
+        x: 320 + Math.random() * 80,
+        y: 120 + Math.random() * 60,
+      },
+    });
+    setSelectedNode({
+      type: 'hypothesis',
+      boardId: hypothesisId,
+      data: {
+        hypothesis: label,
+        status: 'missing',
+        supportScore: 0,
+        contradictionScore: 0,
+        linkedEvidence: 0,
+        contradictionEvidence: [],
+      },
+    });
+    if (isMobile) {
+      setMobileLayer('details');
+    }
+  }, [addToBoard, caseId, isMobile, t]);
 
   // Expand connections for an entity (fetch neighbors and edges from Neo4j)
   const expandEntityConnections = useCallback(
@@ -696,6 +1217,7 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
     clearBoard(caseId);
     setEdges([]);
     setSelectedNode(null);
+    setSelectedManualEdgeId(null);
     setExpandedEntities(new Set());
     setFeedback(null);
   }, [caseId, clearBoard, setEdges]);
@@ -855,7 +1377,10 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
   ]);
 
   const handleNodeDoubleClick = useCallback(
-    (_event: React.MouseEvent, node: Node<EntityNodeData | DocumentNodeData>) => {
+    (
+      _event: React.MouseEvent,
+      node: Node<EntityNodeData | DocumentNodeData | HypothesisNodeData>,
+    ) => {
       if (node.type !== 'entity') return;
       const entityData = node.data as EntityNodeData;
       void expandEntityConnections(entityData.entity.entity_id, node.position, { force: true });
@@ -895,22 +1420,12 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
     (connection: Connection) => {
       if (!connection.source || !connection.target) return;
       const edgeId = `manual-${connection.source}-${connection.target}-${connectionType}`;
-      const newEdge: BoardEdge = {
+      const newEdge = createManualBoardEdge({
         id: edgeId,
         source: connection.source,
         target: connection.target,
-        label: connectionType,
-        type: 'smoothstep',
-        animated: false,
-        style: {
-          stroke: getEdgeColor(connectionType),
-          strokeWidth: 2,
-          strokeDasharray: '6 4',
-        },
-        labelStyle: { fontSize: 10, fill: '#475569' },
-        labelBgStyle: { fill: 'white', fillOpacity: 0.8 },
-        labelBgPadding: [4, 2] as [number, number],
-      };
+        relationshipType: connectionType,
+      });
 
       setEdges(currentEdges => {
         if (currentEdges.some(edge => edge.id === edgeId)) {
@@ -918,19 +1433,69 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
         }
         return [...currentEdges, newEdge];
       });
+      setSelectedManualEdgeId(edgeId);
     },
     [connectionType, setEdges],
   );
 
+  const handleDeleteSelectedEdge = useCallback(() => {
+    if (!selectedManualEdge) return;
+    setEdges(currentEdges => currentEdges.filter(edge => edge.id !== selectedManualEdge.id));
+    setSelectedManualEdgeId(null);
+  }, [selectedManualEdge, setEdges]);
+
+  const handleUpdateSelectedEdgeRelationship = useCallback(
+    (relationshipType: string) => {
+      if (!selectedManualEdge) return;
+
+      const nextRelationshipType = relationshipType.trim().toUpperCase() || 'LINKED';
+      if (nextRelationshipType === selectedManualEdge.relationshipType) return;
+
+      const nextId = `manual-${selectedManualEdge.source}-${selectedManualEdge.target}-${nextRelationshipType}`;
+
+      setEdges(currentEdges => {
+        const duplicateExists = currentEdges.some(
+          edge => edge.id === nextId && edge.id !== selectedManualEdge.id,
+        );
+        const withoutCurrent = currentEdges.filter(edge => edge.id !== selectedManualEdge.id);
+        if (duplicateExists) {
+          return withoutCurrent;
+        }
+
+        const insertAt = currentEdges.findIndex(edge => edge.id === selectedManualEdge.id);
+        const replacement = createManualBoardEdge({
+          id: nextId,
+          source: selectedManualEdge.source,
+          target: selectedManualEdge.target,
+          relationshipType: nextRelationshipType,
+        });
+
+        if (insertAt < 0) {
+          return [...withoutCurrent, replacement];
+        }
+
+        return [
+          ...withoutCurrent.slice(0, insertAt),
+          replacement,
+          ...withoutCurrent.slice(insertAt),
+        ];
+      });
+
+      setSelectedManualEdgeId(nextId);
+    },
+    [selectedManualEdge, setEdges],
+  );
+
   const handleRemoveFromBoard = useCallback(
     (id: string) => {
-      const boardIds = new Set([id, `entity-${id}`, `document-${id}`]);
+      const boardIds = new Set([id, `entity-${id}`, `document-${id}`, `hypothesis-${id}`]);
       boardIds.forEach(boardId => {
         removeFromBoard(caseId, boardId);
       });
       setNodes(nds => nds.filter(n => !boardIds.has(n.id)));
       setEdges(eds => eds.filter(e => !boardIds.has(e.source) && !boardIds.has(e.target)));
       setSelectedNode(null);
+      setSelectedManualEdgeId(null);
     },
     [caseId, removeFromBoard, setEdges, setNodes],
   );
@@ -941,6 +1506,76 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
       setMobileLayer('map');
     }
   }, [isMobile]);
+
+  const handleClearFilters = useCallback(() => {
+    setBoardQuery('');
+    setNodeTypeFilter('all');
+    setReliabilityFilter('all');
+    setHypothesisStatusFilter('all');
+  }, []);
+
+  const handleOpenHypothesisFromTracker = useCallback(
+    (boardId: string) => {
+      const item = caseBoardItems.find(
+        boardItem => boardItem.id === boardId && boardItem.type === 'hypothesis',
+      );
+      if (!item) return;
+
+      const hypothesisValue = item.data['hypothesis'];
+      const hypothesisText =
+        typeof hypothesisValue === 'string' && hypothesisValue.trim()
+          ? hypothesisValue
+          : item.label;
+      const insight = hypothesisInsights.get(boardId) ?? {
+        status: 'missing' as const,
+        supportScore: 0,
+        contradictionScore: 0,
+        linkedEvidence: 0,
+        contradictionEvidence: [],
+      };
+
+      setSelectedManualEdgeId(null);
+      setSelectedNode({
+        type: 'hypothesis',
+        boardId,
+        data: {
+          hypothesis: hypothesisText,
+          status: insight.status,
+          supportScore: insight.supportScore,
+          contradictionScore: insight.contradictionScore,
+          linkedEvidence: insight.linkedEvidence,
+          contradictionEvidence: insight.contradictionEvidence,
+        },
+      });
+
+      if (isMobile) {
+        setMobileLayer('map');
+      }
+
+      if (!visibleNodeIds.has(boardId)) {
+        handleClearFilters();
+        window.setTimeout(() => {
+          focusSingleNode(boardId);
+        }, 100);
+      } else {
+        focusSingleNode(boardId);
+      }
+
+      setFeedback({
+        kind: 'info',
+        message: t('feedback.focusedNode'),
+      });
+    },
+    [
+      caseBoardItems,
+      focusSingleNode,
+      handleClearFilters,
+      hypothesisInsights,
+      isMobile,
+      t,
+      visibleNodeIds,
+    ],
+  );
 
   const onboardingSteps = useMemo(
     () => [
@@ -1000,17 +1635,122 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
           onLoadHubs={handleLoadHubs}
           onSyncGraph={handleSyncGraph}
           onTraceSuspects={handleTraceSuspects}
+          onAddHypothesis={addHypothesisNode}
           onClearBoard={handleClearBoard}
           onAutoLayout={handleAutoLayout}
           onSearch={handleSearch}
+          boardQuery={boardQuery}
+          onBoardQueryChange={setBoardQuery}
+          nodeTypeFilter={nodeTypeFilter}
+          onNodeTypeFilterChange={setNodeTypeFilter}
+          reliabilityFilter={reliabilityFilter}
+          onReliabilityFilterChange={setReliabilityFilter}
+          hypothesisStatusFilter={hypothesisStatusFilter}
+          onHypothesisStatusFilterChange={setHypothesisStatusFilter}
+          onClearFilters={handleClearFilters}
           connectionType={connectionType}
           onConnectionTypeChange={setConnectionType}
           isLoading={isLoading}
           suspectCount={suspectedEntities.length}
           nodeCount={nodes.length}
-          edgeCount={edges.length}
-          manualEdgeCount={edges.filter(edge => edge.id.startsWith('manual-')).length}
+          visibleNodeCount={visibleNodes.length}
+          edgeCount={visibleEdges.length}
+          manualEdgeCount={visibleManualEdgeCount}
         />
+
+        {hypothesisTrackerRows.length > 0 && (
+          <div className="ink-divider border-border/70 bg-muted/25 border-b px-3 py-2 md:px-4">
+            <div className="mb-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.11em]">
+                  {t('hypothesisTracker.title')}
+                </p>
+                <p className="text-muted-foreground mt-0.5 text-xs">
+                  {t('hypothesisTracker.summary', {
+                    supported: hypothesisTrackerCounts.supported,
+                    contradicted: hypothesisTrackerCounts.contradicted,
+                    missing: hypothesisTrackerCounts.missing,
+                  })}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 text-emerald-800">
+                  <CheckCircle2 className="h-3 w-3" />
+                  {hypothesisTrackerCounts.supported}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full border border-rose-500/25 bg-rose-500/10 px-2 py-0.5 text-rose-800">
+                  <AlertCircle className="h-3 w-3" />
+                  {hypothesisTrackerCounts.contradicted}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/10 px-2 py-0.5 text-amber-800">
+                  <CircleDashed className="h-3 w-3" />
+                  {hypothesisTrackerCounts.missing}
+                </span>
+                {hiddenHypothesisCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={handleClearFilters}
+                  >
+                    {t('hypothesisTracker.showAll', { count: hiddenHypothesisCount })}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
+              {hypothesisTrackerRows.map(row => {
+                const statusClass =
+                  row.status === 'supported'
+                    ? 'border-emerald-500/30 bg-emerald-500/10'
+                    : row.status === 'contradicted'
+                      ? 'border-rose-500/30 bg-rose-500/10'
+                      : 'border-amber-500/30 bg-amber-500/10';
+                const isSelected =
+                  selectedNode?.type === 'hypothesis' && selectedNode.boardId === row.boardId;
+
+                return (
+                  <button
+                    key={row.boardId}
+                    type="button"
+                    onClick={() => {
+                      handleOpenHypothesisFromTracker(row.boardId);
+                    }}
+                    className={cn(
+                      'bg-card/90 hover:bg-card min-w-[220px] max-w-[260px] rounded-xl border px-3 py-2 text-left shadow-sm transition-colors',
+                      statusClass,
+                      isSelected && 'ring-primary ring-2 ring-offset-1',
+                      !row.isVisible && 'opacity-80',
+                    )}
+                  >
+                    <div className="mb-1 flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.08em]">
+                        {t(`hypothesis.status.${row.status}`)}
+                      </span>
+                      {!row.isVisible && (
+                        <span className="text-muted-foreground border-border/70 rounded-full border px-1.5 py-0.5 text-[10px]">
+                          {t('hypothesisTracker.hidden')}
+                        </span>
+                      )}
+                    </div>
+                    <p className="line-clamp-2 text-sm font-medium">{row.label}</p>
+                    <div className="text-muted-foreground mt-2 flex items-center justify-between text-[11px]">
+                      <span>
+                        {t('hypothesis.scores', {
+                          support: row.supportScore,
+                          contradiction: row.contradictionScore,
+                        })}
+                      </span>
+                      <span>{row.linkedEvidence}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {showOnboarding && (
           <div className="ink-divider border-border/70 bg-muted/35 border-b px-3 py-3 md:px-4">
@@ -1147,20 +1887,90 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
               </button>
             </div>
           )}
+          {selectedManualEdge && (
+            <div className="bg-card/95 border-border/80 absolute right-3 top-3 z-20 w-[min(320px,92%)] rounded-xl border p-3 shadow-md backdrop-blur">
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em]">
+                    {t('edgeEditor.title')}
+                  </p>
+                  <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">
+                    {selectedManualEdge.sourceLabel} → {selectedManualEdge.targetLabel}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  aria-label={t('feedback.dismiss')}
+                  className="rounded p-0.5 opacity-80 transition-opacity hover:opacity-100"
+                  onClick={() => {
+                    setSelectedManualEdgeId(null);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <label className="text-muted-foreground mb-1 block text-xs font-medium">
+                {t('edgeEditor.relationship')}
+              </label>
+              <select
+                value={selectedManualEdge.relationshipType}
+                onChange={event => {
+                  handleUpdateSelectedEdgeRelationship(event.target.value);
+                }}
+                className="bg-background border-border/80 h-9 w-full rounded-md border px-2 text-sm"
+              >
+                <option value="LINKED">{t('relationships.LINKED')}</option>
+                <option value="SUPPORTS">{t('relationships.SUPPORTS')}</option>
+                <option value="CONTRADICTS">{t('relationships.CONTRADICTS')}</option>
+                <option value="SENT">{t('relationships.SENT')}</option>
+                <option value="MENTIONS">{t('relationships.MENTIONS')}</option>
+                <option value="APPROVED">{t('relationships.APPROVED')}</option>
+                <option value="PAID_TO">{t('relationships.PAID_TO')}</option>
+                <option value="WORKS_AT">{t('relationships.WORKS_AT')}</option>
+              </select>
+
+              <div className="mt-3 flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive gap-1.5"
+                  onClick={handleDeleteSelectedEdge}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {t('edgeEditor.delete')}
+                </Button>
+              </div>
+            </div>
+          )}
           {nodes.length === 0 ? (
             <EmptyBoardState caseId={caseId} onSuggestionClick={handleSearch} />
+          ) : visibleNodes.length === 0 ? (
+            <div className="flex h-full items-center justify-center px-6">
+              <div className="bg-card/90 border-border/80 w-full max-w-md rounded-2xl border px-5 py-6 text-center shadow-sm">
+                <p className="font-display text-lg font-semibold">{t('filters.emptyTitle')}</p>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  {t('filters.emptyDescription')}
+                </p>
+                <Button variant="outline" className="mt-4" onClick={handleClearFilters}>
+                  {t('filters.clear')}
+                </Button>
+              </div>
+            </div>
           ) : (
             <ReactFlow
               style={{ width: '100%', height: '100%' }}
-              nodes={nodes}
-              edges={edges}
+              nodes={visibleNodes}
+              edges={visibleEdges}
               onInit={instance => {
                 reactFlowRef.current = instance;
               }}
               onNodesChange={handleNodesChange}
               onEdgesChange={handleEdgesChange}
               onConnect={handleConnect}
+              onPaneClick={handlePaneClick}
               onNodeClick={handleNodeClick}
+              onEdgeClick={handleEdgeClick}
               onNodeDoubleClick={handleNodeDoubleClick}
               nodeTypes={memoizedNodeTypes}
               fitView
@@ -1190,6 +2000,31 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
               selectedNode={selectedNode}
               onFocusNode={handleFocusNode}
               onExpandEntity={handleExpandEntity}
+              onSetReliability={(id, reliability) => {
+                setBoardItemReliability(caseId, id, reliability);
+              }}
+              onUpdateHypothesis={(id, text) => {
+                setBoardItemLabel(caseId, id, text);
+                const insight = hypothesisInsights.get(id) ?? {
+                  status: 'missing',
+                  supportScore: 0,
+                  contradictionScore: 0,
+                  linkedEvidence: 0,
+                  contradictionEvidence: [],
+                };
+                setSelectedNode({
+                  type: 'hypothesis',
+                  boardId: id,
+                  data: {
+                    hypothesis: text,
+                    status: insight.status,
+                    supportScore: insight.supportScore,
+                    contradictionScore: insight.contradictionScore,
+                    linkedEvidence: insight.linkedEvidence,
+                    contradictionEvidence: insight.contradictionEvidence,
+                  },
+                });
+              }}
               onClose={handleClosePanel}
               onRemoveFromBoard={handleRemoveFromBoard}
               mobileInline
@@ -1220,8 +2055,16 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
       {isMobile && mobileLayer === 'evidence' && (
         <MobileEvidenceLayer
           caseId={caseId}
-          pinnedDocs={pinnedDocs.map(doc => ({ id: doc.id, label: doc.label }))}
-          pinnedEntities={pinnedEntities.map(entity => ({ id: entity.id, label: entity.label }))}
+          pinnedDocs={pinnedDocs.map(doc => ({
+            id: doc.id,
+            label: doc.label,
+            reliability: doc.reliability,
+          }))}
+          pinnedEntities={pinnedEntities.map(entity => ({
+            id: entity.id,
+            label: entity.label,
+            reliability: entity.reliability,
+          }))}
           suspects={suspectEntities.map(suspect => ({ id: suspect.entity_id, name: suspect.name }))}
           suspectConfidence={suspectConfidence}
           onRemovePin={id => {
@@ -1239,6 +2082,31 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
           selectedNode={selectedNode}
           onFocusNode={handleFocusNode}
           onExpandEntity={handleExpandEntity}
+          onSetReliability={(id, reliability) => {
+            setBoardItemReliability(caseId, id, reliability);
+          }}
+          onUpdateHypothesis={(id, text) => {
+            setBoardItemLabel(caseId, id, text);
+            const insight = hypothesisInsights.get(id) ?? {
+              status: 'missing',
+              supportScore: 0,
+              contradictionScore: 0,
+              linkedEvidence: 0,
+              contradictionEvidence: [],
+            };
+            setSelectedNode({
+              type: 'hypothesis',
+              boardId: id,
+              data: {
+                hypothesis: text,
+                status: insight.status,
+                supportScore: insight.supportScore,
+                contradictionScore: insight.contradictionScore,
+                linkedEvidence: insight.linkedEvidence,
+                contradictionEvidence: insight.contradictionEvidence,
+              },
+            });
+          }}
           onClose={handleClosePanel}
           onRemoveFromBoard={handleRemoveFromBoard}
         />
@@ -1295,8 +2163,25 @@ function MobileEvidenceLayer({
   const tBoard = useTranslations('board.mobileLayers');
   const tEvidence = useTranslations('evidencePanel');
   const tNav = useTranslations('nav');
+  const tReliability = useTranslations('board.reliability');
   const canSubmit = suspects.length > 0 && pinnedDocs.length > 0;
   const hasContent = suspects.length > 0 || pinnedDocs.length > 0 || pinnedEntities.length > 0;
+
+  const getReliabilityLabel = (reliability: EvidenceReliability): string => {
+    if (reliability === 'reliable') return tReliability('reliable');
+    if (reliability === 'false') return tReliability('false');
+    return tReliability('uncertain');
+  };
+
+  const getReliabilityClass = (reliability: EvidenceReliability): string => {
+    if (reliability === 'reliable') {
+      return 'border-emerald-500/30 bg-emerald-500/12 text-emerald-700';
+    }
+    if (reliability === 'false') {
+      return 'border-rose-500/30 bg-rose-500/12 text-rose-700';
+    }
+    return 'border-amber-500/30 bg-amber-500/12 text-amber-700';
+  };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col pb-20 md:hidden">
@@ -1374,7 +2259,17 @@ function MobileEvidenceLayer({
                   key={doc.id}
                   className="bg-muted/45 border-border/70 flex items-center justify-between rounded-xl border px-3 py-2"
                 >
-                  <span className="mr-2 truncate text-sm">{doc.label}</span>
+                  <div className="mr-2 min-w-0">
+                    <span className="block truncate text-sm">{doc.label}</span>
+                    <span
+                      className={cn(
+                        'mt-1 inline-flex rounded-md border px-1.5 py-0.5 text-[10px] font-semibold',
+                        getReliabilityClass(doc.reliability),
+                      )}
+                    >
+                      {getReliabilityLabel(doc.reliability)}
+                    </span>
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -1403,7 +2298,17 @@ function MobileEvidenceLayer({
                   key={entity.id}
                   className="bg-muted/45 border-border/70 flex items-center justify-between rounded-xl border px-3 py-2"
                 >
-                  <span className="mr-2 truncate text-sm">{entity.label}</span>
+                  <div className="mr-2 min-w-0">
+                    <span className="block truncate text-sm">{entity.label}</span>
+                    <span
+                      className={cn(
+                        'mt-1 inline-flex rounded-md border px-1.5 py-0.5 text-[10px] font-semibold',
+                        getReliabilityClass(entity.reliability),
+                      )}
+                    >
+                      {getReliabilityLabel(entity.reliability)}
+                    </span>
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon"

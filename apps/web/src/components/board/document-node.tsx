@@ -2,8 +2,9 @@
 
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { FileText, Pin, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import type { Document } from '@/types';
+import type { Document, EvidenceReliability } from '@/types';
 
 import { DocumentTypeBadge } from '@/components/documents/document-type-badge';
 import { cn } from '@/lib/utils';
@@ -13,14 +14,40 @@ export interface DocumentNodeData extends Record<string, unknown> {
   document: Document;
   label: string;
   caseId: string;
+  boardId: string;
+  reliability: EvidenceReliability;
 }
 
 type DocumentNodeProps = NodeProps & { data: DocumentNodeData };
 
+function getReliabilityPill(reliability: EvidenceReliability): {
+  key: EvidenceReliability;
+  className: string;
+} {
+  if (reliability === 'reliable') {
+    return {
+      key: 'reliable',
+      className: 'border-emerald-500/30 bg-emerald-500/12 text-emerald-700',
+    };
+  }
+  if (reliability === 'false') {
+    return {
+      key: 'false',
+      className: 'border-rose-500/30 bg-rose-500/12 text-rose-700',
+    };
+  }
+  return {
+    key: 'uncertain',
+    className: 'border-amber-500/30 bg-amber-500/12 text-amber-700',
+  };
+}
+
 export function DocumentNode({ data, selected }: DocumentNodeProps) {
-  const { document, caseId } = data;
+  const t = useTranslations('board.reliability');
+  const { document, caseId, reliability } = data;
   const docType = document.doc_type;
   const subject = document.subject ?? docType;
+  const reliabilityPill = getReliabilityPill(reliability);
 
   const pinItem = useGameStore(state => state.pinItem);
   const unpinItem = useGameStore(state => state.unpinItem);
@@ -85,6 +112,14 @@ export function DocumentNode({ data, selected }: DocumentNodeProps) {
           <DocumentTypeBadge docType={docType} className="text-[10px]" />
         </div>
         <span className="line-clamp-2 text-xs font-medium">{subject}</span>
+        <span
+          className={cn(
+            'mt-1 inline-flex w-fit rounded-md border px-1.5 py-0.5 text-[10px] font-semibold',
+            reliabilityPill.className,
+          )}
+        >
+          {t(reliabilityPill.key)}
+        </span>
       </div>
       <Handle type="source" position={Position.Bottom} className="!bg-secondary" />
     </>

@@ -220,14 +220,17 @@ export interface ProgressResponse {
   last_score: number | null;
 }
 
+export type EvidenceReliability = 'reliable' | 'uncertain' | 'false';
+
 export interface BoardStatePayload {
   board_items: {
     id: string;
-    type: 'entity' | 'document';
+    type: 'entity' | 'document' | 'hypothesis';
     caseId: string;
     label: string;
     position: { x: number; y: number };
     data: Record<string, unknown>;
+    reliability: EvidenceReliability;
   }[];
   board_edges: {
     id: string;

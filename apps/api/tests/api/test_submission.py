@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.routes.cases import (
     _build_feedback,
+    _calculate_board_reasoning_score,
     _calculate_explanation_score,
     _extract_ground_truth_culprits,
     _parse_uuid,
@@ -168,6 +169,8 @@ async def test_board_state_roundtrip(
     put_data = put_response.json()
     assert len(put_data["board_items"]) == 2
     assert len(put_data["board_edges"]) == 1
+    assert put_data["board_items"][0]["reliability"] == "uncertain"
+    assert put_data["board_items"][1]["reliability"] == "uncertain"
 
     get_response = await client.get(
         f"/api/cases/{case.case_id}/board-state",
@@ -178,6 +181,98 @@ async def test_board_state_roundtrip(
     assert len(get_data["board_items"]) == 2
     assert len(get_data["board_edges"]) == 1
     assert get_data["board_edges"][0]["id"].startswith("manual-")
+    assert get_data["board_items"][0]["reliability"] == "uncertain"
+    assert get_data["board_items"][1]["reliability"] == "uncertain"
+
+
+@pytest.mark.asyncio
+async def test_board_state_normalizes_reliability_values(
+    client: AsyncClient,
+    submission_case: tuple[Case, Entity, Document],
+    auth_headers: dict[str, str],
+) -> None:
+    """Board state reliability values are normalized and persisted safely."""
+    case, culprit, document = submission_case
+    response = await client.put(
+        f"/api/cases/{case.case_id}/board-state",
+        headers=auth_headers,
+        json={
+            "board_items": [
+                {
+                    "id": f"entity-{culprit.entity_id}",
+                    "type": "entity",
+                    "caseId": str(case.case_id),
+                    "label": culprit.name,
+                    "position": {"x": 100, "y": 120},
+                    "data": {},
+                    "reliability": "fiable",
+                },
+                {
+                    "id": f"document-{document.doc_id}",
+                    "type": "document",
+                    "caseId": str(case.case_id),
+                    "label": document.subject,
+                    "position": {"x": 340, "y": 180},
+                    "data": {},
+                    "reliability": "not-valid",
+                },
+            ],
+            "board_edges": [],
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    reliability_by_id = {item["id"]: item["reliability"] for item in data["board_items"]}
+    assert reliability_by_id[f"entity-{culprit.entity_id}"] == "reliable"
+    assert reliability_by_id[f"document-{document.doc_id}"] == "uncertain"
+
+
+@pytest.mark.asyncio
+async def test_board_state_allows_hypothesis_nodes(
+    client: AsyncClient,
+    submission_case: tuple[Case, Entity, Document],
+    auth_headers: dict[str, str],
+) -> None:
+    """Board state accepts and returns hypothesis nodes."""
+    case, culprit, _document = submission_case
+    response = await client.put(
+        f"/api/cases/{case.case_id}/board-state",
+        headers=auth_headers,
+        json={
+            "board_items": [
+                {
+                    "id": f"entity-{culprit.entity_id}",
+                    "type": "entity",
+                    "caseId": str(case.case_id),
+                    "label": culprit.name,
+                    "position": {"x": 100, "y": 120},
+                    "data": {},
+                },
+                {
+                    "id": "hypothesis-1",
+                    "type": "hypothesis",
+                    "caseId": str(case.case_id),
+                    "label": "Culprit approved fake invoices",
+                    "position": {"x": 280, "y": 180},
+                    "data": {"hypothesis": "Culprit approved fake invoices"},
+                },
+            ],
+            "board_edges": [
+                {
+                    "source": f"entity-{culprit.entity_id}",
+                    "target": "hypothesis-1",
+                    "label": "LINKED",
+                    "relationship_type": "LINKED",
+                }
+            ],
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    items_by_id = {item["id"]: item for item in data["board_items"]}
+    assert items_by_id["hypothesis-1"]["type"] == "hypothesis"
+    assert items_by_id["hypothesis-1"]["label"] == "Culprit approved fake invoices"
+    assert items_by_id["hypothesis-1"]["data"]["hypothesis"] == "Culprit approved fake invoices"
 
 
 @pytest.mark.asyncio
@@ -498,3 +593,56 @@ def test_build_feedback_branches() -> None:
     assert "Excellent investigation" in _build_feedback(90, missed=0, wrong=0)
     assert "Good investigation overall" in _build_feedback(75, missed=1, wrong=0)
     assert "needs more supporting evidence" in _build_feedback(45, missed=2, wrong=1)
+
+
+def test_board_reasoning_score_rewards_supported_and_penalizes_contradicted() -> None:
+    """Supported hypotheses should score higher than contradicted hypotheses."""
+    board_items = [
+        {
+            "id": "entity-a",
+            "type": "entity",
+            "label": "Alice",
+            "position": {"x": 0, "y": 0},
+            "data": {},
+            "reliability": "reliable",
+        },
+        {
+            "id": "document-1",
+            "type": "document",
+            "label": "Invoice",
+            "position": {"x": 1, "y": 1},
+            "data": {},
+            "reliability": "reliable",
+        },
+        {
+            "id": "hypothesis-1",
+            "type": "hypothesis",
+            "label": "Alice approved fake invoices",
+            "position": {"x": 2, "y": 2},
+            "data": {"hypothesis": "Alice approved fake invoices"},
+            "reliability": "uncertain",
+        },
+    ]
+
+    supported_edges = [
+        {
+            "id": "manual-document-1-hypothesis-1-SUPPORTS",
+            "source": "document-1",
+            "target": "hypothesis-1",
+            "label": "SUPPORTS",
+            "relationship_type": "SUPPORTS",
+        }
+    ]
+    contradicted_edges = [
+        {
+            "id": "manual-document-1-hypothesis-1-CONTRADICTS",
+            "source": "document-1",
+            "target": "hypothesis-1",
+            "label": "CONTRADICTS",
+            "relationship_type": "CONTRADICTS",
+        }
+    ]
+
+    supported_score = _calculate_board_reasoning_score(board_items, supported_edges)
+    contradicted_score = _calculate_board_reasoning_score(board_items, contradicted_edges)
+    assert supported_score > contradicted_score

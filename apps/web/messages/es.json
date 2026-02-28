@@ -251,8 +251,24 @@
     "suspects": "sospechosos",
     "goToSubmit": "Ir a Enviar",
     "nodes": "{count} nodos",
+    "visibleNodes": "{visible}/{total} visibles",
     "links": "{count} enlaces",
     "manualLinks": "{count} manuales",
+    "filters": {
+      "searchPlaceholder": "Filtrar tablero...",
+      "nodeType": "Tipo de nodo",
+      "allTypes": "Todos los tipos",
+      "entity": "Entidades",
+      "document": "Documentos",
+      "hypothesis": "Hipotesis",
+      "reliability": "Fiabilidad",
+      "allReliability": "Toda fiabilidad",
+      "hypothesisStatus": "Estado de hipotesis",
+      "allStatus": "Todos los estados",
+      "clear": "Limpiar filtros",
+      "emptyTitle": "Ningun nodo coincide con tus filtros",
+      "emptyDescription": "Ajusta la busqueda o limpia filtros para volver a ver el tablero."
+    },
     "emptyTitle": "Tu tablero de investigacion",
     "emptyDescription": "Busca personas o documentos para comenzar. Marca sospechosos y recolecta evidencia.",
     "trySearching": "Intenta buscar:",
@@ -321,6 +337,38 @@
       "timestamp": "Marca temporal",
       "content": "Contenido"
     },
+    "reliability": {
+      "title": "Fiabilidad de evidencia",
+      "helper": "Define cuanta confianza te merece esta pista para tu teoria.",
+      "reliable": "Fiable",
+      "uncertain": "Dudosa",
+      "false": "Pista falsa"
+    },
+    "hypothesis": {
+      "add": "Nueva hipotesis",
+      "badge": "Hipotesis",
+      "detailsTitle": "Detalle de hipotesis",
+      "helper": "Registra tu teoria actual y ajustala a medida que sumas evidencia.",
+      "label": "Hipotesis de trabajo",
+      "placeholder": "Ejemplo: La gerente de finanzas coordinó aprobaciones con facturas falsas.",
+      "minLength": "Usa al menos 6 caracteres.",
+      "save": "Guardar hipotesis",
+      "defaultText": "La cadena de aprobacion sospechosa apunta a colusion interna.",
+      "scores": "A:{support} / C:{contradiction}",
+      "links": "{count} evidencias enlazadas",
+      "contradictions": "Contradicha por: {evidence}",
+      "status": {
+        "supported": "Sostenida",
+        "contradicted": "Contradicha",
+        "missing": "Falta evidencia"
+      }
+    },
+    "hypothesisTracker": {
+      "title": "Tracker de teorias",
+      "summary": "{supported} sostenidas · {contradicted} contradichas · {missing} sin evidencia",
+      "hidden": "Filtrada",
+      "showAll": "Mostrar todas ({count})"
+    },
     "mobileLayers": {
       "map": "Mapa",
       "details": "Detalle",
@@ -335,6 +383,9 @@
       "emptyDescription": "Fija documentos o entidades y marca sospechosos desde el tablero."
     },
     "relationships": {
+      "LINKED": "Vinculo",
+      "SUPPORTS": "Sostiene",
+      "CONTRADICTS": "Contradice",
       "SENT": "Envio",
       "MENTIONS": "Menciona",
       "APPROVED": "Aprobo",
@@ -342,6 +393,11 @@
       "WORKS_AT": "Trabaja en",
       "RECEIVED": "Recibio",
       "BELONGS_TO": "Pertenece a"
+    },
+    "edgeEditor": {
+      "title": "Editor de enlace",
+      "relationship": "Relacion",
+      "delete": "Eliminar enlace"
     }
   },
   "evidencePanel": {

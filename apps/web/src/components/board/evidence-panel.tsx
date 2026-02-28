@@ -3,6 +3,8 @@
 import { ArrowRight, Building2, FileText, Star, Trash2, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import type { EvidenceReliability } from '@/types';
+
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useEntities } from '@/hooks/use-entities';
@@ -15,7 +17,9 @@ interface EvidencePanelProps {
 
 export function EvidencePanel({ caseId }: EvidencePanelProps) {
   const t = useTranslations('evidencePanel');
+  const tReliability = useTranslations('board.reliability');
   const pinnedItems = useGameStore(state => state.pinnedItems);
+  const boardItems = useGameStore(state => state.boardItems);
   const suspectedEntities = useGameStore(state => state.getSuspectedEntities(caseId));
   const unpinItem = useGameStore(state => state.unpinItem);
   const toggleSuspect = useGameStore(state => state.toggleSuspect);
@@ -25,6 +29,9 @@ export function EvidencePanel({ caseId }: EvidencePanelProps) {
   const casePins = pinnedItems.filter(p => p.caseId === caseId);
   const documents = casePins.filter(p => p.type === 'document');
   const pinnedEntities = casePins.filter(p => p.type === 'entity');
+  const reliabilityByNodeId = new Map(
+    boardItems.filter(item => item.caseId === caseId).map(item => [item.id, item.reliability]),
+  );
 
   // Get suspect entity details from entity list
   const suspects = entities.filter(e => suspectedEntities.includes(e.entity_id));
@@ -77,6 +84,11 @@ export function EvidencePanel({ caseId }: EvidencePanelProps) {
                 key={doc.id}
                 icon={<FileText className="h-3.5 w-3.5" />}
                 label={doc.label}
+                reliability={reliabilityByNodeId.get(`document-${doc.id}`) ?? 'uncertain'}
+                reliabilityLabel={getReliabilityLabel(
+                  reliabilityByNodeId.get(`document-${doc.id}`) ?? 'uncertain',
+                  tReliability,
+                )}
                 onRemove={() => {
                   unpinItem(caseId, doc.id);
                 }}
@@ -97,6 +109,11 @@ export function EvidencePanel({ caseId }: EvidencePanelProps) {
                 key={ent.id}
                 icon={<Building2 className="h-3.5 w-3.5" />}
                 label={ent.label}
+                reliability={reliabilityByNodeId.get(`entity-${ent.id}`) ?? 'uncertain'}
+                reliabilityLabel={getReliabilityLabel(
+                  reliabilityByNodeId.get(`entity-${ent.id}`) ?? 'uncertain',
+                  tReliability,
+                )}
                 onRemove={() => {
                   unpinItem(caseId, ent.id);
                 }}
@@ -129,6 +146,25 @@ export function EvidencePanel({ caseId }: EvidencePanelProps) {
       </div>
     </div>
   );
+}
+
+function getReliabilityLabel(
+  reliability: EvidenceReliability,
+  tReliability: ReturnType<typeof useTranslations<'board.reliability'>>,
+): string {
+  if (reliability === 'reliable') return tReliability('reliable');
+  if (reliability === 'false') return tReliability('false');
+  return tReliability('uncertain');
+}
+
+function getReliabilityClass(reliability: EvidenceReliability): string {
+  if (reliability === 'reliable') {
+    return 'border-emerald-500/30 bg-emerald-500/12 text-emerald-700';
+  }
+  if (reliability === 'false') {
+    return 'border-rose-500/30 bg-rose-500/12 text-rose-700';
+  }
+  return 'border-amber-500/30 bg-amber-500/12 text-amber-700';
 }
 
 // Section component for grouping items
@@ -195,11 +231,15 @@ function SuspectItem({
 function EvidenceItem({
   icon,
   label,
+  reliability,
+  reliabilityLabel,
   onRemove,
   removeTitle,
 }: {
   icon: React.ReactNode;
   label: string;
+  reliability: EvidenceReliability;
+  reliabilityLabel: string;
   onRemove: () => void;
   removeTitle: string;
 }) {
@@ -207,7 +247,14 @@ function EvidenceItem({
     <div className="bg-muted/45 border-border/70 group flex items-center justify-between rounded-lg border px-2.5 py-1.5">
       <div className="flex items-center gap-2 overflow-hidden">
         <span className="text-muted-foreground flex-shrink-0">{icon}</span>
-        <span className="truncate text-sm">{label}</span>
+        <div className="min-w-0">
+          <span className="block truncate text-sm">{label}</span>
+          <span
+            className={`mt-0.5 inline-flex rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${getReliabilityClass(reliability)}`}
+          >
+            {reliabilityLabel}
+          </span>
+        </div>
       </div>
       <button
         onClick={onRemove}

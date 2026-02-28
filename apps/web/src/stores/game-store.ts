@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import type { EvidenceReliability } from '@/types';
+
 interface PinnedItem {
   id: string;
   type: 'document' | 'entity' | 'chunk';
@@ -11,15 +13,17 @@ interface PinnedItem {
 
 interface BoardItem {
   id: string;
-  type: 'entity' | 'document';
+  type: 'entity' | 'document' | 'hypothesis';
   caseId: string;
   label: string;
   position: { x: number; y: number };
   data: Record<string, unknown>;
+  reliability: EvidenceReliability;
 }
 
-type AddBoardItemInput = Omit<BoardItem, 'position'> & {
+type AddBoardItemInput = Omit<BoardItem, 'position' | 'reliability'> & {
   position?: { x: number; y: number };
+  reliability?: EvidenceReliability;
 };
 
 interface GameEvent {
@@ -57,6 +61,7 @@ interface LegacyPersistedGameState {
   openedDocs?: string[];
   suspectedEntities?: string[];
   suspectConfidence?: Record<string, number>;
+  boardItems?: Array<Record<string, unknown>>;
   hintsUsed?: number;
   searchesRun?: number;
   ariaQuestions?: number;
@@ -84,13 +89,21 @@ const EMPTY_STRING_LIST: string[] = [];
 const EMPTY_EVENT_LIST: GameEvent[] = [];
 const EMPTY_CONFIDENCE: Record<string, number> = {};
 const EMPTY_SUBMISSION: SubmissionStats = { count: 0, lastScore: null };
+const DEFAULT_EVIDENCE_RELIABILITY: EvidenceReliability = 'uncertain';
+
+function normalizeEvidenceReliability(value: unknown): EvidenceReliability {
+  if (value === 'reliable' || value === 'uncertain' || value === 'false') {
+    return value;
+  }
+  return DEFAULT_EVIDENCE_RELIABILITY;
+}
 
 // Calculate position for new board items: documents on left, entities on right
 function calculateNextPosition(
   existingItems: BoardItem[],
-  itemType: 'entity' | 'document',
+  itemType: 'entity' | 'document' | 'hypothesis',
 ): { x: number; y: number } {
-  const baseX = itemType === 'document' ? 100 : 500;
+  const baseX = itemType === 'document' ? 100 : itemType === 'hypothesis' ? 300 : 500;
   const baseY = 100;
   const spacing = 140;
 
@@ -259,6 +272,26 @@ function migrateState(persistedState: unknown, version: number): unknown {
     };
   }
 
+  if (!isLegacyState(nextState)) return nextState;
+
+  if (version < 7) {
+    nextState = {
+      ...nextState,
+      boardItems: Array.isArray(nextState.boardItems)
+        ? nextState.boardItems.map(item => {
+            const reliability =
+              item && typeof item === 'object' && 'reliability' in item
+                ? normalizeEvidenceReliability(item['reliability'])
+                : DEFAULT_EVIDENCE_RELIABILITY;
+            return {
+              ...item,
+              reliability,
+            };
+          })
+        : [],
+    };
+  }
+
   return nextState;
 }
 
@@ -287,6 +320,8 @@ interface GameState {
   setSuspectConfidence: (caseId: string, entityId: string, confidence: number) => void;
   addToBoard: (item: AddBoardItemInput) => void;
   setBoardItems: (caseId: string, items: BoardItem[]) => void;
+  setBoardItemReliability: (caseId: string, id: string, reliability: EvidenceReliability) => void;
+  setBoardItemLabel: (caseId: string, id: string, label: string) => void;
   removeFromBoard: (caseId: string, id: string) => void;
   updateBoardPosition: (caseId: string, id: string, position: { x: number; y: number }) => void;
   clearBoard: (caseId: string) => void;
@@ -397,6 +432,7 @@ export const useGameStore = create<GameState>()(
                     label: item.label,
                     position,
                     data: item.data,
+                    reliability: DEFAULT_EVIDENCE_RELIABILITY,
                   },
                 ],
           };
@@ -515,6 +551,7 @@ export const useGameStore = create<GameState>()(
               {
                 ...item,
                 position: item.position ?? calculateNextPosition(caseBoardItems, item.type),
+                reliability: normalizeEvidenceReliability(item.reliability),
               },
             ],
             recentEventsByCase: {
@@ -532,8 +569,41 @@ export const useGameStore = create<GameState>()(
         set(state => ({
           boardItems: [
             ...state.boardItems.filter(existing => existing.caseId !== caseId),
-            ...items,
+            ...items.map(item => ({
+              ...item,
+              reliability: normalizeEvidenceReliability(item.reliability),
+            })),
           ],
+        }));
+      },
+
+      setBoardItemReliability: (caseId, id, reliability) => {
+        set(state => ({
+          boardItems: state.boardItems.map(item =>
+            item.caseId === caseId && item.id === id
+              ? { ...item, reliability: normalizeEvidenceReliability(reliability) }
+              : item,
+          ),
+        }));
+      },
+
+      setBoardItemLabel: (caseId, id, label) => {
+        set(state => ({
+          boardItems: state.boardItems.map(item =>
+            item.caseId === caseId && item.id === id
+              ? {
+                  ...item,
+                  label: label.trim() || item.label,
+                  data:
+                    item.type === 'hypothesis'
+                      ? {
+                          ...item.data,
+                          hypothesis: label.trim() || item.label,
+                        }
+                      : item.data,
+                }
+              : item,
+          ),
         }));
       },
 
@@ -726,7 +796,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: 'office-detective-game',
-      version: 6,
+      version: 7,
       migrate: migrateState,
     },
   ),

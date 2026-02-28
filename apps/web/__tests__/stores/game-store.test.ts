@@ -98,6 +98,8 @@ describe('game-store case isolation', () => {
 
     expect(aItem?.position).toEqual({ x: 10, y: 20 });
     expect(bItem?.position).not.toEqual({ x: 10, y: 20 });
+    expect(aItem?.reliability).toBe('uncertain');
+    expect(bItem?.reliability).toBe('uncertain');
 
     store.clearBoard('case-a');
     expect(useGameStore.getState().boardItems.some(item => item.caseId === 'case-a')).toBe(false);
@@ -105,6 +107,60 @@ describe('game-store case isolation', () => {
 
     store.removeFromBoard('case-b', 'entity-1');
     expect(useGameStore.getState().boardItems.some(item => item.caseId === 'case-b')).toBe(false);
+  });
+
+  it('updates reliability for a board item without affecting other cases', () => {
+    const store = useGameStore.getState();
+
+    store.addToBoard({
+      id: 'entity-1',
+      type: 'entity',
+      caseId: 'case-a',
+      label: 'Alice',
+      data: {},
+    });
+    store.addToBoard({
+      id: 'entity-1',
+      type: 'entity',
+      caseId: 'case-b',
+      label: 'Bob',
+      data: {},
+    });
+
+    store.setBoardItemReliability('case-a', 'entity-1', 'reliable');
+
+    const aItem = useGameStore
+      .getState()
+      .boardItems.find(item => item.caseId === 'case-a' && item.id === 'entity-1');
+    const bItem = useGameStore
+      .getState()
+      .boardItems.find(item => item.caseId === 'case-b' && item.id === 'entity-1');
+
+    expect(aItem?.reliability).toBe('reliable');
+    expect(bItem?.reliability).toBe('uncertain');
+  });
+
+  it('supports hypothesis nodes and label updates', () => {
+    const store = useGameStore.getState();
+
+    store.addToBoard({
+      id: 'hypothesis-1',
+      type: 'hypothesis',
+      caseId: 'case-a',
+      label: 'Initial theory',
+      data: { hypothesis: 'Initial theory' },
+    });
+    store.setBoardItemLabel('case-a', 'hypothesis-1', 'Updated theory');
+
+    const item = useGameStore
+      .getState()
+      .boardItems.find(
+        boardItem => boardItem.caseId === 'case-a' && boardItem.id === 'hypothesis-1',
+      );
+
+    expect(item?.type).toBe('hypothesis');
+    expect(item?.label).toBe('Updated theory');
+    expect(item?.data).toMatchObject({ hypothesis: 'Updated theory' });
   });
 
   it('tracks counters and submissions independently per case', () => {

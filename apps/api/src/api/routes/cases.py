@@ -32,6 +32,18 @@ from src.services.ingestion_service import IngestionService
 
 router = APIRouter()
 MAX_HINTS = 4
+DEFAULT_EVIDENCE_RELIABILITY = "uncertain"
+ALLOWED_EVIDENCE_RELIABILITY = frozenset({"reliable", "uncertain", "false"})
+EVIDENCE_RELIABILITY_ALIASES = {
+    "fiable": "reliable",
+    "trusted": "reliable",
+    "dudosa": "uncertain",
+    "questionable": "uncertain",
+    "doubtful": "uncertain",
+    "unknown": "uncertain",
+    "falsa": "false",
+    "unreliable": "false",
+}
 
 
 def _parse_uuid(raw: object) -> UUID | None:
@@ -504,10 +516,27 @@ def _coerce_float(value: Any, fallback: float = 100.0) -> float:
     return fallback
 
 
+def _normalize_evidence_reliability(value: Any) -> str:
+    """Normalize incoming reliability values to known enum-like strings."""
+    if not isinstance(value, str):
+        return DEFAULT_EVIDENCE_RELIABILITY
+
+    normalized = value.strip().lower()
+    if not normalized:
+        return DEFAULT_EVIDENCE_RELIABILITY
+
+    mapped = EVIDENCE_RELIABILITY_ALIASES.get(normalized, normalized)
+    if mapped in ALLOWED_EVIDENCE_RELIABILITY:
+        return mapped
+
+    return DEFAULT_EVIDENCE_RELIABILITY
+
+
 def _sanitize_board_items(case_id: UUID, board_items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Normalize board items payload from clients."""
     sanitized: list[dict[str, Any]] = []
     seen_ids: set[str] = set()
+    allowed_types = {"entity", "document", "hypothesis"}
 
     for item in board_items:
         node_id = item.get("id")
@@ -516,7 +545,7 @@ def _sanitize_board_items(case_id: UUID, board_items: list[dict[str, Any]]) -> l
             continue
         if node_id in seen_ids:
             continue
-        if node_type not in {"entity", "document"}:
+        if node_type not in allowed_types:
             continue
 
         raw_position = item.get("position")
@@ -526,12 +555,15 @@ def _sanitize_board_items(case_id: UUID, board_items: list[dict[str, Any]]) -> l
                 "id": node_id,
                 "type": node_type,
                 "caseId": str(case_id),
-                "label": item.get("label") if isinstance(item.get("label"), str) else node_id,
+                "label": item.get("label")
+                if isinstance(item.get("label"), str) and item.get("label").strip()
+                else ("Hypothesis" if node_type == "hypothesis" else node_id),
                 "position": {
                     "x": _coerce_float(position.get("x")),
                     "y": _coerce_float(position.get("y")),
                 },
                 "data": item.get("data") if isinstance(item.get("data"), dict) else {},
+                "reliability": _normalize_evidence_reliability(item.get("reliability")),
             }
         )
         seen_ids.add(node_id)
@@ -589,7 +621,7 @@ def _sanitize_board_edges(board_edges: list[dict[str, Any]]) -> list[dict[str, A
 def _calculate_board_reasoning_score(
     board_items: list[dict[str, Any]], board_edges: list[dict[str, Any]]
 ) -> int:
-    """Estimate board reasoning quality from structure and connection depth."""
+    """Estimate board reasoning quality from structure and deduction quality."""
     node_ids = {
         item.get("id") for item in board_items if isinstance(item.get("id"), str) and item.get("id")
     }
@@ -602,15 +634,106 @@ def _calculate_board_reasoning_score(
     if node_count == 0:
         return 0
 
-    node_score = min(4, max(0, node_count - 1))
-    edge_score = min(4, edge_count * 2)
+    node_score = min(3, max(0, node_count - 1))
+    edge_score = min(3, edge_count)
     node_types = {
         item.get("type")
         for item in board_items
-        if isinstance(item.get("type"), str) and item.get("type") in {"entity", "document"}
+        if isinstance(item.get("type"), str)
+        and item.get("type") in {"entity", "document", "hypothesis"}
     }
-    diversity_bonus = 2 if {"entity", "document"}.issubset(node_types) and edge_count > 0 else 0
-    return min(10, node_score + edge_score + diversity_bonus)
+    diversity_bonus = 1 if {"entity", "document"}.issubset(node_types) and edge_count > 0 else 0
+
+    base_score = node_score + edge_score + diversity_bonus
+
+    items_by_id: dict[str, dict[str, Any]] = {}
+    for item in board_items:
+        node_id = item.get("id")
+        if isinstance(node_id, str) and node_id:
+            items_by_id[node_id] = item
+
+    hypothesis_ids = [
+        node_id
+        for node_id, item in items_by_id.items()
+        if isinstance(item.get("type"), str) and item.get("type") == "hypothesis"
+    ]
+    if not hypothesis_ids:
+        return min(10, base_score)
+
+    deduction_score = 0
+    has_explicit_reasoning_edge = False
+    reasoning_types = {"SUPPORTS", "CONTRADICTS"}
+    supportive_types = {"SUPPORTS", "LINKED"}
+
+    for hypothesis_id in hypothesis_ids:
+        support_score = 0
+        contradiction_score = 0
+        evidence_links: set[str] = set()
+
+        for edge in board_edges:
+            source = edge.get("source")
+            target = edge.get("target")
+            if not isinstance(source, str) or not isinstance(target, str):
+                continue
+
+            evidence_id: str | None = None
+            if source == hypothesis_id:
+                evidence_id = target
+            elif target == hypothesis_id:
+                evidence_id = source
+            if evidence_id is None:
+                continue
+
+            evidence_item = items_by_id.get(evidence_id)
+            if not evidence_item:
+                continue
+            evidence_type = evidence_item.get("type")
+            if evidence_type not in {"entity", "document"}:
+                continue
+            evidence_links.add(evidence_id)
+
+            raw_relation = edge.get("relationship_type")
+            relation_value = raw_relation if isinstance(raw_relation, str) else edge.get("label")
+            relationship_type = (
+                relation_value.strip().upper()
+                if isinstance(relation_value, str) and relation_value.strip()
+                else "LINKED"
+            )
+
+            if relationship_type in reasoning_types:
+                has_explicit_reasoning_edge = True
+
+            reliability = _normalize_evidence_reliability(evidence_item.get("reliability"))
+            if relationship_type == "CONTRADICTS":
+                if reliability == "reliable":
+                    contradiction_score += 2
+                elif reliability == "uncertain":
+                    contradiction_score += 1
+            elif relationship_type in supportive_types:
+                if reliability == "reliable":
+                    support_score += 2
+                elif reliability == "uncertain":
+                    support_score += 1
+                else:
+                    contradiction_score += 1
+            else:
+                if reliability == "reliable":
+                    support_score += 1
+
+        if not evidence_links:
+            continue
+
+        if contradiction_score > support_score:
+            deduction_score -= 1
+        elif support_score >= 2:
+            deduction_score += 2
+        else:
+            deduction_score += 1
+
+    if has_explicit_reasoning_edge:
+        deduction_score += 1
+
+    return min(10, max(0, base_score + deduction_score))
 
 
 async def _get_or_create_player_state(db: DbSession, user_id: UUID, case_id: UUID) -> PlayerState:
@@ -1073,9 +1196,10 @@ async def get_case_board_state(
         )
 
     player_state = await _get_or_create_player_state(db, current_user.user_id, case_id)
-    board_items, board_edges = _extract_board_state(
+    raw_board_items, board_edges = _extract_board_state(
         player_state.hypotheses_json if isinstance(player_state.hypotheses_json, dict) else {}
     )
+    board_items = _sanitize_board_items(case_id, raw_board_items)
 
     return BoardStateResponse(
         board_items=board_items,

@@ -13,8 +13,9 @@ import {
   Trash2,
   User,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import type { Entity, EntityType } from '@/types';
+import type { Entity, EntityType, EvidenceReliability } from '@/types';
 
 import { cn } from '@/lib/utils';
 import { useGameStore } from '@/stores/game-store';
@@ -92,15 +93,41 @@ export interface EntityNodeData extends Record<string, unknown> {
   entity: Entity;
   label: string;
   caseId: string;
+  boardId: string;
+  reliability: EvidenceReliability;
 }
 
 type EntityNodeProps = NodeProps & { data: EntityNodeData };
 
+function getReliabilityPill(reliability: EvidenceReliability): {
+  key: EvidenceReliability;
+  className: string;
+} {
+  if (reliability === 'reliable') {
+    return {
+      key: 'reliable',
+      className: 'border-emerald-500/30 bg-emerald-500/12 text-emerald-700',
+    };
+  }
+  if (reliability === 'false') {
+    return {
+      key: 'false',
+      className: 'border-rose-500/30 bg-rose-500/12 text-rose-700',
+    };
+  }
+  return {
+    key: 'uncertain',
+    className: 'border-amber-500/30 bg-amber-500/12 text-amber-700',
+  };
+}
+
 export function EntityNode({ data, selected }: EntityNodeProps) {
-  const { entity, caseId } = data;
+  const t = useTranslations('board.reliability');
+  const { entity, caseId, reliability } = data;
   const entityType = entity.entity_type;
   const Icon = entityIcons[entityType];
   const colors = entityColors[entityType];
+  const reliabilityPill = getReliabilityPill(reliability);
 
   const pinItem = useGameStore(state => state.pinItem);
   const unpinItem = useGameStore(state => state.unpinItem);
@@ -208,6 +235,14 @@ export function EntityNode({ data, selected }: EntityNodeProps) {
         </span>
         <span className={cn('mt-0.5 text-xs font-medium capitalize opacity-70', colors.text)}>
           {entityType}
+        </span>
+        <span
+          className={cn(
+            'mt-1 inline-flex rounded-md border px-1.5 py-0.5 text-[10px] font-semibold',
+            reliabilityPill.className,
+          )}
+        >
+          {t(reliabilityPill.key)}
         </span>
       </div>
       <Handle type="source" position={Position.Bottom} className="!bg-primary !h-2 !w-2" />

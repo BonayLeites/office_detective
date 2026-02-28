@@ -20,19 +20,34 @@ import { Input } from '@/components/ui/input';
 import { Link } from '@/i18n/navigation';
 import { useGameStore } from '@/stores/game-store';
 
+type NodeTypeFilter = 'all' | 'entity' | 'document' | 'hypothesis';
+type ReliabilityFilter = 'all' | 'reliable' | 'uncertain' | 'false';
+type HypothesisStatusFilter = 'all' | 'supported' | 'contradicted' | 'missing';
+
 interface BoardToolbarProps {
   caseId: string;
   onLoadHubs: () => Promise<void>;
   onSyncGraph: () => Promise<void>;
   onTraceSuspects: () => Promise<void>;
+  onAddHypothesis: () => void;
   onClearBoard: () => void;
   onAutoLayout: () => void;
   onSearch: (query: string) => void;
+  boardQuery: string;
+  onBoardQueryChange: (query: string) => void;
+  nodeTypeFilter: NodeTypeFilter;
+  onNodeTypeFilterChange: (value: NodeTypeFilter) => void;
+  reliabilityFilter: ReliabilityFilter;
+  onReliabilityFilterChange: (value: ReliabilityFilter) => void;
+  hypothesisStatusFilter: HypothesisStatusFilter;
+  onHypothesisStatusFilterChange: (value: HypothesisStatusFilter) => void;
+  onClearFilters: () => void;
   connectionType: string;
   onConnectionTypeChange: (type: string) => void;
   isLoading: boolean;
   suspectCount: number;
   nodeCount: number;
+  visibleNodeCount: number;
   edgeCount: number;
   manualEdgeCount: number;
 }
@@ -42,14 +57,25 @@ export function BoardToolbar({
   onLoadHubs,
   onSyncGraph,
   onTraceSuspects,
+  onAddHypothesis,
   onClearBoard,
   onAutoLayout,
   onSearch,
+  boardQuery,
+  onBoardQueryChange,
+  nodeTypeFilter,
+  onNodeTypeFilterChange,
+  reliabilityFilter,
+  onReliabilityFilterChange,
+  hypothesisStatusFilter,
+  onHypothesisStatusFilterChange,
+  onClearFilters,
   connectionType,
   onConnectionTypeChange,
   isLoading,
   suspectCount,
   nodeCount,
+  visibleNodeCount,
   edgeCount,
   manualEdgeCount,
 }: BoardToolbarProps) {
@@ -64,6 +90,11 @@ export function BoardToolbar({
   const caseSuspectedCount = suspectedEntities.length;
 
   const canSubmit = casePinnedCount > 0 && caseSuspectedCount > 0;
+  const hasActiveFilters =
+    boardQuery.trim().length > 0 ||
+    nodeTypeFilter !== 'all' ||
+    reliabilityFilter !== 'all' ||
+    hypothesisStatusFilter !== 'all';
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -141,6 +172,16 @@ export function BoardToolbar({
         <Button
           variant="outline"
           size="sm"
+          onClick={onAddHypothesis}
+          className="gap-2 whitespace-nowrap"
+        >
+          <Plus className="h-4 w-4" />
+          {t('hypothesis.add')}
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
           onClick={onAutoLayout}
           disabled={nodeCount === 0}
           className="gap-2 whitespace-nowrap"
@@ -168,13 +209,74 @@ export function BoardToolbar({
           className="bg-background border-border/80 h-9 rounded-md border px-2 text-xs md:text-sm"
           title="Connection type"
         >
-          <option value="LINKED">Link</option>
-          <option value="SENT">Sent</option>
-          <option value="MENTIONS">Mentions</option>
-          <option value="APPROVED">Approved</option>
-          <option value="PAID_TO">Paid To</option>
-          <option value="WORKS_AT">Works At</option>
+          <option value="LINKED">{t('relationships.LINKED')}</option>
+          <option value="SUPPORTS">{t('relationships.SUPPORTS')}</option>
+          <option value="CONTRADICTS">{t('relationships.CONTRADICTS')}</option>
+          <option value="SENT">{t('relationships.SENT')}</option>
+          <option value="MENTIONS">{t('relationships.MENTIONS')}</option>
+          <option value="APPROVED">{t('relationships.APPROVED')}</option>
+          <option value="PAID_TO">{t('relationships.PAID_TO')}</option>
+          <option value="WORKS_AT">{t('relationships.WORKS_AT')}</option>
         </select>
+      </div>
+
+      <div className="no-scrollbar flex w-full items-center gap-1 overflow-x-auto pb-1 md:w-auto md:overflow-visible md:pb-0">
+        <Input
+          placeholder={t('filters.searchPlaceholder')}
+          value={boardQuery}
+          onChange={event => {
+            onBoardQueryChange(event.target.value);
+          }}
+          className="h-9 w-[180px] rounded-lg text-xs md:text-sm"
+        />
+        <select
+          value={nodeTypeFilter}
+          onChange={event => {
+            onNodeTypeFilterChange(event.target.value as NodeTypeFilter);
+          }}
+          className="bg-background border-border/80 h-9 rounded-md border px-2 text-xs md:text-sm"
+          title={t('filters.nodeType')}
+        >
+          <option value="all">{t('filters.allTypes')}</option>
+          <option value="entity">{t('filters.entity')}</option>
+          <option value="document">{t('filters.document')}</option>
+          <option value="hypothesis">{t('filters.hypothesis')}</option>
+        </select>
+        <select
+          value={reliabilityFilter}
+          onChange={event => {
+            onReliabilityFilterChange(event.target.value as ReliabilityFilter);
+          }}
+          className="bg-background border-border/80 h-9 rounded-md border px-2 text-xs md:text-sm"
+          title={t('filters.reliability')}
+        >
+          <option value="all">{t('filters.allReliability')}</option>
+          <option value="reliable">{t('reliability.reliable')}</option>
+          <option value="uncertain">{t('reliability.uncertain')}</option>
+          <option value="false">{t('reliability.false')}</option>
+        </select>
+        <select
+          value={hypothesisStatusFilter}
+          onChange={event => {
+            onHypothesisStatusFilterChange(event.target.value as HypothesisStatusFilter);
+          }}
+          className="bg-background border-border/80 h-9 rounded-md border px-2 text-xs md:text-sm"
+          title={t('filters.hypothesisStatus')}
+        >
+          <option value="all">{t('filters.allStatus')}</option>
+          <option value="supported">{t('hypothesis.status.supported')}</option>
+          <option value="contradicted">{t('hypothesis.status.contradicted')}</option>
+          <option value="missing">{t('hypothesis.status.missing')}</option>
+        </select>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="whitespace-nowrap"
+          onClick={onClearFilters}
+          disabled={!hasActiveFilters}
+        >
+          {t('filters.clear')}
+        </Button>
       </div>
 
       <div className="flex w-full items-center gap-3 md:ml-auto md:w-auto">
@@ -204,7 +306,7 @@ export function BoardToolbar({
         )}
 
         <span className="text-muted-foreground ml-auto whitespace-nowrap text-xs md:text-sm">
-          {t('nodes', { count: nodeCount })}
+          {t('visibleNodes', { visible: visibleNodeCount, total: nodeCount })}
         </span>
         <span className="text-muted-foreground whitespace-nowrap text-xs md:text-sm">
           {t('links', { count: edgeCount })}

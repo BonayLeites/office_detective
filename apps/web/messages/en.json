@@ -251,8 +251,24 @@
     "suspects": "suspects",
     "goToSubmit": "Go to Submit",
     "nodes": "{count} nodes",
+    "visibleNodes": "{visible}/{total} visible",
     "links": "{count} links",
     "manualLinks": "{count} manual",
+    "filters": {
+      "searchPlaceholder": "Filter board...",
+      "nodeType": "Node type",
+      "allTypes": "All types",
+      "entity": "Entities",
+      "document": "Documents",
+      "hypothesis": "Hypotheses",
+      "reliability": "Reliability",
+      "allReliability": "All reliability",
+      "hypothesisStatus": "Hypothesis status",
+      "allStatus": "All status",
+      "clear": "Clear filters",
+      "emptyTitle": "No nodes match your filters",
+      "emptyDescription": "Adjust search or clear filters to show your board again."
+    },
     "emptyTitle": "Your investigation board",
     "emptyDescription": "Search for people or documents to begin. Mark suspects and collect evidence.",
     "trySearching": "Try searching:",
@@ -321,6 +337,38 @@
       "timestamp": "Timestamp",
       "content": "Content"
     },
+    "reliability": {
+      "title": "Evidence reliability",
+      "helper": "Set how trustworthy this item is for your theory.",
+      "reliable": "Reliable",
+      "uncertain": "Uncertain",
+      "false": "False lead"
+    },
+    "hypothesis": {
+      "add": "New hypothesis",
+      "badge": "Hypothesis",
+      "detailsTitle": "Hypothesis details",
+      "helper": "Capture your current theory and refine it as you gather evidence.",
+      "label": "Working hypothesis",
+      "placeholder": "Example: Finance manager coordinated vendor approvals with fake invoices.",
+      "minLength": "Use at least 6 characters.",
+      "save": "Save hypothesis",
+      "defaultText": "Suspicious approval chain points to internal collusion.",
+      "scores": "S:{support} / C:{contradiction}",
+      "links": "{count} linked evidence items",
+      "contradictions": "Contradicted by: {evidence}",
+      "status": {
+        "supported": "Supported",
+        "contradicted": "Contradicted",
+        "missing": "Missing evidence"
+      }
+    },
+    "hypothesisTracker": {
+      "title": "Theory tracker",
+      "summary": "{supported} supported · {contradicted} contradicted · {missing} missing",
+      "hidden": "Filtered",
+      "showAll": "Show all ({count})"
+    },
     "mobileLayers": {
       "map": "Map",
       "details": "Details",
@@ -335,6 +383,9 @@
       "emptyDescription": "Pin documents or entities and mark suspects from the board."
     },
     "relationships": {
+      "LINKED": "Linked",
+      "SUPPORTS": "Supports",
+      "CONTRADICTS": "Contradicts",
       "SENT": "Sent",
       "MENTIONS": "Mentions",
       "APPROVED": "Approved",
@@ -342,6 +393,11 @@
       "WORKS_AT": "Works at",
       "RECEIVED": "Received",
       "BELONGS_TO": "Belongs to"
+    },
+    "edgeEditor": {
+      "title": "Link editor",
+      "relationship": "Relationship",
+      "delete": "Delete link"
     }
   },
   "evidencePanel": {
