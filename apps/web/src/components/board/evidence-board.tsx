@@ -388,9 +388,8 @@ export function EvidenceBoard({ caseId }: EvidenceBoardProps) {
   const setCurrentCase = useGameStore(state => state.setCurrentCase);
   const openedDocCount = useGameStore(state => state.getOpenedDocs(caseId).length);
   const ariaQuestions = useGameStore(state => state.getAriaQuestions(caseId));
-  const caseBoardItems = useGameStore(state =>
-    state.boardItems.filter(item => item.caseId === caseId),
-  );
+  const allBoardItems = useGameStore(state => state.boardItems);
+  const caseBoardItems = allBoardItems.filter(item => item.caseId === caseId);
   const pinnedItems = useGameStore(state => state.pinnedItems);
   const suspectedEntities = useGameStore(state => state.getSuspectedEntities(caseId));
   const suspectConfidence = useGameStore(state => state.getSuspectConfidenceMap(caseId));

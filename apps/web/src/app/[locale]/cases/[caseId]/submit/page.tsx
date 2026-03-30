@@ -68,9 +68,8 @@ export default function SubmitPage({ params }: SubmitPageProps) {
   const openedDocs = useGameStore(state => state.getOpenedDocs(caseId).length);
   const searchesRun = useGameStore(state => state.getSearchesRun(caseId));
   const ariaQuestions = useGameStore(state => state.getAriaQuestions(caseId));
-  const pinnedItems = useGameStore(state =>
-    state.pinnedItems.filter(item => item.caseId === caseId),
-  );
+  const allPinnedItems = useGameStore(state => state.pinnedItems);
+  const pinnedItems = allPinnedItems.filter(item => item.caseId === caseId);
   const suspects = useGameStore(state => state.getSuspectedEntities(caseId).length);
   const boardItems = useGameStore(
     state => state.boardItems.filter(item => item.caseId === caseId).length,

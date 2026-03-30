@@ -64,7 +64,8 @@ export function InvestigationHud({ caseId, compact = false }: InvestigationHudPr
   const submissionTimeline = useGameStore(state => state.submissionTimeline);
   const claimedMetaRewards = useGameStore(state => state.claimedMetaRewards);
   const claimedMetaXp = useGameStore(state => state.getClaimedMetaXp());
-  const recentEvents = useGameStore(state => state.getRecentEvents(caseId).slice(0, 4));
+  const allRecentEvents = useGameStore(state => state.getRecentEvents(caseId));
+  const recentEvents = allRecentEvents.slice(0, 4);
   const snapshot = {
     openedDocs,
     searchesRun,
