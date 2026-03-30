@@ -1126,6 +1126,7 @@ async def create_case(
 @router.delete("/{case_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_case(
     case_id: UUID,
+    current_user: CurrentUser,
     db: DbSession,
 ) -> None:
     """Delete a case."""

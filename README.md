@@ -9,14 +9,6 @@ An AI-powered investigation game where players analyze corporate documents, unco
 
 ---
 
-## Demo
-
-<p align="center">
-  <img src=".github/assets/demo.gif" alt="Office Detective Demo" width="800">
-</p>
-
----
-
 ## Features
 
 - **AI Investigation Assistant** - Chat with an AI agent that searches documents, analyzes evidence, and provides cited responses

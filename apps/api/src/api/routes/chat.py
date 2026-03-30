@@ -148,7 +148,7 @@ async def chat_with_aria(
         detail="Too many chat requests. Please wait a moment and try again.",
     )
 
-    # Initialize agent service (without Neo4j for now - optional)
+    # Initialize agent service
     agent_service = AgentService(db=db, neo4j=None)
 
     try:
